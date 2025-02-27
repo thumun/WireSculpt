@@ -1,5 +1,6 @@
 #include "WireSculpt.h"
 #include <maya/MFnPlugin.h>
+#include "WireSculptNode.h"
 
 // define EXPORT for exporting dll functions
 #define EXPORT _declspec(dllexport)
@@ -67,9 +68,19 @@ EXPORT MStatus initializePlugin(MObject obj)
 {
 	MStatus status;
 	MFnPlugin plugin(obj, "CIS660", "1.0", "Any");
+	
 	status = plugin.registerCommand("WireSculpt", WireSculpt::creator, WireSculpt::newSyntax);
 	if (!status)
 		status.perror("registerCommand failed");
+
+	// Run with the MEL command createNode WireSculptNode
+	status = plugin.registerNode("WireSculptNode", WireSculptNode::id,
+		WireSculptNode::creator, WireSculptNode::initialize);
+	if (!status) {
+		status.perror("registerNode");
+		return status;
+	}
+
 	return status;
 }
 // Cleanup Plugin upon unloading
@@ -77,6 +88,13 @@ EXPORT MStatus uninitializePlugin(MObject obj)
 {
 	MStatus status;
 	MFnPlugin plugin(obj);
+
+	status = plugin.deregisterNode(WireSculptNode::id);
+	if (!status) {
+		status.perror("deregisterNode");
+		return status;
+	}
+
 	status = plugin.deregisterCommand("WireSculpt");
 	if (!status)
 		status.perror("deregisterCommand failed");

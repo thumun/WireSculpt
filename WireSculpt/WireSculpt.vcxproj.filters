@@ -18,9 +18,15 @@
     <ClInclude Include="WireSculpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WireSculptNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WireSculpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WireSculptNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
