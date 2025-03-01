@@ -138,10 +138,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Edge.h" />
+    <ClInclude Include="Landmark.h" />
+    <ClInclude Include="NonLandmark.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="Vertex.h" />
     <ClInclude Include="WireSculpt.h" />
+    <ClInclude Include="WireSculptNode.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="Landmark.cpp" />
+    <ClCompile Include="NonLandmark.cpp" />
+    <ClCompile Include="Path.cpp" />
+    <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="WireSculpt.cpp" />
+    <ClCompile Include="WireSculptNode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
