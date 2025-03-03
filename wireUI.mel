@@ -142,13 +142,15 @@ global proc generatePaths() {
     float $thickness = `floatSliderGrp -query -value $gThicknessSlider`;
 
     // Print the parameters (replace this with your actual logic)
-    print("Starting process with the following parameters:\n");
-    print("File Path: " + $filePath + "\n");
-    print("Feature Attraction: a=" + $aAttraction + ", b=" + $bAttraction + "\n");
-    print("Path Repulsion: a*=" + $aRepulsion + ", b*=" + $bRepulsion + "\n");
-    print("Multi-Path Construction: K=" + $K + ", M=" + $M + "\n");
-    print("Custom lambda: " + $lambda + "\n");
-    print("Thickness: " + $thickness + "\n");
+    //print("Starting process with the following parameters:\n");
+    //print("File Path: " + $filePath + "\n");
+    //print("Feature Attraction: a=" + $aAttraction + ", b=" + $bAttraction + "\n");
+    //print("Path Repulsion: a*=" + $aRepulsion + ", b*=" + $bRepulsion + "\n");
+    //print("Multi-Path Construction: K=" + $K + ", M=" + $M + "\n");
+    //print("Custom lambda: " + $lambda + "\n");
+    //print("Thickness: " + $thickness + "\n");
+        
+    WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
 }
 
 // Create the GUI
