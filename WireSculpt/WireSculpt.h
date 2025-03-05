@@ -11,10 +11,9 @@
 
 class WireSculpt : public MPxCommand
 {
-public: 
+public:
 	WireSculpt() {};
 	virtual MStatus doIt(const MArgList& args);
 	static void* creator();
 	static MSyntax newSyntax();
 };
-

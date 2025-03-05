@@ -1,4 +1,5 @@
 #include "WireSculpt.h"
+#include "WireSculptPlugin.h"
 #include <maya/MFnPlugin.h>
 #include "WireSculptNode.h"
 
@@ -64,9 +65,9 @@ MStatus WireSculpt::doIt(const MArgList& argList)
 	double attractSteep = 0.0;
 	double repulStrength = 1.0;
 	double repulSteep = 0.0;
-	int expand = 0; 
-	int keep = 0; 
-	double lambda = 1.0; 
+	int expand = 0;
+	int keep = 0;
+	double lambda = 1.0;
 	double thickness = 1.0;
 
 
@@ -156,6 +157,19 @@ MStatus WireSculpt::doIt(const MArgList& argList)
 	print += thickness;
 	MGlobal::displayInfo(print);
 
+	// process file
+	WireSculptPlugin ws = WireSculptPlugin();
+	bool returnVal = ws.ProcessFile(file.asChar());
+	MString errorMsg = "\n";
+	if (returnVal) {
+		errorMsg += "file processed successfully";
+		MGlobal::displayInfo(errorMsg);
+	}
+	else {
+		errorMsg += "issue with file format or contents";
+		MGlobal::displayInfo(errorMsg);
+	}
+
 	return MStatus::kSuccess;
 }
 
@@ -164,7 +178,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 {
 	MStatus status;
 	MFnPlugin plugin(obj, "CIS660", "1.0", "Any");
-	
+
 	status = plugin.registerCommand("WireSculpt", WireSculpt::creator, WireSculpt::newSyntax);
 	if (!status)
 		status.perror("registerCommand failed");

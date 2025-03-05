@@ -145,6 +145,7 @@
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WireSculpt.h" />
     <ClInclude Include="WireSculptNode.h" />
+    <ClInclude Include="WireSculptPlugin.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Edge.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="WireSculpt.cpp" />
     <ClCompile Include="WireSculptNode.cpp" />
+    <ClCompile Include="WireSculptPlugin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
