@@ -102,3 +102,8 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
+
+int main() {
+    WireSculptPlugin ws = WireSculptPlugin();
+    ws.ProcessFile("D:\\CGGT\\ComputerGraphics\\mesh - editor - project - thumun\\obj_files\\cube.obj");
+}
