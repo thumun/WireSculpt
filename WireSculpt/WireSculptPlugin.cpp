@@ -43,7 +43,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     }
 
     // failure to open 
-    ofstream fin;
+    ifstream fin;
     fin.open(filePath);
     if (!fin.is_open()) {
         return false;
@@ -55,38 +55,40 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     vector<MVector> pos; 
     vector<MVector> vertexNormals;
 
-    while (getline(cin, line)) {
+    while (getline(fin, line)) {
+
+        vector<string> fields = SplitString(line, ' ');
+
         if (line == "-1") {
             break;
         }
         // adding vert positions to temp vector
-        else if (line.substr(0) == "v") {
-            vector<string> fields = SplitString(line, ' ');
+        else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
         }
 
         // calculating normals by going through faces 
-        else if (line.substr(0) == "f") {
-
-            vector<string> fields = SplitString(line, ' ');
+        else if (fields[0] == "f") {
             // temp storage to calc normals w/ vert pos
-            vector<float> faceVerts; 
+            vector<int> faceVerts; 
 
             // going through verticies that make up a face 
             for (int i = 1; i < fields.size(); i++) {
-                vector<string> triplets = SplitString(line, '/');
+                vector<string> triplets = SplitString(fields[i], '/');
 
-                faceVerts.push_back(stof(triplets[0]));
+                faceVerts.push_back(stoi(triplets[0]));
             }
 
             // draw edges with verts to get cross prod
             for (int i = 0; i < faceVerts.size(); i++) {
                 
-                MVector current = pos[i];
-                MVector prev = pos[(i - 1)%pos.size()];
-                MVector next = pos[(i + 1)%pos.size()];
+                int indx = faceVerts[i] - 1;
 
-                MVector crossProd = (prev - current) ^ (next-current);
+                MVector current = pos[indx];
+                MVector prev = pos[(indx - 1)%pos.size()];
+                MVector next = pos[(indx + 1)%pos.size()];
+
+                MVector crossProd = (current - prev) ^ (next-current);
                 crossProd.normalize();
 
                 // for each calc can make Vertex obj and add to list
@@ -103,7 +105,9 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
 
+#if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:\\CGGT\\ComputerGraphics\\mesh - editor - project - thumun\\obj_files\\cube.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 }
+#endif // EXEDEBUG
