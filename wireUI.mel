@@ -154,7 +154,7 @@ global proc generatePaths() {
     if (!`objExists "WireSculptNode1"`) {
         createNode WireSculptNode -n WireSculptNode1;
     }
-    setAttr WireSculptNode1.inputMeshFile -type string $filePath;
+    setAttr WireSculptNode1.inputMeshFile -type "string" $filePath;
     setAttr WireSculptNode1.rangeAttraction $aAttraction;
     setAttr WireSculptNode1.steepAttraction $bAttraction;
     setAttr WireSculptNode1.rangeRepulsion $aRepulsion;
