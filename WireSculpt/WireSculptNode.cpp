@@ -1,4 +1,5 @@
 #include "WireSculptNode.h"
+#include "cylinder.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnNumericAttribute.h>
@@ -231,11 +232,33 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
+MObject WireSculptNode::createMesh(const double& radius, MObject& outData, MStatus& status) {
+    MPoint start({0, 0, 0 });
+    MPoint end({ 1, 1, 1 });
+    MPointArray currPoints;
+    MIntArray currFaceCounts;
+    MIntArray currFaceConnects;
+    CylinderMesh cylinder(start, end, 0.12);
+    cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+    cylinder.appendToMesh(points, faceCounts, faceConnects);
+    
+    MFnMesh meshFS;
+    return meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+}
+
 MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
     MStatus returnStatus;
 
     // Check if plug is geometry
+    // TODO: test how to make things change based on the input that got changed
     if (plug == outGeom) {
+
+        /* Clear points and face data */
+        points.clear();
+        faceCounts.clear();
+        faceConnects.clear();
+
+        /* Get inputs */
         // Input Mesh
         MDataHandle grammarData = data.inputValue(inMeshFile, &returnStatus);
         if (!returnStatus) {
@@ -262,10 +285,34 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double bAttractVal = bAttractData.asDouble();
 
+        // TODO - idk why i didnt add the other parameters... i must have forgot??
+
         // Need to create new geometry
+        /* Get output object - geometry */
+        MDataHandle outGeometry = data.outputValue(outGeom, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting geometry data handle\n");
+            return returnStatus;
+        }
+        MFnMeshData dataCreator;
+        MObject newOutputData = dataCreator.create(&returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating output geometry data\n");
+            return returnStatus;
+        }
+
+        createMesh(aAttractVal, newOutputData, returnStatus);
+
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating new mesh\n");
+            return returnStatus;
+        }
+        outGeometry.set(newOutputData);
+        data.setClean(plug);
     }
     else {
         return MS::kUnknownParameter;
     }
+    return MS::kSuccess;
 
 }

@@ -195,6 +195,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cylinder.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="NonLandmark.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="WireSculptPlugin.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="NonLandmark.cpp" />
