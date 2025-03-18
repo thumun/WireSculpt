@@ -104,6 +104,13 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 // for each calc can make Vertex obj and add to list
                 verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
             }
+
+            // setting up neighbors 
+            for (int i = 1; i < faceVerts.size(); i++) {
+                edges.push_back(Edge(&verticies[faceVerts[i-1]], &verticies[faceVerts[i]]));
+
+                verticies[faceVerts[i]].setNeighbor(&verticies[faceVerts[i-1]], &edges[edges.size()-1]);
+            }
         }
     }
 
