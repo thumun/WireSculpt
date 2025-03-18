@@ -18,6 +18,8 @@ private:
 
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
+
+	void GetExtremePoints(const std::string& filePath);
 };
 
 
