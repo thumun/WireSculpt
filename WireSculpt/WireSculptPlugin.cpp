@@ -107,8 +107,9 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
             // setting up neighbors 
             for (int i = 1; i < faceVerts.size(); i++) {
-                verticies[faceVerts[i]].setNeighbor(&verticies[faceVerts[i-1]], nullptr);
+                edges.push_back(Edge(&verticies[faceVerts[i-1]], &verticies[faceVerts[i]]));
 
+                verticies[faceVerts[i]].setNeighbor(&verticies[faceVerts[i-1]], &edges[edges.size()-1]);
             }
         }
     }
