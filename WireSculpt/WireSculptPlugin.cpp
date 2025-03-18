@@ -8,8 +8,8 @@
 
 #include "WireSculptPlugin.h"
 
-//#include <igl/read_triangle_mesh.h>
-//#include <Eigen/Core>
+#include <igl/read_triangle_mesh.h>
+#include <Eigen/Core>
 
 using namespace std;
 
@@ -40,12 +40,6 @@ vector<string> WireSculptPlugin::SplitString(const string& input, char delimiter
 // returns false: issue with file (contents or type) 
 // returns true: success 
 bool WireSculptPlugin::ProcessFile(std::string filePath) {
-
-    //Eigen::MatrixXd V;
-    //Eigen::MatrixXi F;
-
-    //igl::read_triangle_mesh(filePath, V, F);
-
 
     // incorrect obj type 
     if (!GetFileExtension(filePath)) {
@@ -116,6 +110,13 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
     fin.close();
     return true;
+}
+
+void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi F;
+
+    igl::read_triangle_mesh(filePath, V, F);
 }
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
