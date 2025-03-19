@@ -18,7 +18,7 @@ struct NonLandmarkData {
 // Represents the vertices of the input 3D model 
 class Vertex {
 public:
-	Vertex(const MPoint& position, const MVector& normal, bool isLandmark = false);
+	Vertex(const MPoint& position, bool isLandmark = false);
 	~Vertex();
 
 	MPoint mPosition;

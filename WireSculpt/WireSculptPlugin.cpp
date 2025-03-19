@@ -8,8 +8,8 @@
 
 #include "WireSculptPlugin.h"
 
-//#include <igl/read_triangle_mesh.h>
-//#include <Eigen/Core>
+#include <igl/read_triangle_mesh.h>
+#include <Eigen/Core>
 
 using namespace std;
 
@@ -41,12 +41,6 @@ vector<string> WireSculptPlugin::SplitString(const string& input, char delimiter
 // returns true: success 
 bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
-    //Eigen::MatrixXd V;
-    //Eigen::MatrixXi F;
-
-    //igl::read_triangle_mesh(filePath, V, F);
-
-
     // incorrect obj type 
     if (!GetFileExtension(filePath)) {
         return false; 
@@ -75,7 +69,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
-            verticies.push_back(Vertex(MPoint(pos[pos.size() - 1]), MVector(0,0,1)));
+            verticies.push_back(MPoint(pos[pos.size()-1]));
         }
 
         // calculating normals by going through faces 
@@ -107,16 +101,50 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
             }
 
             // setting up neighbors 
-            for (int i = 1; i < faceVerts.size(); i++) {
-               /* edges.push_back(Edge(&verticies[faceVerts[i-1]-1], &verticies[faceVerts[i]-1]));
+            for (int i = 0; i < faceVerts.size(); i++) {
+                // check if edge already exists before creating 
 
-                verticies[faceVerts[i]-1].setNeighbor(&verticies[faceVerts[i-1]-1], &edges[edges.size()-1]);*/
+                auto vertOne = faceVerts[i] - 1; 
+                auto vertTwo = faceVerts[(i + 1)%faceVerts.size()] - 1;
+
+                bool edgeFound = false; 
+                int edgeIndx = -1; 
+
+                // want to do while but how to loop at same time
+                if (edges.size() > 0) {
+                    for (int j = 0; j < edges.size(); j++) {
+
+                        if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
+                            (edges[j].endpoints.find(&verticies[vertTwo]) != edges[j].endpoints.end())) {
+                            edgeFound = true; 
+                            edgeIndx = j; 
+                            break;
+                        }
+                    }
+                }
+
+                if (!edgeFound) {
+                    edges.push_back(Edge(&verticies[vertOne], &verticies[vertTwo]));
+                    edgeIndx = edges.size() - 1;
+                }
+
+                verticies[vertOne].setNeighbor(&verticies[vertTwo], &edges[edgeIndx]);
             }
         }
     }
 
     fin.close();
     return true;
+}
+
+void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi F;
+
+    // debugged - this seems to be working 
+    igl::read_triangle_mesh(filePath, V, F);
+
+
 }
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
@@ -126,6 +154,7 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
+    //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 }
 #endif // EXEDEBUG
