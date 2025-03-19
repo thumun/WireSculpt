@@ -1,5 +1,6 @@
 #include "WireSculptNode.h"
 #include "cylinder.h"
+#include "sphere.h"
 #include "WireSculptPlugin.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -245,9 +246,9 @@ MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& ve
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        CylinderMesh cylinder(start, end, radius);
-        cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        cylinder.appendToMesh(points, faceCounts, faceConnects);
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
     }
     
     MFnMesh meshFS;

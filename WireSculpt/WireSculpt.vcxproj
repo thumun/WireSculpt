@@ -200,6 +200,7 @@
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="NonLandmark.h" />
     <ClInclude Include="Path.h" />
+    <ClInclude Include="sphere.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WireSculpt.h" />
     <ClInclude Include="WireSculptNode.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="NonLandmark.cpp" />
     <ClCompile Include="Path.cpp" />
+    <ClCompile Include="sphere.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="WireSculpt.cpp" />
     <ClCompile Include="WireSculptNode.cpp" />
