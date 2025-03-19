@@ -1,7 +1,7 @@
 #include "Vertex.h"
 
-Vertex::Vertex(const MPoint& position, const MVector& normal, bool isLandmark) : 
-	mPosition(position), mNormal(normal) {
+Vertex::Vertex(const MPoint& position, bool isLandmark) : 
+	mPosition(position) {
 	this->isLandmark.first = isLandmark;
 	//this->neighbors = {};
 }
