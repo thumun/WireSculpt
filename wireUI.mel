@@ -79,7 +79,7 @@ global proc createWireSculptGUI() {
     // Thickness for NURBs Curve Extrusion
     string $thicknessGroup = `frameLayout -label "NURBs Curve Thickness" -collapsable false`;
     columnLayout;
-    $gThicknessSlider = `floatSliderGrp -label "Thickness" -field true -minValue 0.1 -maxValue 10.0 -value 1.0`;
+    $gThicknessSlider = `floatSliderGrp -label "Thickness" -field true -minValue 0.1 -maxValue 2.0 -value 1.0`;
     setParent ..;
     setParent ..;
 
@@ -150,9 +150,14 @@ global proc generatePaths() {
     //print("Custom lambda: " + $lambda + "\n");
     //print("Thickness: " + $thickness + "\n");
         
-    WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
+    //WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
     if (!`objExists "WireSculptNode1"`) {
+        createNode transform -n WireTransform1; 
+        createNode mesh -n WireShape1 -p WireTransform1; 
+        sets -add initialShadingGroup WireShape1;
         createNode WireSculptNode -n WireSculptNode1;
+        connectAttr WireSculptNode1.geometry WireShape1.inMesh;
+
     }
     setAttr WireSculptNode1.inputMeshFile -type "string" $filePath;
     setAttr WireSculptNode1.rangeAttraction $aAttraction;

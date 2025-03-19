@@ -1,4 +1,7 @@
 #include "WireSculptNode.h"
+#include "cylinder.h"
+#include "sphere.h"
+#include "WireSculptPlugin.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnNumericAttribute.h>
@@ -231,20 +234,50 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
+MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+
+    for (auto vertex : verticies) {
+      
+        MPoint increment({ 0.1, 0.1, 0.1 });
+        MPoint start = vertex.mPosition;
+        MPoint end = start + increment;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+    }
+    
+    MFnMesh meshFS;
+    return meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+}
+
 MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
     MStatus returnStatus;
 
     // Check if plug is geometry
+    // TODO: test how to make things change based on the input that got changed
     if (plug == outGeom) {
+
+        /* Clear points and face data */
+        points.clear();
+        faceCounts.clear();
+        faceConnects.clear();
+
+        /* Get inputs */
         // Input Mesh
-        MDataHandle grammarData = data.inputValue(inMeshFile, &returnStatus);
+        MDataHandle fileData = data.inputValue(inMeshFile, &returnStatus);
         if (!returnStatus) {
             returnStatus.perror("ERROR getting grammar data handle\n");
             return returnStatus;
         }
-        MString meshFilePath = grammarData.asString();
+        MString meshFilePath = fileData.asString();
         std::string meshFilePathStr = meshFilePath.asChar();
-        MString grammar = MString() + meshFilePathStr.c_str();
+        MString objFilePath = MString() + meshFilePathStr.c_str();
+        MGlobal::displayInfo("File path: " + objFilePath);
 
         // Range Attract
         MDataHandle aAttractData = data.inputValue(aAttract, &returnStatus);
@@ -262,10 +295,94 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double bAttractVal = bAttractData.asDouble();
 
-        // Need to create new geometry
+        // Range Repel
+        MDataHandle aRepelData = data.inputValue(aRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting range repel data handle\n");
+            return returnStatus;
+        }
+        double aRepelVal = aRepelData.asDouble();
+
+        // Steepness Repel
+        MDataHandle bRepelData = data.inputValue(bRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting steep repel data handle\n");
+            return returnStatus;
+        }
+        double bRepelVal = bRepelData.asDouble();
+
+        // Lambda
+        MDataHandle lambdaData = data.inputValue(lambda, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting lambda data handle\n");
+            return returnStatus;
+        }
+        double lambdaVal = lambdaData.asDouble();
+
+        // K
+        MDataHandle kData = data.inputValue(K, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting k data handle\n");
+            return returnStatus;
+        }
+        double kVal = kData.asDouble();
+
+        // M
+        MDataHandle mData = data.inputValue(M, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting m data handle\n");
+            return returnStatus;
+        }
+        double mVal = mData.asDouble();
+
+        // Thickness
+        MDataHandle thicknessData = data.inputValue(thickness, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting thickness data handle\n");
+            return returnStatus;
+        }
+        double thicknessVal = thicknessData.asDouble();
+
+        /* Process file */
+        WireSculptPlugin ws = WireSculptPlugin();
+        bool returnVal = ws.ProcessFile(meshFilePathStr);
+        MString errorMsg = "\n";
+        if (returnVal) {
+            errorMsg += "file processed successfully";
+            MGlobal::displayInfo(errorMsg);
+            MGlobal::displayInfo(MString() + ws.GetVerticies()->size());
+        }
+        else {
+            errorMsg += "issue with file format or contents";
+            MGlobal::displayInfo(errorMsg);
+        }
+
+        /* Get output object - geometry */
+        MDataHandle outGeometry = data.outputValue(outGeom, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting geometry data handle\n");
+            return returnStatus;
+        }
+        MFnMeshData dataCreator;
+        MObject newOutputData = dataCreator.create(&returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating output geometry data\n");
+            return returnStatus;
+        }
+
+        // Create new geometry
+        createMesh(thicknessVal, *(ws.GetVerticies()), newOutputData, returnStatus);
+
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating new mesh\n");
+            return returnStatus;
+        }
+        outGeometry.set(newOutputData);
+        data.setClean(plug);
     }
     else {
         return MS::kUnknownParameter;
     }
+    return MS::kSuccess;
 
 }

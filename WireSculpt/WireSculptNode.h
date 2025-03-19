@@ -1,8 +1,10 @@
 
 #ifndef CreateWireSculptNode_H_
 #define CreateWireSculptNode_H_
-
+#include "Vertex.h"
 #include <maya/MPxNode.h>
+#include <maya/MPointArray.h>
+#include <vector>
 
 class WireSculptNode : public MPxNode
 {
@@ -27,6 +29,11 @@ public:
     static MObject  outGeom;
 
 protected:
+    MObject createMesh(const double& radius, std::vector<Vertex>& verticies, MObject& outData, MStatus& status);
+    
+    MPointArray points;
+    MIntArray faceCounts;
+    MIntArray faceConnects;
 
 };
 
