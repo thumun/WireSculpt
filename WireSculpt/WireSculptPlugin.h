@@ -11,6 +11,7 @@ public:
 
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
+	void GetExtremePoints(const std::string& filePath);
 
 private:
 	std::vector<Vertex> verticies;
@@ -19,7 +20,6 @@ private:
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
 
-	void GetExtremePoints(const std::string& filePath);
 };
 
 
