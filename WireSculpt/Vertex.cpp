@@ -3,6 +3,9 @@
 Vertex::Vertex(const MPoint& position, bool isLandmark) : 
 	mPosition(position) {
 	this->isLandmark.first = isLandmark;
+	f = 0;
+	g = 0;
+	h = 0;
 	//this->neighbors = {};
 }
 

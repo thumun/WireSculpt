@@ -27,6 +27,11 @@ public:
 	std::pair<bool, NonLandmarkData> isLandmark; 
 	std::map<const Vertex*, const Edge*> neighbors;
 
+	// Graph Traversal
+	float f;
+	float g;
+	float h;
+
 	void setLandMarkStatus(bool landMark);
 	void setNonLandMarkData(float attract, float repel, float dist); 
 	void setNeighbor(Vertex *, const Edge *);
