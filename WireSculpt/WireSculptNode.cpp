@@ -1,5 +1,6 @@
 #include "WireSculptNode.h"
 #include "cylinder.h"
+#include "WireSculptPlugin.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnNumericAttribute.h>
@@ -232,16 +233,22 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, MObject& outData, MStatus& status) {
-    MPoint start({0, 0, 0 });
-    MPoint end({ 1, 1, aAttract });
-    MPointArray currPoints;
-    MIntArray currFaceCounts;
-    MIntArray currFaceConnects;
-    MGlobal::displayInfo("Mesh created has radius " + MString() + radius);
-    CylinderMesh cylinder(start, end, radius);
-    cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-    cylinder.appendToMesh(points, faceCounts, faceConnects);
+MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+
+    for (auto vertex : verticies) {
+      
+        MPoint increment({ 0.1, 0.1, 0.1 });
+        MPoint start = vertex.mPosition;
+        MPoint end = start + increment;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        CylinderMesh cylinder(start, end, radius);
+        cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        cylinder.appendToMesh(points, faceCounts, faceConnects);
+    }
     
     MFnMesh meshFS;
     return meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
@@ -335,9 +342,20 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double thicknessVal = thicknessData.asDouble();
 
-        // TODO - idk why i didnt add the other parameters... i must have forgot??
+        /* Process file */
+        WireSculptPlugin ws = WireSculptPlugin();
+        bool returnVal = ws.ProcessFile(meshFilePathStr);
+        MString errorMsg = "\n";
+        if (returnVal) {
+            errorMsg += "file processed successfully";
+            MGlobal::displayInfo(errorMsg);
+            MGlobal::displayInfo(MString() + ws.GetVerticies()->size());
+        }
+        else {
+            errorMsg += "issue with file format or contents";
+            MGlobal::displayInfo(errorMsg);
+        }
 
-        // Need to create new geometry
         /* Get output object - geometry */
         MDataHandle outGeometry = data.outputValue(outGeom, &returnStatus);
         if (!returnStatus) {
@@ -351,7 +369,8 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
             return returnStatus;
         }
 
-        createMesh(thicknessVal, aAttractVal, newOutputData, returnStatus);
+        // Create new geometry
+        createMesh(thicknessVal, *(ws.GetVerticies()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");

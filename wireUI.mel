@@ -150,7 +150,7 @@ global proc generatePaths() {
     //print("Custom lambda: " + $lambda + "\n");
     //print("Thickness: " + $thickness + "\n");
         
-    WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
+    //WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
     if (!`objExists "WireSculptNode1"`) {
         createNode transform -n WireTransform1; 
         createNode mesh -n WireShape1 -p WireTransform1; 
