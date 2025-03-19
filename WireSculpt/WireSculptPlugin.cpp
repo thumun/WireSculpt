@@ -75,6 +75,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
+            verticies.push_back(Vertex(MPoint(pos[pos.size() - 1]), MVector(0,0,1)));
         }
 
         // calculating normals by going through faces 
@@ -102,7 +103,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 crossProd.normalize();
 
                 // for each calc can make Vertex obj and add to list
-                verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
+                //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
             }
 
             // setting up neighbors 

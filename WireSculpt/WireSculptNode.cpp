@@ -232,13 +232,14 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, MObject& outData, MStatus& status) {
     MPoint start({0, 0, 0 });
-    MPoint end({ 1, 1, 1 });
+    MPoint end({ 1, 1, aAttract });
     MPointArray currPoints;
     MIntArray currFaceCounts;
     MIntArray currFaceConnects;
-    CylinderMesh cylinder(start, end, 0.12);
+    MGlobal::displayInfo("Mesh created has radius " + MString() + radius);
+    CylinderMesh cylinder(start, end, radius);
     cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
     cylinder.appendToMesh(points, faceCounts, faceConnects);
     
@@ -260,14 +261,15 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
 
         /* Get inputs */
         // Input Mesh
-        MDataHandle grammarData = data.inputValue(inMeshFile, &returnStatus);
+        MDataHandle fileData = data.inputValue(inMeshFile, &returnStatus);
         if (!returnStatus) {
             returnStatus.perror("ERROR getting grammar data handle\n");
             return returnStatus;
         }
-        MString meshFilePath = grammarData.asString();
+        MString meshFilePath = fileData.asString();
         std::string meshFilePathStr = meshFilePath.asChar();
-        MString grammar = MString() + meshFilePathStr.c_str();
+        MString objFilePath = MString() + meshFilePathStr.c_str();
+        MGlobal::displayInfo("File path: " + objFilePath);
 
         // Range Attract
         MDataHandle aAttractData = data.inputValue(aAttract, &returnStatus);
@@ -285,6 +287,54 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double bAttractVal = bAttractData.asDouble();
 
+        // Range Repel
+        MDataHandle aRepelData = data.inputValue(aRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting range repel data handle\n");
+            return returnStatus;
+        }
+        double aRepelVal = aRepelData.asDouble();
+
+        // Steepness Repel
+        MDataHandle bRepelData = data.inputValue(bRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting steep repel data handle\n");
+            return returnStatus;
+        }
+        double bRepelVal = bRepelData.asDouble();
+
+        // Lambda
+        MDataHandle lambdaData = data.inputValue(lambda, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting lambda data handle\n");
+            return returnStatus;
+        }
+        double lambdaVal = lambdaData.asDouble();
+
+        // K
+        MDataHandle kData = data.inputValue(K, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting k data handle\n");
+            return returnStatus;
+        }
+        double kVal = kData.asDouble();
+
+        // M
+        MDataHandle mData = data.inputValue(M, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting m data handle\n");
+            return returnStatus;
+        }
+        double mVal = mData.asDouble();
+
+        // Thickness
+        MDataHandle thicknessData = data.inputValue(thickness, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting thickness data handle\n");
+            return returnStatus;
+        }
+        double thicknessVal = thicknessData.asDouble();
+
         // TODO - idk why i didnt add the other parameters... i must have forgot??
 
         // Need to create new geometry
@@ -301,7 +351,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
             return returnStatus;
         }
 
-        createMesh(aAttractVal, newOutputData, returnStatus);
+        createMesh(thicknessVal, aAttractVal, newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");

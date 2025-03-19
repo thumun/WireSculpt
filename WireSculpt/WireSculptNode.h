@@ -28,7 +28,7 @@ public:
     static MObject  outGeom;
 
 protected:
-    MObject createMesh(const double& radius, MObject& outData, MStatus& status);
+    MObject createMesh(const double& radius, const double& aAttract, MObject& outData, MStatus& status);
     
     MPointArray points;
     MIntArray faceCounts;

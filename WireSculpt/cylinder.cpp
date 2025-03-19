@@ -11,10 +11,11 @@ CylinderMesh::CylinderMesh(
     const MPoint& start, const MPoint& end, double _r) :
     mStart(start), mEnd(end), r(_r)
 {
-    if (gPoints.length() == 0)
+    initCylinderMesh(r);
+    /*if (gPoints.length() == 0)
     {
         initCylinderMesh(r);
-    }
+    }*/
 }
 
 CylinderMesh::~CylinderMesh() {}
