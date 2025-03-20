@@ -10,6 +10,7 @@
 
 #include <igl/read_triangle_mesh.h>
 #include <Eigen/Core>
+#include <maya/MGlobal.h>
 
 using namespace std;
 
@@ -59,6 +60,10 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     vector<MVector> pos; 
     vector<MVector> vertexNormals;
 
+    // id
+    int idV = 0;
+    int idE = 0;
+
     while (getline(fin, line)) {
 
         vector<string> fields = SplitString(line, ' ');
@@ -69,7 +74,8 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
-            verticies.push_back(MPoint(pos[pos.size()-1]));
+            verticies.push_back(Vertex(MPoint(pos[pos.size()-1]), idV, false));
+            idV++;
         }
 
         // calculating normals by going through faces 
@@ -124,8 +130,9 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 }
 
                 if (!edgeFound) {
-                    edges.push_back(Edge(&verticies[vertOne], &verticies[vertTwo]));
+                    edges.push_back(Edge(idE, &verticies[vertOne], &verticies[vertTwo]));
                     edgeIndx = edges.size() - 1;
+                    idE++;
                 }
 
                 verticies[vertOne].setNeighbor(&verticies[vertTwo], &edges[edgeIndx]);
@@ -146,6 +153,105 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 
 
 }
+
+// TODO: Move to W
+std::vector<Vertex> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
+{
+    // Initialize the open and closed lists
+    std::priority_queue<Vertex, std::vector<Vertex>, std::greater<Vertex>> openList;
+    std::vector<bool> closedList(vertexCount, false);
+
+    // Keep track of parents
+    std::vector<int> parentList(vertexCount, -1);
+
+    // TODO: Reset all f,g,h values of all verticies
+    for (auto& v : verticies) {
+        v.resetFGH();
+    }
+
+    start->f = 0;
+    start->g = 0;
+    start->h = 0;
+    MGlobal::displayInfo("Closed list size: " + MString() + closedList.size() + "Parent list size: " + MString() + parentList.size());
+
+    
+    // Start vertex
+    openList.push(*start);
+
+    // Main loop
+    while (!openList.empty()) {
+
+        // Get vertex with lowest f value from open list
+        Vertex current = openList.top();
+        openList.pop();
+
+        // Check if current vertex is goal
+        if (current.id == goal->id) {
+            
+            // Reconstruct the path
+            std::vector<Vertex> path;
+            while (!(current.id == start->id))
+            {
+                path.push_back(current);
+                MGlobal::displayInfo("Vertex Information: F: " + MString() + current.f + ", G: " + MString() + current.g + ", H: " + MString() + current.h);
+
+                if (parentList[current.id] >= 0) {
+                    current = verticies[parentList[current.id]];	// assuming that verticies are stored in order of id
+
+                }
+                else {
+                    MGlobal::displayInfo("parentLIst invalid index " + MString() + parentList[current.id] + " is the index");
+                    return verticies;
+                }
+            }
+            path.push_back(*start);
+            reverse(path.begin(), path.end());
+            return path;
+            
+        }
+
+        // Record current vertex as closed
+        if (current.id < closedList.size()) {
+
+            closedList[current.id] = true;
+        }
+        else {
+            MGlobal::displayInfo("size to large closedList");
+        }
+
+        // Explore neighbors
+        for (auto neighbor : current.neighbors) {
+            Vertex* nVert = neighbor.first;
+            Edge* nEdge = neighbor.second;
+
+            if (nVert->id < closedList.size()) {
+                // Check if neighbor is not in closed list
+                if (!closedList[nVert->id]) {
+                    float newG = current.g + nEdge->warpedLength;
+                    float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
+                    float newF = newG + newH;
+
+                    // Check if neighbor has a lower f value
+                    // or if it's not in closedList?
+                    if (newF < nVert->f || !closedList[nVert->id]) {
+                        nVert->g = newG;
+                        nVert->h = newH;
+                        nVert->f = newF;
+                        parentList[nVert->id] = current.id;
+                        openList.push(*nVert);
+                    }
+                }
+            }
+            else {
+                MGlobal::displayInfo("size to large closedList");
+            }
+
+            
+        }
+    }
+    return std::vector<Vertex>();
+}
+
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);

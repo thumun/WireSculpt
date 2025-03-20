@@ -12,6 +12,11 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	void GetExtremePoints(const std::string& filePath);
+	
+	
+
+	std::vector<Vertex> FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount);
+
 
 private:
 	std::vector<Vertex> verticies;

@@ -234,13 +234,12 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
 
+    // Making sphere wireframe
     for (auto vertex : verticies) {
       
-        MPoint increment({ 0.1, 0.1, 0.1 });
         MPoint start = vertex.mPosition;
-        MPoint end = start + increment;
 
         MPointArray currPoints;
         MIntArray currFaceCounts;
@@ -249,10 +248,52 @@ MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& ve
         SphereMesh sphere(start, radius);
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
+
+        MGlobal::displayInfo("Vertex id: " + MString() + vertex.id);
+    }
+
+    // Running A* and drawing cylinders to map out path
+    if (verticies.size() > 0) {
+        Vertex source = verticies[0];
+        Vertex goal = verticies[verticies.size() - 1];   // arbitrary
+
+        // Draw the source and goal
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(source.mPosition, radius * 1.7);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+
+        SphereMesh sphere2(goal.mPosition, radius * 3);
+        sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere2.appendToMesh(points, faceCounts, faceConnects);
+
+        // Run A*
+        MGlobal::displayInfo("Verticies size: " + MString() + verticies.size());
+        std::vector<Vertex> path = ws.FindPath(verticies, &source, &goal, verticies.size());
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            MPoint start = path[i].mPosition;
+            MPoint end = path[i + 1].mPosition;
+
+            MPointArray currPoints;
+            MIntArray currFaceCounts;
+            MIntArray currFaceConnects;
+
+            CylinderMesh cylinder(start, end, radius * 0.5);
+            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);
+        }
     }
     
+
+    
     MFnMesh meshFS;
-    return meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+    MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+
+    return meshObject;
 }
 
 MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
@@ -371,7 +412,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, *(ws.GetVerticies()), newOutputData, returnStatus);
+        createMesh(thicknessVal, ws, *(ws.GetVerticies()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");
