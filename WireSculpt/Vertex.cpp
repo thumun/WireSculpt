@@ -2,6 +2,7 @@
 #include "Edge.h"
 #include <algorithm>
 #include <iostream>
+#include <maya/MGlobal.h>
 
 Vertex::Vertex(const MPoint& position, int idNum, bool landmark) : 
 	mPosition(position), id(idNum) {
@@ -13,8 +14,12 @@ Vertex::Vertex(const MPoint& position, int idNum, bool landmark) :
 Vertex::~Vertex() {}
 
 void Vertex::setNeighbor(Vertex* v, Edge* e) {
-	this->neighbors.insert({ v, e });
-	v->neighbors.insert({this, e});
+	//this->neighbors.insert(Ve(v, e));
+	//v->neighbors.insert(Ve(this, e));
+	//MGlobal::displayInfo("In set neighbor edge lenght: " + MString() + n.second->warpedLength);
+
+	this->neighbors.insert(std::make_pair( v, e ));
+	//v->neighbors.insert({this, e});
 }
 
 // A* path traversal

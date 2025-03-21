@@ -252,8 +252,8 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
 
     // Running A* and drawing cylinders to map out path
     if (verticies.size() > 0) {
-        Vertex source = verticies[0];
-        Vertex goal = verticies[verticies.size() - 1];   // arbitrary
+        Vertex source = verticies[2];
+        Vertex goal = verticies[5];   // arbitrary
 
         // Draw the source and goal
         MPointArray currPoints;
@@ -269,20 +269,24 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         sphere2.appendToMesh(points, faceCounts, faceConnects);
 
         // Run A*
-        /*std::vector<Vertex> path = ws.FindPath(verticies, source, goal, verticies.size());
+        std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
+        if (path.size() == 0) {
+            MGlobal::displayInfo("No path found");
+        }
+        else {
+            for (int i = 0; i < path.size() - 1; i++) {
+                MPoint start = path[i]->mPosition;
+                MPoint end = path[i + 1]->mPosition;
 
-        for (int i = 0; i < path.size() - 1; i++) {
-            MPoint start = path[i].mPosition;
-            MPoint end = path[i + 1].mPosition;
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
 
-            MPointArray currPoints;
-            MIntArray currFaceCounts;
-            MIntArray currFaceConnects;
-
-            CylinderMesh cylinder(start, end, radius * 0.5);
-            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
-        }*/
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }
     }
     
     MFnMesh meshFS;

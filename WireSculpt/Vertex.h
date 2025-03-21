@@ -21,6 +21,8 @@ struct NonLandmarkData {
 // Represents the vertices of the input 3D model 
 class Vertex {
 public:
+	typedef std::pair<Vertex*, Edge*> Ve;
+
 	Vertex(const MPoint& position, int idNum, bool landmark = false);
 	~Vertex();
 
@@ -44,7 +46,7 @@ public:
 
 	void setLandMarkStatus(bool landMark);
 	void setNonLandMarkData(float attract, float repel, float dist); 
-	void setNeighbor(Vertex *, Edge *);
+	void setNeighbor(Vertex *v, Edge *e);
 
 	bool getLandMarkStatus(); 
 

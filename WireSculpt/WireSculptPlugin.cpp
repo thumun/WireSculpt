@@ -106,6 +106,8 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
             }
 
+            edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
+
             // setting up neighbors 
             for (int i = 0; i < faceVerts.size(); i++) {
                 // check if edge already exists before creating 
@@ -142,7 +144,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
     fin.close();
 
-    MGlobal::displayInfo("Vertices count: " + MString() + verticies.size() + "; Edges count: " + MString() + edges.size());
+    /*MGlobal::displayInfo("Vertices count: " + MString() + verticies.size() + "; Edges count: " + MString() + edges.size());
     for (auto e : edges) {
         MGlobal::displayInfo("Edge ID: " + MString() + e.id + "Edge address: " + MString() + reinterpret_cast<uintptr_t>(&e));;
 
@@ -153,7 +155,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
             MGlobal::displayInfo("Neighbor edge lenght: " + MString() + n.second->warpedLength);
             MGlobal::displayInfo("Neighbor Edge ID: " + MString() + n.second->id + "Neighbor edge address: " + MString() + reinterpret_cast<uintptr_t>(&(n.second)));;
         }
-    }
+    }*/
     return true;
 }
 
@@ -168,120 +170,99 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 }
 
 // TODO: Move to W
-std::vector<Vertex> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex& start, Vertex& goal, int vertexCount)
+std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex& start, Vertex& goal, int vertexCount)
 {
     // Initialize the open and closed lists
-    std::priority_queue<Vertex, std::vector<Vertex>, std::greater<Vertex>> openList;
+    std::priority_queue<Vertex*, std::vector<Vertex*>, std::greater<Vertex*>> openList;
     std::vector<bool> closedList(vertexCount, false);
 
     // Keep track of parents
-    //std::vector<int> parentList(vertexCount, -1);
+    std::vector<int> parentList(vertexCount, -1);
 
-    //// TODO: Reset all f,g,h values of all verticies
-    //for (auto& v : verticies) {
-    //    v.resetFGH();
-    //    for (auto neighbor : v.neighbors) {
-    //        MGlobal::displayInfo("Edge warped length: " + MString() + neighbor.second->warpedLength);
-    //    }
-    //}
+    // TODO: Reset all f,g,h values of all verticies
+    for (auto& v : verticies) {
+        v.resetFGH();
+        for (auto neighbor : v.neighbors) {
+            MGlobal::displayInfo("Edge warped length: " + MString() + neighbor.second->warpedLength);
+        }
+    }
 
-    //start.f = 0;
-    //start.g = 0;
-    //start.h = 0;
+    start.f = 0;
+    start.g = 0;
+    start.h = 0;
 
-    //MGlobal::displayInfo("BEFORE WHILE LOOP:");
-    //MGlobal::displayInfo("Start id: " + MString() + start.id + ": End id: " + MString() + goal.id);
-    //for (auto& v : verticies) {
-    //    MGlobal::displayInfo("Vertex Information: Id: " + 
-    //        MString() + v.id + " F: " + MString() + v.f + ", G : " + MString() + v.g + ", H : " + MString() + v.h);
-    //}
+    MGlobal::displayInfo("BEFORE WHILE LOOP:");
+    MGlobal::displayInfo("Start id: " + MString() + start.id + ": End id: " + MString() + goal.id);
+    for (auto& v : verticies) {
+        MGlobal::displayInfo("Vertex Information: Id: " + 
+            MString() + v.id + " F: " + MString() + v.f + ", G : " + MString() + v.g + ", H : " + MString() + v.h);
+    }
     
     // Start vertex
-    //openList.push(start);
+    openList.push(&start);
+    closedList[start.id] = true;
 
-    //// Main loop
-    //while (!openList.empty()) {
+    // Main loop
+    while (!openList.empty()) {
 
-    //    // Get vertex with lowest f value from open list
-    //    Vertex current = openList.top();
-    //    openList.pop();
+        // Get vertex with lowest f value from open list
+        Vertex* current = openList.top();
+        openList.pop();
+        closedList[current->id] = false;
 
-    //    // Check if current vertex is goal
-    //    if (current.id == goal.id) {
-    //        MGlobal::displayInfo("IN FOUND GOAL");
-    //        // Reconstruct the path
-    //        std::vector<Vertex> path;
-    //        while (!(current.id == start.id))
-    //        {
-    //            path.push_back(current);
-    //            MGlobal::displayInfo("Vertex Information: Id: " + MString() + current.id + " F: " + MString() + current.f + ", G : " + MString() + current.g + ", H : " + MString() + current.h);
+        // Check if current vertex is goal
+        if (current->id == goal.id) {
+            MGlobal::displayInfo("IN FOUND GOAL");
+            // Reconstruct the path
+            std::vector<Vertex*> path;
+            while (!(current->id == start.id))
+            {
+                path.push_back(current);
+                MGlobal::displayInfo("Vertex Information: Id: " + MString() + current->id + " F: " + MString() + current->f + ", G : " + MString() + current->g + ", H : " + MString() + current->h);
 
-    //            if (parentList[current.id] >= 0) {
-    //                current = verticies[parentList[current.id]];	// assuming that verticies are stored in order of id
+                if (parentList[current->id] >= 0) {
+                    current = &verticies[parentList[current->id]];	// assuming that verticies are stored in order of id
 
-    //            }
-    //            else {
-    //                MGlobal::displayInfo("parentLIst invalid index " + MString() + parentList[current.id] + " is the index");
-    //                return verticies;
-    //            }
-    //        }
-    //        MGlobal::displayInfo("Vertex Information: Id: " + MString() + current.id + " F: " + MString() + current.f + ", G : " + MString() + current.g + ", H : " + MString() + current.h);
+                }
+                else {
+                    MGlobal::displayInfo("parentLIst invalid index " + MString() + parentList[current->id] + " is the index");
+                    return path;
+                }
+            }
+            MGlobal::displayInfo("Vertex Information: Id: " + MString() + current->id + " F: " + MString() + current->f + ", G : " + MString() + current->g + ", H : " + MString() + current->h);
 
-    //        path.push_back(start);
-    //        reverse(path.begin(), path.end());
-    //        return path;
-    //        
-    //    }
+            path.push_back(&start);
+            reverse(path.begin(), path.end());
+            return path;
+            
+        }
 
-    //    // Record current vertex as closed
-    //    if (current.id < closedList.size()) {
-
-    //        closedList[current.id] = true;
-    //    }
-    //    else {
-    //        MGlobal::displayInfo("size to large closedList");
-    //        return std::vector<Vertex>();
-    //    }
-
-    //    // Explore neighbors
-    //    for (auto neighbor : current.neighbors) {
-    //        Vertex* nVert = neighbor.first;
-    //        Edge* nEdge = neighbor.second;
-
-    //        if (nVert->id < closedList.size()) {
-
-    //            // Check if neighbor is not in closed list
-    //            if (!closedList[nVert->id]) {
-    //                float newG = current.g + nEdge->warpedLength;
-    //                float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
-    //                float newF = newG + newH;
-
-    //                MGlobal::displayInfo("IN EXPLORE NEIGHBOR");
-    //                MGlobal::displayInfo("currentG " + MString() + current.g + "; nEdge warp " + MString() + nEdge->warpedLength +
-    //                    "; newG: " + MString() + newG + "; newF: " + MString() + newF);
-
-    //                // Check if neighbor has a lower f value
-    //                // or if it's not in closedList?
-    //                if (newF < nVert->f || !closedList[nVert->id]) {
-    //                    nVert->g = newG;
-    //                    nVert->h = newH;
-    //                    nVert->f = newF;
-    //                    parentList[nVert->id] = current.id;
-    //                    openList.push(*nVert);
-
-    //                    MGlobal::displayInfo("Nvert was pushed");
-    //                }
-    //            }
-    //        }
-    //        else {
-    //            MGlobal::displayInfo("size to large closedList");
-    //            return std::vector<Vertex>();
-    //        }
-
-    //        
-    //    }
-    //}
-    return std::vector<Vertex>();
+        // Explore neighbors
+        for (auto neighbor : current->neighbors) {
+            MGlobal::displayInfo("IN EXPLORE NEIGHBOR");
+            Vertex* nVert = neighbor.first;
+            Edge* nEdge = neighbor.second;
+            
+            float newG = current->g + nEdge->warpedLength;
+            if (newG < nVert->g) {
+                float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
+                float newF = newG + newH;
+                nVert->g = newG;
+                nVert->h = newH;
+                nVert->f = newF;
+                parentList[nVert->id] = current->id;
+                        
+                MGlobal::displayInfo("currentG " + MString() + current->g + "; nEdge warp " + MString() + nEdge->warpedLength +
+                    "; newG: " + MString() + newG + "; newF: " + MString() + newF);
+                if (!closedList[nVert->id]) {
+                    openList.push(nVert);
+                    closedList[nVert->id] = true;
+                }
+            }
+        }
+    }
+    MGlobal::displayInfo("Open list was empty, no path was found");
+    return std::vector<Vertex*>();
 }
 
 
