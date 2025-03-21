@@ -23,10 +23,10 @@ void Vertex::setNeighbor(Vertex* v, Edge* e) {
 }
 
 // A* path traversal
-bool Vertex::operator>(const Vertex& other) const
-{
-	return f > other.f;
-}
+//bool Vertex::operator>(const Vertex& other) const
+//{
+//	return f > other.f;
+//}
 
 //bool Vertex::operator==(const Vertex& other) const
 //{

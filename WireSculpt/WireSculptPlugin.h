@@ -15,7 +15,7 @@ public:
 	
 	
 
-	std::vector<Vertex*> FindPath(std::vector<Vertex>& verticies, Vertex& start, Vertex& goal, int vertexCount);
+	std::vector<Vertex*> FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount);
 
 
 private:

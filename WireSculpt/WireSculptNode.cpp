@@ -252,21 +252,37 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
 
     // Running A* and drawing cylinders to map out path
     if (verticies.size() > 0) {
-        Vertex source = verticies[2];
-        Vertex goal = verticies[5];   // arbitrary
+        Vertex* source = &verticies[2];
+        Vertex* goal = &verticies[5];   // arbitrary
 
         // Draw the source and goal
         MPointArray currPoints;
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        SphereMesh sphere(source.mPosition, radius * 1.7);
+        SphereMesh sphere(source->mPosition, radius * 1.7);
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
 
-        SphereMesh sphere2(goal.mPosition, radius * 3);
+        SphereMesh sphere2(goal->mPosition, radius * 3);
         sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere2.appendToMesh(points, faceCounts, faceConnects);
+
+
+        /*for (auto v : verticies) {
+            MPoint start = v.mPosition;
+            for (auto n : v.neighbors) {
+                MPoint end = n.first->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }*/
 
         // Run A*
         std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());

@@ -53,3 +53,10 @@ public:
 
 protected:
 };
+
+struct VertexPtrCompare
+{
+	bool operator()(const Vertex* lhs, const Vertex* rhs) const {
+		return lhs->f > rhs->f; // min-heap: lower f is higher priority
+	}
+};

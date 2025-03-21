@@ -144,7 +144,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
     fin.close();
 
-    /*MGlobal::displayInfo("Vertices count: " + MString() + verticies.size() + "; Edges count: " + MString() + edges.size());
+    MGlobal::displayInfo("Vertices count: " + MString() + verticies.size() + "; Edges count: " + MString() + edges.size());
     for (auto e : edges) {
         MGlobal::displayInfo("Edge ID: " + MString() + e.id + "Edge address: " + MString() + reinterpret_cast<uintptr_t>(&e));;
 
@@ -155,7 +155,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
             MGlobal::displayInfo("Neighbor edge lenght: " + MString() + n.second->warpedLength);
             MGlobal::displayInfo("Neighbor Edge ID: " + MString() + n.second->id + "Neighbor edge address: " + MString() + reinterpret_cast<uintptr_t>(&(n.second)));;
         }
-    }*/
+    }
     return true;
 }
 
@@ -170,37 +170,41 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 }
 
 // TODO: Move to W
-std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex& start, Vertex& goal, int vertexCount)
+std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
 {
     // Initialize the open and closed lists
-    std::priority_queue<Vertex*, std::vector<Vertex*>, std::greater<Vertex*>> openList;
-    std::vector<bool> closedList(vertexCount, false);
+    //std::priority_queue<Vertex*, std::vector<Vertex*>, std::greater<Vertex*>> openList;
+    std::priority_queue<Vertex*, std::vector<Vertex*>, VertexPtrCompare> openList;
+    std::vector<bool> inOpenList(vertexCount, false);
 
     // Keep track of parents
     std::vector<int> parentList(vertexCount, -1);
 
+    // Visited
+    std::vector<Vertex*> visited = std::vector<Vertex*>();
+
     // TODO: Reset all f,g,h values of all verticies
     for (auto& v : verticies) {
         v.resetFGH();
-        for (auto neighbor : v.neighbors) {
+        /*for (auto neighbor : v.neighbors) {
             MGlobal::displayInfo("Edge warped length: " + MString() + neighbor.second->warpedLength);
-        }
+        }*/
     }
 
-    start.f = 0;
-    start.g = 0;
-    start.h = 0;
+    start->f = 0;
+    start->g = 0;
+    start->h = 0;
 
     MGlobal::displayInfo("BEFORE WHILE LOOP:");
-    MGlobal::displayInfo("Start id: " + MString() + start.id + ": End id: " + MString() + goal.id);
-    for (auto& v : verticies) {
+    MGlobal::displayInfo("Start id: " + MString() + start->id + ": End id: " + MString() + goal->id);
+    /*for (auto& v : verticies) {
         MGlobal::displayInfo("Vertex Information: Id: " + 
             MString() + v.id + " F: " + MString() + v.f + ", G : " + MString() + v.g + ", H : " + MString() + v.h);
-    }
+    }*/
     
     // Start vertex
-    openList.push(&start);
-    closedList[start.id] = true;
+    openList.push(start);
+    inOpenList[start->id] = true;
 
     // Main loop
     while (!openList.empty()) {
@@ -208,14 +212,15 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
         // Get vertex with lowest f value from open list
         Vertex* current = openList.top();
         openList.pop();
-        closedList[current->id] = false;
+        inOpenList[current->id] = false;
+        MGlobal::displayInfo("Current Information: Id: " + MString() + current->id + " F: " + MString() + current->f + ", G : " + MString() + current->g + ", H : " + MString() + current->h);
 
         // Check if current vertex is goal
-        if (current->id == goal.id) {
+        if (current->id == goal->id) {
             MGlobal::displayInfo("IN FOUND GOAL");
             // Reconstruct the path
             std::vector<Vertex*> path;
-            while (!(current->id == start.id))
+            while (!(current->id == start->id))
             {
                 path.push_back(current);
                 MGlobal::displayInfo("Vertex Information: Id: " + MString() + current->id + " F: " + MString() + current->f + ", G : " + MString() + current->g + ", H : " + MString() + current->h);
@@ -231,19 +236,24 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
             }
             MGlobal::displayInfo("Vertex Information: Id: " + MString() + current->id + " F: " + MString() + current->f + ", G : " + MString() + current->g + ", H : " + MString() + current->h);
 
-            path.push_back(&start);
+            path.push_back(start);
             reverse(path.begin(), path.end());
             return path;
             
         }
 
         // Explore neighbors
-        for (auto neighbor : current->neighbors) {
+        for (auto& neighbor : current->neighbors) {
             MGlobal::displayInfo("IN EXPLORE NEIGHBOR");
             Vertex* nVert = neighbor.first;
             Edge* nEdge = neighbor.second;
+
+            visited.push_back(nVert);
+
             
             float newG = current->g + nEdge->warpedLength;
+            MGlobal::displayInfo("0: nVert ID: " + MString() + nVert->id + "; nVert->g" + MString() + nVert->g + "; currentG " + MString() + current->g + "; nEdge warp " + MString() + nEdge->warpedLength +
+                "; newG: " + MString() + newG);
             if (newG < nVert->g) {
                 float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
                 float newF = newG + newH;
@@ -252,17 +262,21 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
                 nVert->f = newF;
                 parentList[nVert->id] = current->id;
                         
-                MGlobal::displayInfo("currentG " + MString() + current->g + "; nEdge warp " + MString() + nEdge->warpedLength +
-                    "; newG: " + MString() + newG + "; newF: " + MString() + newF);
-                if (!closedList[nVert->id]) {
+                MGlobal::displayInfo("1: newG < nVert->g Updated nVert->g values: nVert ID: " + MString() + nVert->id + "; nVert->g" + MString() + nVert->g);
+                if (!inOpenList[nVert->id]) {
                     openList.push(nVert);
-                    closedList[nVert->id] = true;
+                    inOpenList[nVert->id] = true;
+                    MGlobal::displayInfo("2: newG < nVert->g ADDED to openList ");
                 }
+                /*openList.push(nVert);
+                inOpenList[nVert->id] = true;
+                MGlobal::displayInfo("2: newG < nVert->g ADDED to openList ");*/
             }
+
         }
     }
     MGlobal::displayInfo("Open list was empty, no path was found");
-    return std::vector<Vertex*>();
+    return visited;
 }
 
 
@@ -273,7 +287,12 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
+    ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
+    std::vector<Vertex>* verticies = ws.GetVerticies();
+    Vertex& source = (*verticies)[2];
+    Vertex& goal = (*verticies)[5];   // arbitrary
+    std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
+
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 }
 #endif // EXEDEBUG
