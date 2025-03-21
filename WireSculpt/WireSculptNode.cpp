@@ -248,8 +248,6 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         SphereMesh sphere(start, radius);
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
-
-        MGlobal::displayInfo("Vertex id: " + MString() + vertex.id);
     }
 
     // Running A* and drawing cylinders to map out path
@@ -271,8 +269,7 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         sphere2.appendToMesh(points, faceCounts, faceConnects);
 
         // Run A*
-        MGlobal::displayInfo("Verticies size: " + MString() + verticies.size());
-        std::vector<Vertex> path = ws.FindPath(verticies, &source, &goal, verticies.size());
+        /*std::vector<Vertex> path = ws.FindPath(verticies, source, goal, verticies.size());
 
         for (int i = 0; i < path.size() - 1; i++) {
             MPoint start = path[i].mPosition;
@@ -285,10 +282,8 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
             CylinderMesh cylinder(start, end, radius * 0.5);
             cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
             cylinder.appendToMesh(points, faceCounts, faceConnects);
-        }
+        }*/
     }
-    
-
     
     MFnMesh meshFS;
     MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
