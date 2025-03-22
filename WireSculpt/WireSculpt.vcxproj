@@ -160,6 +160,9 @@
       <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;..\suitesparse\libfiles</AdditionalLibraryDirectories>
       <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;libspqrd.lib;libcholmodd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy ..\extdll\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ExeDebug|x64'">
     <ClCompile>
