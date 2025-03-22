@@ -195,6 +195,6 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
     //ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
 }
 #endif // EXEDEBUG

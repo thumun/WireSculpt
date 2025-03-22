@@ -18,7 +18,6 @@
 #include <math.h>
 #include <algorithm>
 
-
 #include <igl/read_triangle_mesh.h>
 #include <igl/is_vertex_manifold.h>
 
@@ -526,8 +525,8 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
 
     extreme_points.clear();
     for (auto val : extreme_point_set) {
-        //std::cout << ">> Final Extreme Point: " << val << std::endl;
         extreme_points.push_back(val);
     }
+
     return extreme_points;
 }
