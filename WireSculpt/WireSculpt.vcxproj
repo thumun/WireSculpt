@@ -167,14 +167,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;NT_PLUGIN;EXEDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;D:\CGGT\AdvTopics\SuiteSparse\SPQR\Include;D:\CGGT\AdvTopics\SuiteSparse\SuiteSparse_config;D:\CGGT\AdvTopics\SuiteSparse\CHOLMOD\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;D:\CGGT\AdvTopics\suitesparse-metis-for-windows\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;..\suitesparse\libfiles</AdditionalLibraryDirectories>
       <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;libspqrd.lib;libcholmodd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
