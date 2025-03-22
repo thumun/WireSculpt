@@ -167,15 +167,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;NT_PLUGIN;EXEDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;D:\CGGT\AdvTopics\SuiteSparse\SPQR\Include;D:\CGGT\AdvTopics\SuiteSparse\SuiteSparse_config;D:\CGGT\AdvTopics\SuiteSparse\CHOLMOD\Include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;D:\CGGT\AdvTopics\suitesparse-metis-for-windows\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;libspqrd.lib;libcholmodd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -197,6 +197,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Edge.h" />
+    <ClInclude Include="ExtremePoints.h" />
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="NonLandmark.h" />
     <ClInclude Include="Path.h" />
@@ -207,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="ExtremePoints.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="NonLandmark.cpp" />
     <ClCompile Include="Path.cpp" />
