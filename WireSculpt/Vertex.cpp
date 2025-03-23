@@ -14,27 +14,8 @@ Vertex::Vertex(const MPoint& position, int idNum, bool landmark) :
 Vertex::~Vertex() {}
 
 void Vertex::setNeighbor(Vertex* v, Edge* e) {
-	//this->neighbors.insert(Ve(v, e));
-	//v->neighbors.insert(Ve(this, e));
-	//MGlobal::displayInfo("In set neighbor edge lenght: " + MString() + n.second->warpedLength);
-
 	this->neighbors.insert(std::make_pair( v, e ));
-	//v->neighbors.insert({this, e});
 }
-
-// A* path traversal
-//bool Vertex::operator>(const Vertex& other) const
-//{
-//	return f > other.f;
-//}
-
-//bool Vertex::operator==(const Vertex& other) const
-//{
-//	// ignoring normals for now
-//	return mPosition[0] == other.mPosition[0] 
-//		&& mPosition[1] == other.mPosition[1]
-//		&& mPosition[2] == other.mPosition[2];
-//}
 
 void Vertex::resetFGH() {
 	f = 999999;

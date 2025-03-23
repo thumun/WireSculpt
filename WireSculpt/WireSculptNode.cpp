@@ -10,6 +10,7 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MFnMesh.h>
 #include <maya/MGlobal.h>
+#include <random>
 
 
 MTypeId WireSculptNode::id(0x0007F015);
@@ -252,8 +253,14 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
 
     // Running A* and drawing cylinders to map out path
     if (verticies.size() > 0) {
-        Vertex* source = &verticies[2];
-        Vertex* goal = &verticies[5];   // arbitrary
+
+        // Choose random vertices to be source and goal
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
+
+        Vertex* source = &verticies[dist6(rng)];
+        Vertex* goal = &verticies[dist6(rng)];   // arbitrary
 
         // Draw the source and goal
         MPointArray currPoints;
@@ -267,22 +274,6 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         SphereMesh sphere2(goal->mPosition, radius * 3);
         sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere2.appendToMesh(points, faceCounts, faceConnects);
-
-
-        /*for (auto v : verticies) {
-            MPoint start = v.mPosition;
-            for (auto n : v.neighbors) {
-                MPoint end = n.first->mPosition;
-
-                MPointArray currPoints;
-                MIntArray currFaceCounts;
-                MIntArray currFaceConnects;
-
-                CylinderMesh cylinder(start, end, radius * 0.5);
-                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);
-            }
-        }*/
 
         // Run A*
         std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
@@ -303,6 +294,22 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
                 cylinder.appendToMesh(points, faceCounts, faceConnects);
             }
         }
+
+        // Display wireframe:
+        /*for (auto v : verticies) {
+            MPoint start = v.mPosition;
+            for (auto n : v.neighbors) {
+                MPoint end = n.first->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }*/
     }
     
     MFnMesh meshFS;
