@@ -10,6 +10,7 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MFnMesh.h>
 #include <maya/MGlobal.h>
+#include <random>
 
 
 MTypeId WireSculptNode::id(0x0007F015);
@@ -234,13 +235,12 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
 
+    // Making sphere wireframe
     for (auto vertex : verticies) {
       
-        MPoint increment({ 0.1, 0.1, 0.1 });
         MPoint start = vertex.mPosition;
-        MPoint end = start + increment;
 
         MPointArray currPoints;
         MIntArray currFaceCounts;
@@ -250,9 +250,72 @@ MObject WireSculptNode::createMesh(const double& radius, std::vector<Vertex>& ve
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
     }
+
+    // Running A* and drawing cylinders to map out path
+    if (verticies.size() > 0) {
+
+        // Choose random vertices to be source and goal
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
+
+        Vertex* source = &verticies[dist6(rng)];
+        Vertex* goal = &verticies[dist6(rng)];   // arbitrary
+
+        // Draw the source and goal
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(source->mPosition, radius * 1.7);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+
+        SphereMesh sphere2(goal->mPosition, radius * 3);
+        sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere2.appendToMesh(points, faceCounts, faceConnects);
+
+        // Run A*
+        std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
+        if (path.size() == 0) {
+            MGlobal::displayInfo("No path found");
+        }
+        else {
+            for (int i = 0; i < path.size() - 1; i++) {
+                MPoint start = path[i]->mPosition;
+                MPoint end = path[i + 1]->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }
+
+        // Display wireframe:
+        /*for (auto v : verticies) {
+            MPoint start = v.mPosition;
+            for (auto n : v.neighbors) {
+                MPoint end = n.first->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }*/
+    }
     
     MFnMesh meshFS;
-    return meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+    MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+
+    return meshObject;
 }
 
 MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
@@ -371,7 +434,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, *(ws.GetVerticies()), newOutputData, returnStatus);
+        createMesh(thicknessVal, ws, *(ws.GetVerticies()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");
