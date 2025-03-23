@@ -157,7 +157,21 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 
 }
 
-// TODO: Move to W
+std::vector<Vertex*> WireSculptPlugin::FindTspPath(std::vector<Vertex>& landmarks, Vertex* start) {
+    return std::vector<Vertex*>();
+}
+
+float WireSculptPlugin::findNearestNeighbor(int indexOfVertex, std::vector<Vertex>& landmarks) {
+    return 0.0;
+}
+int WireSculptPlugin::pickUnvisitedCity(std::vector<int> used) {
+    return 0;
+}
+int WireSculptPlugin::findMinTriangularDistanceEdge(int newVertex, std::vector<int> tour, std::vector<Vertex>& landmarks) {
+    return 0;
+}
+
+// A* Path Finding Algorithm
 std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
 {
     // Initialize the open and closed lists
