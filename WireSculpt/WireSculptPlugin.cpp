@@ -157,6 +157,52 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 
 }
 
+// Optimized Tour
+std::vector<int> WireSculptPlugin::TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters) {
+    std::vector<int> tour = FindTspPath(landmarks, start);
+
+    int iters = 0;
+    int numLMs = tour.size();
+
+    while (iters < maxIters) {
+        for (int i = 1; i < numLMs; i++) {
+            for (int j = i + 1; j < numLMs - 1; j++) {
+                Vertex& lm1 = *landmarks[i - 1];
+                Vertex& lm2 = *landmarks[i];
+                Vertex& lm3 = *landmarks[j];
+                Vertex& lm4 = *landmarks[j + 1];
+                if (computeLMDistance(lm1, lm3) + computeLMDistance(lm2, lm4)
+                    < computeLMDistance(lm1, lm2) + computeLMDistance(lm3, lm4)) {
+                    tour = swapEdge(tour, i, j);
+                }
+            }
+        }
+        iters++;
+    }
+    return tour;
+}
+
+std::vector<int> WireSculptPlugin::swapEdge(std::vector<int> tour, int i, int j) {
+    std::vector<int> newTour;
+
+    for (int p = 0; p < i; p++) {
+        newTour.push_back(tour[p]);
+    }
+    
+    int q = 0;
+    for (int p = i; p < j + 1; p++) {
+        newTour.push_back(tour[j - q]);
+        q++;
+    }
+
+    for (int p = j + 1; p < tour.size(); p++) {
+        newTour.push_back(tour[p]);
+    }
+
+    return newTour;
+}
+
+
 // Nearest Insertion Tour
 std::vector<int> WireSculptPlugin::FindTspPath(std::vector<Vertex*> landmarks, int start) {
     int numLandmarks = landmarks.size();
@@ -226,7 +272,7 @@ int WireSculptPlugin::pickUnvisitedCity(std::vector<int> used) {
 // return the index in which newLM will be inserted in tour 
 // that will minimize the insertion cost for the tour
 int WireSculptPlugin::findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks) {
-    int indexToInsert;
+    int indexToInsert = 0;
     float minCost = 99999;
     float currCost;
 

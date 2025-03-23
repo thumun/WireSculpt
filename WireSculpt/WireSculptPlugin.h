@@ -19,7 +19,8 @@ public:
 	// 2. Run FindPath for each pair of consecutive vertices in the path
 	// Note: We can also use FindPath in place of the tsp distance calculation, but this may increase computation heavily
 	std::vector<Vertex*> FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount);
-	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);
+	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
+	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
 
 private:
@@ -35,6 +36,7 @@ private:
 	int findNearestNeighbor(int indexOfVertex, std::vector<Vertex*> landmarks, std::vector<int> used);
 	int pickUnvisitedCity(std::vector<int> used);
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
+	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
 };
 
 

@@ -263,12 +263,19 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         MIntArray currFaceConnects;
 
         std::vector<int> chosen(verticies.size());
-        int numLMs = chosen.size();
-        int index = rand() % numLMs;
+        /*int numLMs = chosen.size();
+        int index = rand() % numLMs;*/
+
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
+
+        int index = dist6(rng);
 
         for (int i = 0; i < 5; i++) {
             while (chosen[index] == 1) {
-                index = rand() % numLMs;
+                //index = rand() % numLMs;
+                index = dist6(rng);
             }
             chosen[index] = 1;
             landmarks.push_back(&verticies[index]);
@@ -281,23 +288,68 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         }
 
         // Run TSP Nearest Neighbors on five vertices
-        std::vector<int> tour = ws.FindTspPath(landmarks, 0);
+        std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
 
-        // Make cylinder meshes to connect vertices found
-        for (int t = 0; t < tour.size() - 1; t++) {
-            MPoint start = landmarks[tour[t]]->mPosition;
-            MPoint end = landmarks[tour[t + 1]]->mPosition;
+        // Run A* between each of the vertices
+        for (int t = 0; t < tour.size(); t++) {
+            int index1;
+            int index2;
+
+            if (t == tour.size() - 1) {
+                index1 = tour.size() - 1;
+                index2 = 0;
+            }
+            else {
+                index1 = t;
+                index2 = t + 1;
+            }
+           /* MPoint start = landmarks[tour[index1]]->mPosition;
+            MPoint end = landmarks[tour[index2]]->mPosition;
 
             CylinderMesh cylinder(start, end, radius * 0.7);
             cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
-        }
-        MPoint start = landmarks[tour[0]]->mPosition;
-        MPoint end = landmarks[tour[tour.size() - 1]]->mPosition;
+            cylinder.appendToMesh(points, faceCounts, faceConnects);*/
 
-        CylinderMesh cylinder(start, end, radius * 0.7);
-        cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        cylinder.appendToMesh(points, faceCounts, faceConnects);
+            Vertex* source = landmarks[tour[index1]];
+            Vertex* goal = landmarks[tour[index2]];
+
+            std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
+            if (path.size() == 0) {
+                MGlobal::displayInfo("No path found");
+            }
+            else {
+                for (int i = 0; i < path.size() - 1; i++) {
+                    MPoint start = path[i]->mPosition;
+                    MPoint end = path[i + 1]->mPosition;
+
+                    MPointArray currPoints;
+                    MIntArray currFaceCounts;
+                    MIntArray currFaceConnects;
+
+                    CylinderMesh cylinder(start, end, radius * 0.5);
+                    cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                    cylinder.appendToMesh(points, faceCounts, faceConnects);
+                }
+            }
+        }
+        
+
+
+        //// Make cylinder meshes to connect vertices found
+        //for (int t = 0; t < tour.size() - 1; t++) {
+        //    MPoint start = landmarks[tour[t]]->mPosition;
+        //    MPoint end = landmarks[tour[t + 1]]->mPosition;
+
+        //    CylinderMesh cylinder(start, end, radius * 0.7);
+        //    cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        //    cylinder.appendToMesh(points, faceCounts, faceConnects);
+        //}
+        //MPoint start = landmarks[tour[0]]->mPosition;
+        //MPoint end = landmarks[tour[tour.size() - 1]]->mPosition;
+
+        //CylinderMesh cylinder(start, end, radius * 0.7);
+        //cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        //cylinder.appendToMesh(points, faceCounts, faceConnects);
     }
     else {
         /* A* Path */
