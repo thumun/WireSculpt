@@ -157,19 +157,98 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
 
 }
 
-std::vector<Vertex*> WireSculptPlugin::FindTspPath(std::vector<Vertex>& landmarks, Vertex* start) {
-    return std::vector<Vertex*>();
+// Nearest Insertion Tour
+std::vector<int> WireSculptPlugin::FindTspPath(std::vector<Vertex*> landmarks, int start) {
+    int numLandmarks = landmarks.size();
+    std::vector<int> tour;
+    std::vector<int> used(numLandmarks);
+
+    tour.push_back(start);
+    used[start] = 1;
+
+    int newLM;
+    int indexNewLM;
+    int numVisitedLM = 1;
+
+    while (numVisitedLM != numLandmarks) {
+        if (numVisitedLM == 1) {
+            newLM = findNearestNeighbor(start, landmarks, used);
+            tour.push_back(newLM);
+        }
+        else {
+            // Selection
+            newLM = pickUnvisitedCity(used);
+
+            // Insertion
+            indexNewLM = findMinTriangularDistanceEdge(newLM, tour, landmarks);
+            if (indexNewLM > tour.size()) {
+                MGlobal::displayInfo("index is too big");
+            }
+            else {
+                tour.insert(tour.begin() + indexNewLM, newLM);
+
+            }
+        }
+        used[newLM] = 1;
+        numVisitedLM++;
+    }
+
+    return tour;
 }
 
-float WireSculptPlugin::findNearestNeighbor(int indexOfVertex, std::vector<Vertex>& landmarks) {
-    return 0.0;
+// replace this with FindPath if doesn't perform well
+int WireSculptPlugin::findNearestNeighbor(int indexOfVertex, std::vector<Vertex*> landmarks, std::vector<int> used) {
+    int bestNeighborIndex = -1;
+    for (unsigned int i = 0; i < landmarks.size(); i++) {
+        if (used[i] == 0) {
+            if (bestNeighborIndex == -1) {
+                bestNeighborIndex = i;
+            }
+            else if (computeLMDistance(*landmarks[indexOfVertex], *landmarks[i]) < 
+                computeLMDistance(*landmarks[indexOfVertex], *landmarks[bestNeighborIndex])) {
+                bestNeighborIndex = i;
+            }
+        }
+    }
+    
+    return bestNeighborIndex;
 }
+
 int WireSculptPlugin::pickUnvisitedCity(std::vector<int> used) {
-    return 0;
+    int numLMs = used.size();
+    int index = rand() % numLMs;
+    while (used[index] == 1) {
+        index = rand() % numLMs;
+    }
+    return index;
 }
-int WireSculptPlugin::findMinTriangularDistanceEdge(int newVertex, std::vector<int> tour, std::vector<Vertex>& landmarks) {
-    return 0;
+
+// return the index in which newLM will be inserted in tour 
+// that will minimize the insertion cost for the tour
+int WireSculptPlugin::findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks) {
+    int indexToInsert;
+    float minCost = 99999;
+    float currCost;
+
+    for (int i = 0; i < tour.size() - 1; i++) {
+        currCost = insertionCost(*landmarks[tour[i]], *landmarks[tour[i + 1]], *landmarks[newLM]);
+        if (currCost < minCost) {
+            minCost = currCost;
+            indexToInsert = i + 1;
+        }
+    }
+    return indexToInsert;
 }
+float WireSculptPlugin::insertionCost(Vertex& lm1, Vertex& lm2, Vertex& lm3) {
+    return computeLMDistance(lm1, lm3) + computeLMDistance(lm3, lm2) - computeLMDistance(lm1, lm2);
+}
+
+float WireSculptPlugin::computeLMDistance(Vertex& lm1, Vertex& lm2) {
+    MPoint start = lm1.mPosition;
+    MPoint end = lm2.mPosition;
+    return start.distanceTo(end);
+}
+
 
 // A* Path Finding Algorithm
 std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)

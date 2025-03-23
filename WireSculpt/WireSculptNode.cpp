@@ -251,9 +251,56 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         sphere.appendToMesh(points, faceCounts, faceConnects);
     }
 
-    // Running A* and drawing cylinders to map out path
-    if (verticies.size() > 0) {
+    // Running A* or TSP and drawing cylinders to map out path
+    int testTSP = 1;
+    if (testTSP) {
+        /* TSP */
+        // Choose five random vertices
+        
+        std::vector<Vertex*> landmarks;
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
 
+        std::vector<int> chosen(verticies.size());
+        int numLMs = chosen.size();
+        int index = rand() % numLMs;
+
+        for (int i = 0; i < 5; i++) {
+            while (chosen[index] == 1) {
+                index = rand() % numLMs;
+            }
+            chosen[index] = 1;
+            landmarks.push_back(&verticies[index]);
+                
+            // Draw each Landmark Vertex
+            SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);
+
+        }
+
+        // Run TSP Nearest Neighbors on five vertices
+        std::vector<int> tour = ws.FindTspPath(landmarks, 0);
+
+        // Make cylinder meshes to connect vertices found
+        for (int t = 0; t < tour.size() - 1; t++) {
+            MPoint start = landmarks[tour[t]]->mPosition;
+            MPoint end = landmarks[tour[t + 1]]->mPosition;
+
+            CylinderMesh cylinder(start, end, radius * 0.7);
+            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);
+        }
+        MPoint start = landmarks[tour[0]]->mPosition;
+        MPoint end = landmarks[tour[tour.size() - 1]]->mPosition;
+
+        CylinderMesh cylinder(start, end, radius * 0.7);
+        cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        cylinder.appendToMesh(points, faceCounts, faceConnects);
+    }
+    else {
+        /* A* Path */
         // Choose random vertices to be source and goal
         std::random_device dev;
         std::mt19937 rng(dev());
@@ -294,23 +341,24 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
                 cylinder.appendToMesh(points, faceCounts, faceConnects);
             }
         }
-
-        // Display wireframe:
-        /*for (auto v : verticies) {
-            MPoint start = v.mPosition;
-            for (auto n : v.neighbors) {
-                MPoint end = n.first->mPosition;
-
-                MPointArray currPoints;
-                MIntArray currFaceCounts;
-                MIntArray currFaceConnects;
-
-                CylinderMesh cylinder(start, end, radius * 0.5);
-                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);
-            }
-        }*/
     }
+
+    // Display wireframe:
+    /*for (auto v : verticies) {
+        MPoint start = v.mPosition;
+        for (auto n : v.neighbors) {
+            MPoint end = n.first->mPosition;
+
+            MPointArray currPoints;
+            MIntArray currFaceCounts;
+            MIntArray currFaceConnects;
+
+            CylinderMesh cylinder(start, end, radius * 0.5);
+            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);
+        }
+    }*/
+    
     
     MFnMesh meshFS;
     MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
