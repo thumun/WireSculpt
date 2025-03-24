@@ -306,7 +306,7 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     // Keep track of parents
     std::vector<int> parentList(vertexCount, -1);
 
-    // TODO: Reset all f,g,h values of all verticies
+    // Reset all f,g,h values of all verticies
     for (auto& v : verticies) {
         v.resetFGH();
     }
