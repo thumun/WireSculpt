@@ -220,7 +220,6 @@ void eigenvalues(Eigen::MatrixXd& mat, Eigen::MatrixXd& ev) {
 }
 
 bool filter_2(Eigen::MatrixXd& V, int i, std::vector<std::vector<int>>& A) {
-    //Eigen::MatrixXd one_ring = Eigen::MatrixXd::Zero(A[i].size(), 3);
     Eigen::MatrixXd one_ring = Eigen::MatrixXd::Zero(A[i].size() + 1, 3);
     for (int l = 0; l < A[i].size(); l++) {
         int j = A[i][l];
@@ -396,7 +395,6 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
         }
     }
 
-    //std::cout << ">> Finding extreme points...\n";
     do {
 
         iters++;
@@ -443,8 +441,6 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
         Eigen::MatrixXd::Index minRow, minCol;
         x.minCoeff(&minRow, &minCol);
 
-        //std::cout << ">> Field varies from " << x(minRow,0) << " to " << x(maxRow,0) << std::endl;
-
         std::vector<int> candidate_extreme_points;
 
         std::vector<std::pair<double, int>> extreme_point_queue;
@@ -457,7 +453,6 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
                 min_val = std::min(x(adj_vert, 0), min_val);
             }
             if (x(i) >= max_val || x(i) <= min_val) {
-                //std::cout << ">> Found extreme value: " << i << "\n";
                 if (extreme_point_set.size() < 2) {
                     candidate_extreme_points.push_back(i);
                 }
@@ -469,7 +464,6 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
                             neighbors = neighbors + x(A[i][j]);
                         }
                         neighbors = abs(x(i) - (neighbors / A[i].size()));
-                        //std::cout << "Neighbor_values: " << neighbors << "\n";
                         extreme_point_queue.push_back(std::pair<double, int>(neighbors, i));
                     }
                 }
@@ -485,12 +479,7 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
                 double max_dist = max_geodesic_dist(extreme_point_set, V);
                 if (!in_proximity_to(V.row(extreme_point_queue[i].second), extreme_point_set, V, max_dist * 0.15)) {
                     extreme_point_set.insert(extreme_point_queue[i].second);
-                    //std::cout << ">> Added extreme point " << extreme_point_queue[i].second << std::endl;
                 }
-                else {
-                    //std::cout << ">> Rejected extreme point " << extreme_point_queue[i].second << std::endl;
-                }
-
             }
         }
 
