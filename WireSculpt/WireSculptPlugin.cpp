@@ -288,9 +288,9 @@ int main() {
     ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     std::vector<Vertex>* verticies = ws.GetVerticies();
-    Vertex* source = &verticies[2];
-    Vertex* goal = &verticies[5];   // arbitrary
-    std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
+    //Vertex* source = &verticies[2];
+    //Vertex* goal = &verticies[5];   // arbitrary
+    //std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
 
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 }
