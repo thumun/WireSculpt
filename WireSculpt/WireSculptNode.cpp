@@ -1,4 +1,7 @@
 #include "WireSculptNode.h"
+#include "cylinder.h"
+#include "sphere.h"
+#include "WireSculptPlugin.h"
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnNumericAttribute.h>
@@ -7,6 +10,7 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MFnMesh.h>
 #include <maya/MGlobal.h>
+#include <random>
 
 
 MTypeId WireSculptNode::id(0x0007F015);
@@ -231,20 +235,112 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
+MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+
+    // Making sphere wireframe
+    for (auto vertex : verticies) {
+      
+        MPoint start = vertex.mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+    }
+
+    // Running A* and drawing cylinders to map out path
+    if (verticies.size() > 0) {
+
+        // Choose random vertices to be source and goal
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
+
+        Vertex* source = &verticies[dist6(rng)];
+        Vertex* goal = &verticies[dist6(rng)];   // arbitrary
+
+        // Draw the source and goal
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(source->mPosition, radius * 1.7);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+
+        SphereMesh sphere2(goal->mPosition, radius * 3);
+        sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere2.appendToMesh(points, faceCounts, faceConnects);
+
+        // Run A*
+        std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
+        if (path.size() == 0) {
+            MGlobal::displayInfo("No path found");
+        }
+        else {
+            for (int i = 0; i < path.size() - 1; i++) {
+                MPoint start = path[i]->mPosition;
+                MPoint end = path[i + 1]->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }
+
+        // Display wireframe:
+        /*for (auto v : verticies) {
+            MPoint start = v.mPosition;
+            for (auto n : v.neighbors) {
+                MPoint end = n.first->mPosition;
+
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
+
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
+        }*/
+    }
+    
+    MFnMesh meshFS;
+    MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+
+    return meshObject;
+}
+
 MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
     MStatus returnStatus;
 
     // Check if plug is geometry
+    // TODO: test how to make things change based on the input that got changed
     if (plug == outGeom) {
+
+        /* Clear points and face data */
+        points.clear();
+        faceCounts.clear();
+        faceConnects.clear();
+
+        /* Get inputs */
         // Input Mesh
-        MDataHandle grammarData = data.inputValue(inMeshFile, &returnStatus);
+        MDataHandle fileData = data.inputValue(inMeshFile, &returnStatus);
         if (!returnStatus) {
             returnStatus.perror("ERROR getting grammar data handle\n");
             return returnStatus;
         }
-        MString meshFilePath = grammarData.asString();
+        MString meshFilePath = fileData.asString();
         std::string meshFilePathStr = meshFilePath.asChar();
-        MString grammar = MString() + meshFilePathStr.c_str();
+        MString objFilePath = MString() + meshFilePathStr.c_str();
+        MGlobal::displayInfo("File path: " + objFilePath);
 
         // Range Attract
         MDataHandle aAttractData = data.inputValue(aAttract, &returnStatus);
@@ -262,10 +358,94 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double bAttractVal = bAttractData.asDouble();
 
-        // Need to create new geometry
+        // Range Repel
+        MDataHandle aRepelData = data.inputValue(aRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting range repel data handle\n");
+            return returnStatus;
+        }
+        double aRepelVal = aRepelData.asDouble();
+
+        // Steepness Repel
+        MDataHandle bRepelData = data.inputValue(bRepel, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting steep repel data handle\n");
+            return returnStatus;
+        }
+        double bRepelVal = bRepelData.asDouble();
+
+        // Lambda
+        MDataHandle lambdaData = data.inputValue(lambda, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting lambda data handle\n");
+            return returnStatus;
+        }
+        double lambdaVal = lambdaData.asDouble();
+
+        // K
+        MDataHandle kData = data.inputValue(K, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting k data handle\n");
+            return returnStatus;
+        }
+        double kVal = kData.asDouble();
+
+        // M
+        MDataHandle mData = data.inputValue(M, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting m data handle\n");
+            return returnStatus;
+        }
+        double mVal = mData.asDouble();
+
+        // Thickness
+        MDataHandle thicknessData = data.inputValue(thickness, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting thickness data handle\n");
+            return returnStatus;
+        }
+        double thicknessVal = thicknessData.asDouble();
+
+        /* Process file */
+        WireSculptPlugin ws = WireSculptPlugin();
+        bool returnVal = ws.ProcessFile(meshFilePathStr);
+        MString errorMsg = "\n";
+        if (returnVal) {
+            errorMsg += "file processed successfully";
+            MGlobal::displayInfo(errorMsg);
+            MGlobal::displayInfo(MString() + ws.GetVerticies()->size());
+        }
+        else {
+            errorMsg += "issue with file format or contents";
+            MGlobal::displayInfo(errorMsg);
+        }
+
+        /* Get output object - geometry */
+        MDataHandle outGeometry = data.outputValue(outGeom, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting geometry data handle\n");
+            return returnStatus;
+        }
+        MFnMeshData dataCreator;
+        MObject newOutputData = dataCreator.create(&returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating output geometry data\n");
+            return returnStatus;
+        }
+
+        // Create new geometry
+        createMesh(thicknessVal, ws, *(ws.GetVerticies()), newOutputData, returnStatus);
+
+        if (!returnStatus) {
+            returnStatus.perror("ERROR creating new mesh\n");
+            return returnStatus;
+        }
+        outGeometry.set(newOutputData);
+        data.setClean(plug);
     }
     else {
         return MS::kUnknownParameter;
     }
+    return MS::kSuccess;
 
 }

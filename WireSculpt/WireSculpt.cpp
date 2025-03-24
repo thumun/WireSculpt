@@ -164,6 +164,7 @@ MStatus WireSculpt::doIt(const MArgList& argList)
 	if (returnVal) {
 		errorMsg += "file processed successfully";
 		MGlobal::displayInfo(errorMsg);
+		MGlobal::displayInfo(MString() + ws.GetVerticies()->size());
 	}
 	else {
 		errorMsg += "issue with file format or contents";

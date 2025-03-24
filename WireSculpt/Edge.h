@@ -4,7 +4,7 @@
 
 class Edge {
 public:
-	Edge(const Vertex* v1, const Vertex* v2);
+	Edge(int idVal, const Vertex* v1, const Vertex* v2);
 	~Edge();
 
 	// Two Vertex endpoints
@@ -12,6 +12,7 @@ public:
 
 	// Warped edge length between two vertices
 	float warpedLength;
+	int id;
 	
 protected:
 	// Original edge length between two vertices
