@@ -151,15 +151,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;NT_PLUGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\eigen-src;..\libigl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;..\suitesparse\libfiles</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;libspqrd.lib;libcholmodd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy ..\extdll\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ExeDebug|x64'">
     <ClCompile>
@@ -167,15 +170,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;NT_PLUGIN;EXEDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%MAYA_LOCATION%\lib;..\suitesparse\libfiles</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;OpenMayaUI.lib;OpenMayaAnim.lib;OpenMayaFX.lib;OpenMayaRender.lib;Image.lib;opengl32.lib;libspqrd.lib;libcholmodd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy ..\extdll\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -197,6 +204,7 @@
   <ItemGroup>
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="Edge.h" />
+    <ClInclude Include="ExtremePoints.h" />
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="NonLandmark.h" />
     <ClInclude Include="Path.h" />
@@ -209,6 +217,7 @@
   <ItemGroup>
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="ExtremePoints.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="NonLandmark.cpp" />
     <ClCompile Include="Path.cpp" />

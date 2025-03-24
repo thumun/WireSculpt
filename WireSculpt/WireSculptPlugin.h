@@ -4,6 +4,8 @@
 #include "Edge.h"
 #include <vector>
 
+#include <Eigen/Core>
+
 class WireSculptPlugin
 {
 public:
@@ -24,7 +26,6 @@ private:
 
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
-
 };
 
 
