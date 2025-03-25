@@ -250,32 +250,57 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
     }
+    
+    /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
 
-    // Running A* and drawing cylinders to map out path
-    if (verticies.size() > 0) {
+    // Choose five random vertices  
+    std::vector<Vertex*> landmarks;
+    MPointArray currPoints;
+    MIntArray currFaceCounts;
+    MIntArray currFaceConnects;
 
-        // Choose random vertices to be source and goal
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
+    std::vector<int> chosen(verticies.size());
 
-        Vertex* source = &verticies[dist6(rng)];
-        Vertex* goal = &verticies[dist6(rng)];   // arbitrary
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
 
-        // Draw the source and goal
-        MPointArray currPoints;
-        MIntArray currFaceCounts;
-        MIntArray currFaceConnects;
+    int index = dist6(rng);
 
-        SphereMesh sphere(source->mPosition, radius * 1.7);
+    for (int i = 0; i < 5; i++) {
+        while (chosen[index] == 1) {
+            index = dist6(rng);
+        }
+        chosen[index] = 1;
+        landmarks.push_back(&verticies[index]);
+                
+        // Draw each Landmark Vertex
+        SphereMesh sphere(verticies[index].mPosition, radius * 2);
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
 
-        SphereMesh sphere2(goal->mPosition, radius * 3);
-        sphere2.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        sphere2.appendToMesh(points, faceCounts, faceConnects);
+    }
 
-        // Run A*
+    // Run TSP Optimized Nearest Neighbors on five vertices
+    std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
+
+    // Run A* between each of the vertices
+    for (int t = 0; t < tour.size(); t++) {
+        int index1;
+        int index2;
+
+        if (t == tour.size() - 1) {
+            index1 = tour.size() - 1;
+            index2 = 0;
+        }
+        else {
+            index1 = t;
+            index2 = t + 1;
+        }
+
+        Vertex* source = landmarks[tour[index1]];
+        Vertex* goal = landmarks[tour[index2]];
+
         std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
         if (path.size() == 0) {
             MGlobal::displayInfo("No path found");
@@ -294,22 +319,6 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
                 cylinder.appendToMesh(points, faceCounts, faceConnects);
             }
         }
-
-        // Display wireframe:
-        /*for (auto v : verticies) {
-            MPoint start = v.mPosition;
-            for (auto n : v.neighbors) {
-                MPoint end = n.first->mPosition;
-
-                MPointArray currPoints;
-                MIntArray currFaceCounts;
-                MIntArray currFaceConnects;
-
-                CylinderMesh cylinder(start, end, radius * 0.5);
-                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);
-            }
-        }*/
     }
     
     MFnMesh meshFS;
