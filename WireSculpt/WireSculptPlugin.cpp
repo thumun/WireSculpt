@@ -7,9 +7,11 @@
 #include <maya/MVector.h>
 
 #include "WireSculptPlugin.h"
+#include "ExtremePoints.h"
 
 #include <igl/read_triangle_mesh.h>
 #include <Eigen/Core>
+#include <igl/is_vertex_manifold.h>
 #include <maya/MGlobal.h>
 
 using namespace std;
@@ -151,10 +153,46 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
     Eigen::MatrixXd V;
     Eigen::MatrixXi F;
 
-    // debugged - this seems to be working 
+    Eigen::MatrixXi E;    // Edges
+    Eigen::MatrixXd N;    // Normals
+    std::vector<std::vector<int>> VF;
+    std::vector<std::vector<int>> VFi;
+    Eigen::MatrixXi IF;   // Incident Faces
+    Eigen::MatrixXi OV;   // Opposite Vertices
+    Eigen::MatrixXd FC;   //
+    Eigen::MatrixXd FN;   // Face Normals
+    Eigen::MatrixXd DA;   // Dihedral Angle
+    Eigen::MatrixXd D;    // Distance
+    Eigen::MatrixXd L;    // Laplacian
+    Eigen::MatrixXd G;    // Gaussian Curvature
+    Eigen::MatrixXd dblA; // Area
+
+    double beta = 0.1; 
+    double eps = 0.000001;
+    double sigma = 0.001;
+    int lap_weighting = 0;
+    Eigen::MatrixXd vertex_is_concave;
+    int index = 0;
+    std::vector<int> extreme_points;
+
+    // no idea what this value is 
+    int clip_bound = 0;
+
     igl::read_triangle_mesh(filePath, V, F);
 
+    Eigen::MatrixXi B;
+    igl::is_vertex_manifold(F, B);
+    // link this to plug in 
+    if (B.minCoeff() == 0) {
+        std::cerr << ">> The loaded mesh is not manifold.\n";
+    }
 
+    // debugged - this seems to be working 
+    compute_all_features(V, F, E, N, VF, VFi, IF, OV, FC, FN, DA, D, L, G, dblA);
+
+    compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, 0.4);
+
+    extreme_points = get_extreme_points(F, V, L, index, E);
 }
 
 // Optimized Tour
@@ -381,14 +419,17 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
 
+
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
+    //ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
+    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     std::vector<Vertex>* verticies = ws.GetVerticies();
-    Vertex* source = &verticies[2];
-    Vertex* goal = &verticies[5];   // arbitrary
-    std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
+    //Vertex* source = &verticies[2];
+    //Vertex* goal = &verticies[5];   // arbitrary
+    //std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
 
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 }

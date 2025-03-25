@@ -4,6 +4,8 @@
 #include "Edge.h"
 #include <vector>
 
+#include <Eigen/Core>
+
 class WireSculptPlugin
 {
 public:
