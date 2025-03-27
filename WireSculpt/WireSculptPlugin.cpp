@@ -149,7 +149,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     return true;
 }
 
-void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
+std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
     Eigen::MatrixXd V;
     Eigen::MatrixXi F;
 
@@ -193,6 +193,8 @@ void WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
     compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, 0.4);
 
     extreme_points = get_extreme_points(F, V, L, index, E);
+
+    return extreme_points;
 }
 
 // Optimized Tour
