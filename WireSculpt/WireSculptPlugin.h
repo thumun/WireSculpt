@@ -13,7 +13,7 @@ public:
 
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
-	void GetExtremePoints(const std::string& filePath);
+	std::vector<int> GetExtremePoints(const std::string& filePath);
 	
 	
 	// Path finding procedure:

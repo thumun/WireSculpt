@@ -235,7 +235,7 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
 
     // Making sphere wireframe
     for (auto vertex : verticies) {
@@ -252,33 +252,30 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, s
     }
     
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
+    std::vector<int> extremePoints = ws.GetExtremePoints(filePath);
+    MGlobal::displayInfo("Extreme points: ");
+    for (int i : extremePoints) {
+        MGlobal::displayInfo("point: " + MString() + i);
 
-    // Choose five random vertices  
+    }
+    // Set landmark vertices to be vertices of indexes extremePts chose:
     std::vector<Vertex*> landmarks;
     MPointArray currPoints;
     MIntArray currFaceCounts;
     MIntArray currFaceConnects;
 
-    std::vector<int> chosen(verticies.size());
-
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, verticies.size() - 1);
-
-    int index = dist6(rng);
-
-    for (int i = 0; i < 5; i++) {
-        while (chosen[index] == 1) {
-            index = dist6(rng);
+    for (int index : extremePoints) {
+        if (index >= verticies.size()) {
+            MGlobal::displayInfo("Error: index too large");
         }
-        chosen[index] = 1;
-        landmarks.push_back(&verticies[index]);
-                
-        // Draw each Landmark Vertex
-        SphereMesh sphere(verticies[index].mPosition, radius * 2);
-        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        sphere.appendToMesh(points, faceCounts, faceConnects);
+        else {
+            landmarks.push_back(&verticies[index]);
 
+            // Draw each Landmark Vertex
+            SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);
+        }
     }
 
     // Run TSP Optimized Nearest Neighbors on five vertices
@@ -443,7 +440,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, ws, *(ws.GetVerticies()), newOutputData, returnStatus);
+        createMesh(thicknessVal, ws, meshFilePathStr, *(ws.GetVerticies()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");

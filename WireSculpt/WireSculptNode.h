@@ -30,7 +30,7 @@ public:
     static MObject  outGeom;
 
 protected:
-    MObject createMesh(const double& radius, WireSculptPlugin& ws, std::vector<Vertex>& verticies, MObject& outData, MStatus& status);
+    MObject createMesh(const double& radius, WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, MObject& outData, MStatus& status);
     
     MPointArray points;
     MIntArray faceCounts;
