@@ -48,6 +48,12 @@
     <ClInclude Include="ExtremePoints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HeatMapDist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Face.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WireSculpt.cpp">
@@ -81,6 +87,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExtremePoints.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HeatMapDist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Face.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -23,7 +23,8 @@ class Vertex {
 public:
 	typedef std::pair<Vertex*, Edge*> Ve;
 
-	Vertex(const MPoint& position, int idNum, bool landmark = false);
+	Vertex(const MPoint& position, bool landmark = false);
+	Vertex(const Vertex& v); 
 	~Vertex();
 
 	MPoint mPosition;
@@ -32,6 +33,8 @@ public:
 	std::pair<bool, NonLandmarkData> isLandmark; 
 	std::map<Vertex*, Edge*> neighbors;
 	int id;
+
+	static int lastId;
 
 	// A* path traversal
 	float f;	// f = g + h
@@ -52,6 +55,7 @@ public:
 
 
 protected:
+
 };
 
 struct VertexPtrCompare

@@ -62,10 +62,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     vector<MVector> pos; 
     vector<MVector> vertexNormals;
 
-    // id
-    int idV = 0;
-    int idE = 0;
-
     while (getline(fin, line)) {
 
         vector<string> fields = SplitString(line, ' ');
@@ -76,8 +72,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
-            verticies.push_back(Vertex(MPoint(pos[pos.size()-1]), idV, false));
-            idV++;
+            verticies.push_back(Vertex(MPoint(pos[pos.size()-1]), false));
         }
 
         // calculating normals by going through faces 
@@ -105,7 +100,14 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 crossProd.normalize();
 
                 // for each calc can make Vertex obj and add to list
+                std::vector<float> norm; 
+                norm.push_back(crossProd.x);
+                norm.push_back(crossProd.y);
+                norm.push_back(crossProd.z);
+
+                faces.push_back(Face(&verticies[faceVerts[0]], &verticies[faceVerts[1]], &verticies[faceVerts[2]], norm));
                 //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
+                
             }
 
             edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
@@ -134,9 +136,8 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 }
 
                 if (!edgeFound) {
-                    edges.push_back(Edge(idE, &verticies[vertOne], &verticies[vertTwo]));
+                    edges.push_back(Edge(&verticies[vertOne], &verticies[vertTwo]));
                     edgeIndx = edges.size() - 1;
-                    idE++;
                 }
 
                 verticies[vertOne].setNeighbor(&verticies[vertTwo], &edges[edgeIndx]);
@@ -145,7 +146,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     }
 
     fin.close();
-
     return true;
 }
 

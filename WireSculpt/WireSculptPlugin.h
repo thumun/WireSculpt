@@ -2,6 +2,7 @@
 #include <string>
 #include "Vertex.h"
 #include "Edge.h"
+#include "Face.h"
 #include <vector>
 
 #include <Eigen/Core>
@@ -15,7 +16,6 @@ public:
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
 	
-	
 	// Path finding procedure:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors
 	// 2. Run FindPath for each pair of consecutive vertices in the path
@@ -24,11 +24,11 @@ public:
 	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
+	std::vector<Vertex> verticies;
+	std::vector<Edge> edges;
+	std::vector<Face> faces;
 
 private:
-	std::vector<Vertex> verticies;
-	std::vector<Edge> edges; 
-
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
 
@@ -40,6 +40,3 @@ private:
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
 	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
 };
-
-
-

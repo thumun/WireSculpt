@@ -4,7 +4,7 @@
 
 class Edge {
 public:
-	Edge(int idVal, const Vertex* v1, const Vertex* v2);
+	Edge(const Vertex* v1, const Vertex* v2);
 	~Edge();
 
 	// Two Vertex endpoints
