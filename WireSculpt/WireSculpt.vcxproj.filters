@@ -89,5 +89,41 @@
     <ClCompile Include="Contours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_curvature.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_normals.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_tstrips.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_io.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\KDtree.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_grid.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_pointareas.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\remove.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_connectivity.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_stats.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\reorder_verts.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_bounding.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
