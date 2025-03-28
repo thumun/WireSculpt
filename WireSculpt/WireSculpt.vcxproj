@@ -203,6 +203,7 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Contours.h" />
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="ExtremePoints.h" />
@@ -216,6 +217,7 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     <ClInclude Include="WireSculptPlugin.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Contours.cpp" />
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="ExtremePoints.cpp" />
