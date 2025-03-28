@@ -24,6 +24,7 @@ public:
 	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
+	void setUpContours(const char* filename);
 
 private:
 	std::vector<Vertex> verticies;

@@ -8,6 +8,7 @@
 
 #include "WireSculptPlugin.h"
 #include "ExtremePoints.h"
+#include "Contours.h"
 
 #include <igl/read_triangle_mesh.h>
 #include <Eigen/Core>
@@ -414,6 +415,32 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
         }
     }
     return std::vector<Vertex*>();
+}
+
+void WireSculptPlugin::setUpContours(const char* filename) {
+    Contours contour(0.7);
+
+    contour.themesh = TriMesh::read(filename);
+    if (!contour.themesh)
+        MGlobal::displayInfo("Contours: Error reading file");
+
+    contour.xffilename = new char[strlen(filename) + 4];
+    strcpy(contour.xffilename, filename);
+    char* dot = strrchr(contour.xffilename, '.');
+    if (!dot)
+        dot = strrchr(contour.xffilename, 0);
+    strcpy(dot, ".xf");
+
+    contour.themesh->need_tstrips();
+    contour.themesh->need_bsphere();
+    contour.themesh->need_normals();
+    contour.themesh->need_curvatures();
+    contour.themesh->need_dcurv();
+    contour.compute_feature_size();
+
+    contour.redraw();
+
+    contour.resetview();
 }
 
 

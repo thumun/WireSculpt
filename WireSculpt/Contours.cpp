@@ -11,18 +11,21 @@ rtsc.cc
 Real-time suggestive contours - these days, it also draws many other lines.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "TriMesh.h"
-#include "TriMesh_algo.h"
-#include "XForm.h"
-//#include "GLCamera.h"
-#include "timestamp.h"
-//#include "GL/glui.h"
-#ifndef DARWIN
-//#include <GL/glext.h>
-#endif
-#include <algorithm>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include "TriMesh.h"
+//#include "TriMesh_algo.h"
+//#include "XForm.h"
+////#include "GLCamera.h"
+//#include "timestamp.h"
+////#include "GL/glui.h"
+//#ifndef DARWIN
+////#include <GL/glext.h>
+//#endif
+//#include <algorithm>
+
+#include "Contours.h"
+#include <maya/MGlobal.h>
 using namespace trimesh;
 using namespace std;
 
@@ -31,7 +34,7 @@ using namespace std;
 const bool use_dlists = true;
 // Set to false for hardware that has problems with supplying 3D texture coords
 const bool use_3dtexc = false;
-
+/*
 
 // Globals: mesh...
 TriMesh* themesh;
@@ -52,25 +55,52 @@ int test_sc = 1;
 float sug_thresh = 0.01;
 
 // Toggles for style
-int draw_faded = 0;
+//int draw_faded = 0;
 
-int lighting_style = 0;
-//GLUI_Rotation* lightdir = NULL;
-float lightdir_matrix[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-int light_wrt_camera = true;
+//int lighting_style = 0;
+////GLUI_Rotation* lightdir = NULL;
+//float lightdir_matrix[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+//int light_wrt_camera = true;
 
 // Other miscellaneous variables
 float feature_size;	// Used to make thresholds dimensionless
 vec currcolor;		// Current line color
+*/
+//void Contours::setUpContours(const char* filename) {
+//	themesh = TriMesh::read(filename);
+//	if (!themesh)
+//		MGlobal::displayInfo("Contours: Error reading file");
+//
+//	xffilename = new char[strlen(filename) + 4];
+//	strcpy(xffilename, filename);
+//	char* dot = strrchr(xffilename, '.');
+//	if (!dot)
+//		dot = strrchr(xffilename, 0);
+//	strcpy(dot, ".xf");
+//
+//	themesh->need_tstrips();
+//	themesh->need_bsphere();
+//	themesh->need_normals();
+//	themesh->need_curvatures();
+//	themesh->need_dcurv();
+//	compute_feature_size();
+//
+//	redraw();
+//
+//	resetview();
+//}
 
+Contours::Contours(float fovVal) {
+	this->fov = fovVal;
+}
 
 // Compute per-vertex n dot l, n dot v, radial curvature, and
 // derivative of curvature for the current view
-void compute_perview(vector<float>& ndotv, vector<float>& kr,
+void Contours::compute_perview(vector<float>& ndotv, vector<float>& kr,
 	vector<float>& sctest_num, vector<float>& sctest_den,
 	vector<float>& shtest_num, vector<float>& q1,
 	vector<vec2>& t1, vector<float>& Dt1q1,
-	bool extra_sin2theta = false)
+	bool extra_sin2theta)
 {
 
 	int nv = themesh->vertices.size();
@@ -125,7 +155,7 @@ void compute_perview(vector<float>& ndotv, vector<float>& kr,
 
 
 // Compute gradient of (kr * sin^2 theta) at vertex i
-static inline vec gradkr(int i)
+vec Contours::gradkr(int i)
 {
 	vec viewdir = viewpos - themesh->vertices[i];
 	float rlen_viewdir = 1.0f / len(viewdir);
@@ -163,7 +193,7 @@ static inline float find_zero_linear(float val0, float val1)
 
 
 // Find a zero crossing using Hermite interpolation
-float find_zero_hermite(int v0, int v1, float val0, float val1,
+float Contours::find_zero_hermite(int v0, int v1, float val0, float val1,
 	const vec& grad0, const vec& grad1)
 {
 	if (unlikely(val0 == val1))
@@ -267,7 +297,7 @@ float find_zero_hermite(int v0, int v1, float val0, float val1,
 // to make sure they are positive.  This function assumes that val0 has
 // opposite sign from val1 and val2 - the following function is the
 // general one that figures out which one actually has the different sign.
-void draw_face_isoline2(int v0, int v1, int v2,
+void Contours::draw_face_isoline2(int v0, int v1, int v2,
 	const vector<float>& val,
 	const vector<float>& test_num,
 	const vector<float>& test_den,
@@ -357,7 +387,7 @@ void draw_face_isoline2(int v0, int v1, int v2,
 
 // See above.  This is the driver function that figures out which of
 // v0, v1, v2 has a different sign from the others.
-void draw_face_isoline(int v0, int v1, int v2,
+void Contours::draw_face_isoline(int v0, int v1, int v2,
 	const vector<float>& val,
 	const vector<float>& test_num,
 	const vector<float>& test_den,
@@ -411,7 +441,7 @@ void draw_face_isoline(int v0, int v1, int v2,
 
 // Takes a scalar field and renders the zero crossings, but only where
 // test_num/test_den is greater than 0.
-void draw_isolines(const vector<float>& val,
+void Contours::draw_isolines(const vector<float>& val,
 	const vector<float>& test_num,
 	const vector<float>& test_den,
 	const vector<float>& ndotv,
@@ -447,7 +477,7 @@ void draw_isolines(const vector<float>& val,
 }
 
 // Draw the mesh, possibly including a bunch of lines
-void draw_mesh()
+void Contours::draw_mesh()
 {
 	// These are static so the memory isn't reallocated on every frame
 	static vector<float> ndotv, kr;
@@ -477,7 +507,7 @@ void draw_mesh()
 
 	// Suggestive contours and contours
 	if (draw_sc) {
-		float fade = draw_faded ? 0.03f / sqr(feature_size) : 0.0f;
+		float fade = 0.0f;
 		/*glLineWidth(2.5);
 		glBegin(GL_LINES);*/
 		draw_isolines(kr, sctest_num, sctest_den, ndotv,
@@ -549,7 +579,7 @@ void set_subwindow_viewport(bool draw_box = false)
 
 
 // Draw the scene
-void redraw()
+void Contours::redraw()
 {
 	timestamp t = now();
 	viewpos = inv(xf) * point(0, 0, 0);
@@ -577,7 +607,7 @@ void redraw()
 
 
 // Set the view to look at the middle of the mesh, from reasonably far away
-void resetview()
+void Contours::resetview()
 {
 	//camera.stopspin();
 
@@ -592,7 +622,7 @@ void resetview()
 
 // Compute a "feature size" for the mesh: computed as 1% of
 // the reciprocal of the 10-th percentile curvature
-void compute_feature_size()
+void Contours::compute_feature_size()
 {
 	int nv = themesh->curv1.size();
 	int nsamp = min(nv, 500);
@@ -694,14 +724,14 @@ void reshape(int x, int y)
 }
 
 
-void usage(const char* myname)
-{
-	fprintf(stderr, "Usage: %s [-options] infile\n", myname);
-	exit(1);
-}
+//void usage(const char* myname)
+//{
+//	fprintf(stderr, "Usage: %s [-options] infile\n", myname);
+//	exit(1);
+//}
 
 
-int main(int argc, char* argv[])
+int Contours::main(int argc, char* argv[])
 {
 
 	int wwid = 820, wht = 700;
@@ -716,8 +746,8 @@ int main(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInit(&argc, argv);*/
 
-	if (argc < 2)
-		usage(argv[0]);
+	//if (argc < 2)
+		//usage(argv[0]);
 
 	// Skip over any parameter beginning with a '-' or '+'
 	int i = 1;
@@ -729,8 +759,8 @@ int main(int argc, char* argv[])
 	const char* filename = argv[i];
 
 	themesh = TriMesh::read(filename);
-	if (!themesh)
-		usage(argv[0]);
+	//if (!themesh)
+		//usage(argv[0]);
 
 	xffilename = new char[strlen(filename) + 4];
 	strcpy(xffilename, filename);
@@ -791,5 +821,6 @@ int main(int argc, char* argv[])
 	//resetview();
 
 	//glutMainLoop();
+	return 0;
 
 }

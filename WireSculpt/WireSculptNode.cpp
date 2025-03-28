@@ -317,6 +317,10 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
             }
         }
     }
+
+    ws.setUpContours(filePath.c_str());
+
+    MGlobal::displayInfo("Finished: set up contours");
     
     MFnMesh meshFS;
     MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
