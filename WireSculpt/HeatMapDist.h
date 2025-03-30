@@ -27,12 +27,12 @@ public:
     int s;
     double t;
     Eigen::MatrixXd A;
-    Eigen::SparseMatrix<double> Lc;
+    Eigen::MatrixXd Lc;
     Eigen::SparseMatrix<double> M;
     Eigen::FullPivLU<Eigen::MatrixXd> lu;
     Eigen::VectorXd L;
     Eigen::VectorXd phi;
-    Eigen::FullPivLU<Eigen::SparseMatrix<double>> lulc;
+    Eigen::FullPivLU<Eigen::MatrixXd> lulc;
 
 private:
     void computeA(WireSculptPlugin& ws);

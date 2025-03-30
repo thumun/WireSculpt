@@ -10,7 +10,7 @@ HeatMapDist::HeatMapDist(WireSculptPlugin ws) {
     computeM(ws);
 
     lulc.compute(Lc);
-    //lu.compute(M);
+    lu.compute(M);
 }
 
 void HeatMapDist::computeA(WireSculptPlugin& ws) {
@@ -59,7 +59,7 @@ double HeatMapDist::computeVertexArea(Vertex* vert, std::unordered_map<Face*, do
 void HeatMapDist::computeLc(WireSculptPlugin& ws) {
     const std::vector<Vertex>& vertices = ws.verticies;
     Lc.resize(vertices.size(), vertices.size());
-    //Eigen::SparseMatrix<double> M(vertices.size(), vertices.size()); // Create M |V|x|V| matrix
+    Eigen::SparseMatrix<double> M(vertices.size(), vertices.size()); // Create M |V|x|V| matrix
 
     for (size_t i = 0; i < vertices.size(); ++i) {
         std::unordered_set<Vertex*> s = getNeighbor(vertices[i]); // Get the neighbor of the vertex vi
@@ -69,17 +69,16 @@ void HeatMapDist::computeLc(WireSculptPlugin& ws) {
 
         for (Vertex* v : s) {
             double cotan = computeCotan(vertices[i], *v, &ws.faces); // Compute cotan formula
-            Lc.insert(i, indx) = -1.0 * cotan;
+            M.insert(i, indx) = -1.0 * cotan;
             sum += cotan;
             indx++; 
         }
 
-        Lc.insert(i, i) = sum;
+        M.insert(i, i) = sum;
     }
 
-    Lc.makeCompressed();
-
-    //this->Lc = M; 
+    M.makeCompressed();
+    this->Lc = Eigen::MatrixXd(M);
 }
 
 std::unordered_set<Vertex*> HeatMapDist::getNeighbor(const Vertex& vertex) {
@@ -158,14 +157,14 @@ void HeatMapDist::heatDiffusion(int sInput) {
 
     K(s) = 1.0f; 
 
-    //L = lu.solve(K);
+    this->L = lu.solve(K);
 }
 
 void HeatMapDist::computePhi(int sInput) {
     s = sInput;
     Eigen::VectorXd b = computeB(s);
 
-    //phi = lulc.solve(b);
+    this->phi = lulc.solve(b);
     
     double mini = std::numeric_limits<double>::infinity();
     
