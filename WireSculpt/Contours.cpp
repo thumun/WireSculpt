@@ -528,23 +528,12 @@ void Contours::redraw()
 	timestamp t = now();
 	viewpos = inv(xf) * point(0, 0, 0);
 
-	//camera.setupGL(xf * themesh->bsphere.center, themesh->bsphere.r);
-
-
 	// Transform and draw
-	/*glPushMatrix();
-	glMultMatrixd((double*)xf);*/
 	draw_mesh();
-	/*glPopMatrix();*/
 
-	/*glDisable(GL_SCISSOR_TEST);
-	glutSwapBuffers();*/
 	printf("\rElapsed time: %.2f msec.", 1000.0f * (now() - t));
 	fflush(stdout);
 
-	// See if we need to autospin the camera(s)
-	/*if (camera.autospin(xf))
-		need_redraw();*/
 }
 
 
