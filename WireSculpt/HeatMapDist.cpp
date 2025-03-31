@@ -106,9 +106,13 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
 
     for (auto f : *faces) {
 
-        if ((*f.v1 == *v1 && *f.v2 == *v2) || (*f.v2 == *v1 && *f.v3 == *v2) || (*f.v3 == *v1 && *f.v1 == *v2)) {
+        if ((*f.v1 == *v1 && *f.v2 == *v2) || (*f.v1 == *v2 && *f.v2 == *v1) 
+            || (*f.v2 == *v1 && *f.v3 == *v2) || (*f.v3 == *v1 && *f.v1 == *v2) 
+            || (*f.v3 == *v1 && *f.v1 == *v2) || (*f.v1 == *v1 && *f.v3 == *v2)) {
+
             v3 = (f.v1 != v1 && f.v1 != v2) ? f.v1 :
                 (f.v2 != v1 && f.v2 != v2) ? f.v2 : f.v3;
+
             found = true;
             break;
         }

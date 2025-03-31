@@ -73,13 +73,13 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
-            verticies.push_back(Vertex(MPoint(pos[pos.size()-1]), false));
+            verticies.push_back(Vertex(MPoint(pos[pos.size() - 1]), false));
         }
 
         // calculating normals by going through faces 
         else if (fields[0] == "f") {
             // temp storage to calc normals w/ vert pos
-            vector<int> faceVerts; 
+            vector<int> faceVerts;
 
             // going through verticies that make up a face 
             for (int i = 1; i < fields.size(); i++) {
@@ -88,28 +88,50 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 faceVerts.push_back(stoi(triplets[0]));
             }
 
-            // draw edges with verts to get cross prod
-            for (int i = 0; i < faceVerts.size(); i++) {
-                
-                int indx = faceVerts[i] - 1;
+            //if (faceVerts.size() < 3) return;
 
-                MVector current = pos[indx];
-                MVector prev = pos[(indx - 1)%pos.size()];
-                MVector next = pos[(indx + 1)%pos.size()];
+            // Compute face normal
+            MVector v0 = pos[faceVerts[0]-1];
+            MVector v1 = pos[faceVerts[1]-1];
+            MVector v2 = pos[faceVerts[2]-1];
+            MVector crossProd = (v1 - v0) ^ (v2 - v0);
+            crossProd.normalize();
 
-                MVector crossProd = (current - prev) ^ (next-current);
-                crossProd.normalize();
+            std::vector<float> norm;
+            norm.push_back(crossProd.x); 
+            norm.push_back(crossProd.y);
+            norm.push_back(crossProd.z);
 
-                // for each calc can make Vertex obj and add to list
-                std::vector<float> norm; 
-                norm.push_back(crossProd.x);
-                norm.push_back(crossProd.y);
-                norm.push_back(crossProd.z);
-
-                faces.push_back(Face(&verticies[faceVerts[0]-1], &verticies[faceVerts[1]-1], &verticies[faceVerts[2]-1], norm));
-                //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
-                
+            // Triangulate the face (assumes convex polygons)
+            for (size_t i = 1; i + 1 < faceVerts.size(); i++) {
+                faces.push_back(Face(&verticies[faceVerts[0]-1],
+                    &verticies[faceVerts[i]-1],
+                    &verticies[faceVerts[i + 1]-1],
+                    norm));
             }
+
+            // draw edges with verts to get cross prod
+            //for (int i = 0; i < faceVerts.size(); i++) {
+            //    
+            //    int indx = faceVerts[i] - 1;
+
+            //    MVector current = pos[indx];
+            //    MVector prev = pos[(indx - 1)%pos.size()];
+            //    MVector next = pos[(indx + 1)%pos.size()];
+
+            //    MVector crossProd = (current - prev) ^ (next-current);
+            //    crossProd.normalize();
+
+            //    // for each calc can make Vertex obj and add to list
+            //    std::vector<float> norm; 
+            //    norm.push_back(crossProd.x);
+            //    norm.push_back(crossProd.y);
+            //    norm.push_back(crossProd.z);
+
+            //    faces.push_back(Face(&verticies[faceVerts[0]-1], &verticies[faceVerts[1]-1], &verticies[faceVerts[2]-1], norm));
+            //    //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
+            //    
+            //}
 
             edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
 
