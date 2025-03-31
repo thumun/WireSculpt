@@ -16,6 +16,7 @@ Contours::Contours(float fovVal, const char* filename) {
 	this->fov = fovVal;
 	this->feature_size = 0;
 	this->featurePoints = {};
+	this->featureLines = {};
 
 	this->themesh = TriMesh::read(filename);
 	if (!this->themesh)
@@ -362,6 +363,8 @@ void Contours::draw_face_isoline2(int v0, int v1, int v2,
 								  static_cast<float>(fp.y),
 								  static_cast<float>(fp.z) });
 		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
+		
+		// unsure if im supposed to be pushing back here!
 	}
 
 }
@@ -476,15 +479,21 @@ void Contours::draw_mesh()
 	int nv = themesh->vertices.size();
 
 	// Kr = 0 loops
-	if (draw_sc && !test_sc) {
-		currcolor = vec(0.6, 0.6, 0.6);
-		/*glLineWidth(1.5);
-		glBegin(GL_LINES);*/
-		draw_isolines(kr, sctest_num, sctest_den, ndotv,
-			true, false, false, 0.0f);
-		/*glEnd();*/
-		currcolor = vec(0.0, 0.0, 0.0);
-	}
+	//if (draw_sc && !test_sc) {
+	//	currcolor = vec(0.6, 0.6, 0.6);
+	//	/*glLineWidth(1.5);
+	//	glBegin(GL_LINES);*/
+	//	
+	//	draw_isolines(kr, sctest_num, sctest_den, ndotv,
+	//		true, false, false, 0.0f);
+	//	if (featurePoints.size() > 0) {
+	//		//featureLines.push_back(featurePoints);
+	//	}
+	//	featurePoints = {};
+
+	//	/*glEnd();*/
+	//	currcolor = vec(0.0, 0.0, 0.0);
+	//}
 
 	// Suggestive contours and contours
 	if (draw_sc) {
@@ -493,6 +502,10 @@ void Contours::draw_mesh()
 		glBegin(GL_LINES);*/
 		draw_isolines(kr, sctest_num, sctest_den, ndotv,
 			true, false, true, fade);
+		if (featurePoints.size() > 0) {
+			featureLines.push_back(featurePoints);
+		}
+		featurePoints = {};
 		/*glEnd();*/
 	}
 	if (draw_c) {
@@ -500,6 +513,10 @@ void Contours::draw_mesh()
 		glBegin(GL_LINES);*/
 		draw_isolines(ndotv, kr, vector<float>(), ndotv,
 			false, false, true, 0.0f);
+		if (featurePoints.size() > 0) {
+			featureLines.push_back(featurePoints);
+		}
+		featurePoints = {};
 		/*glEnd();*/
 	}
 }

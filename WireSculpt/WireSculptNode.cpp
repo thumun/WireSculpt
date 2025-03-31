@@ -318,33 +318,37 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
         }
     }
 
-    std::vector<std::vector<float>> featurePoints = ws.setUpContours(filePath.c_str());
-    if (featurePoints.size() == 0) {
+    std::vector<std::vector<std::vector<float>>> featureLines = ws.setUpContours(filePath.c_str());
+    if (featureLines.size() == 0) {
         MGlobal::displayInfo("No feature points sadly hahhaha");
-        featurePoints.push_back({ 0, 1, 0 });
+        //featureLines.push_back({ 0, 1, 0 });
     }
     else {
-        for (int i = 0; i < featurePoints.size() - 1; i++) {
-            std::vector<float> p1 = featurePoints[i];
-            std::vector<float> p2 = featurePoints[i + 1];
+        for (int index = 0; index < featureLines.size(); index++) {
+            std::vector<std::vector<float>> featurePoints = featureLines[index];
+            for (int i = 0; i < featurePoints.size() - 1; i+=2) {
+                std::vector<float> p1 = featurePoints[i];
+                std::vector<float> p2 = featurePoints[i + 1];
 
-            MPoint start(p1[0], p1[1], p1[2]);
-            MPoint end(p2[0], p2[1], p2[2]);
+                MPoint start(p1[0], p1[1], p1[2]);
+                MPoint end(p2[0], p2[1], p2[2]);
 
 
-            MPointArray currPoints;
-            MIntArray currFaceCounts;
-            MIntArray currFaceConnects;
+                MPointArray currPoints;
+                MIntArray currFaceCounts;
+                MIntArray currFaceConnects;
 
-            // Draw each Landmark Vertex
-            /*SphereMesh sphere(start, radius * 2);
-            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            sphere.appendToMesh(points, faceCounts, faceConnects);*/
+                // Draw each Landmark Vertex
+                /*SphereMesh sphere(start, radius * 2);
+                sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                sphere.appendToMesh(points, faceCounts, faceConnects);*/
 
-            CylinderMesh cylinder(start, end, radius * 0.5);
-            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
+                CylinderMesh cylinder(start, end, radius * 0.5);
+                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+            }
         }
+        
     }
     
     MGlobal::displayInfo("Finished: set up contours");

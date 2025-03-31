@@ -417,10 +417,9 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
-std::vector<std::vector<float>> WireSculptPlugin::setUpContours(const char* filename) {
+std::vector<std::vector<std::vector<float>>> WireSculptPlugin::setUpContours(const char* filename) {
     Contours contour(0.7, filename);
 
-    //MGlobal::displayInfo("Contours constructed");
 
     contour.themesh->need_tstrips();
     contour.themesh->need_bsphere();
@@ -429,23 +428,13 @@ std::vector<std::vector<float>> WireSculptPlugin::setUpContours(const char* file
     contour.themesh->need_dcurv();
     contour.compute_feature_size();
 
-    //MGlobal::displayInfo("Contours themesh set");
-
 
     contour.resetview(); // originally after redraw?
 
-    //MGlobal::displayInfo("Contours reset");
-
 
     contour.redraw();
+    return contour.featureLines;
 
-    //MGlobal::displayInfo("Contours redraw");
-
-
-    std::vector<std::vector<float>> featurePoints = contour.featurePoints;
-    return featurePoints;
-
-    //contour.resetview();
 }
 
 

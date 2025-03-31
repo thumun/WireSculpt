@@ -25,7 +25,7 @@ public:
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
 	// Suggestive contours code
-	std::vector<std::vector<float>> setUpContours(const char* filename);
+	std::vector<std::vector<std::vector<float>>> setUpContours(const char* filename);
 
 private:
 	std::vector<Vertex> verticies;

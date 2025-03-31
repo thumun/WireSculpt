@@ -46,7 +46,7 @@ public:
 	int test_sc = 1;
 	float sug_thresh = 0.01;
 	std::vector<std::vector<float>> featurePoints;
-
+	std::vector<std::vector<std::vector<float>>> featureLines;
 	// Other miscellaneous variables
 	float feature_size;	// Used to make thresholds dimensionless
 	vec currcolor;
