@@ -24,7 +24,7 @@ public:
 	typedef std::pair<Vertex*, Edge*> Ve;
 
 	Vertex(const MPoint& position, bool landmark = false);
-	Vertex(const Vertex& v); 
+	//Vertex(const Vertex& v); 
 	~Vertex();
 
 	MPoint mPosition;
@@ -42,7 +42,6 @@ public:
 	float h;	// estimated movement cost from given vertex to target vertex
 
 	// Overload comparison operators for priority queue
-	bool operator>(const Vertex& other) const;
 	bool operator==(const Vertex& other) const;
 
 	void resetFGH();

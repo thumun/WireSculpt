@@ -43,8 +43,9 @@ private:
     double computeVertexArea(Vertex* vert, std::unordered_map<Face*, double>* mp, std::vector<Face>* faces);
 
     std::unordered_set<Vertex*> getNeighbor(const Vertex& vertex);
-    double computeCotan(const Vertex& v1, const Vertex& v2, std::vector<Face>* faces); 
+    double computeCotan(const Vertex * v1, const Vertex * v2, std::vector<Face>* faces); 
 
     Eigen::VectorXd computeB(int s);
+    double computeTime(WireSculptPlugin& ws);
 };
 

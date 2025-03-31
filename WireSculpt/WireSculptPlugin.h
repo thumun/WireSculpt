@@ -15,6 +15,7 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
+	void GetHeatMapDistance(WireSculptPlugin ws);
 	
 	// Path finding procedure:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors

@@ -5,6 +5,7 @@
 
 HeatMapDist::HeatMapDist(WireSculptPlugin ws) {
     colors.resize(ws.faces.size());
+    t = 100 * computeTime(ws);
     computeA(ws);
     computeLc(ws);
     computeM(ws);
@@ -13,19 +14,29 @@ HeatMapDist::HeatMapDist(WireSculptPlugin ws) {
     lu.compute(M);
 }
 
+double HeatMapDist::computeTime(WireSculptPlugin& ws) {
+    double sum = 0.0; 
+
+    for (auto e : ws.edges) {
+        sum += e.getLength();
+    }
+
+    return (sum/ws.edges.size()) * (sum / ws.edges.size());
+}
+
 void HeatMapDist::computeA(WireSculptPlugin& ws) {
     std::vector<Vertex>& vertices = ws.verticies;
-    Eigen::SparseMatrix<double> M(vertices.size(), vertices.size()); // Create M |V| x |V| matrix
+    Eigen::SparseMatrix<double> ACalc(vertices.size(), vertices.size()); // Create M |V| x |V| matrix
     std::unordered_map<Face*, double> mp;
     computeFaceArea(&ws.faces, &mp);
 
     for (int i = 0; i < vertices.size(); ++i) {
-        M.insert(i, i) = computeVertexArea(&vertices[i], &mp, &ws.faces);
+        ACalc.insert(i, i) = computeVertexArea(&vertices[i], &mp, &ws.faces);
     }
 
-    M.makeCompressed();
+    ACalc.makeCompressed();
 
-    this->A = M;
+    this->A = ACalc;
 }
 
 void HeatMapDist::computeFaceArea(std::vector<Face> * faces, std::unordered_map<Face*, double>* mp) {
@@ -59,26 +70,23 @@ double HeatMapDist::computeVertexArea(Vertex* vert, std::unordered_map<Face*, do
 void HeatMapDist::computeLc(WireSculptPlugin& ws) {
     const std::vector<Vertex>& vertices = ws.verticies;
     Lc.resize(vertices.size(), vertices.size());
-    Eigen::SparseMatrix<double> M(vertices.size(), vertices.size()); // Create M |V|x|V| matrix
+    Eigen::SparseMatrix<double> LcCalc(vertices.size(), vertices.size()); // Create M |V|x|V| matrix
 
     for (size_t i = 0; i < vertices.size(); ++i) {
-        std::unordered_set<Vertex*> s = getNeighbor(vertices[i]); // Get the neighbor of the vertex vi
+        std::unordered_set<Vertex*> neighbors = getNeighbor(vertices[i]); // Get the neighbor of the vertex vi
         double sum = 0.0;
 
-        int indx = 0; 
-
-        for (Vertex* v : s) {
-            double cotan = computeCotan(vertices[i], *v, &ws.faces); // Compute cotan formula
-            M.insert(i, indx) = -1.0 * cotan;
+        for (Vertex* v : neighbors) {
+            double cotan = computeCotan(&vertices[i], v, &ws.faces); // Compute cotan formula
+            LcCalc.insert(i, v->id) = -1.0 * cotan;
             sum += cotan;
-            indx++; 
         }
 
-        M.insert(i, i) = sum;
+        LcCalc.insert(i, i) = sum;
     }
 
-    M.makeCompressed();
-    this->Lc = Eigen::MatrixXd(M);
+    LcCalc.makeCompressed();
+    this->Lc = Eigen::MatrixXd(LcCalc);
 }
 
 std::unordered_set<Vertex*> HeatMapDist::getNeighbor(const Vertex& vertex) {
@@ -91,18 +99,17 @@ std::unordered_set<Vertex*> HeatMapDist::getNeighbor(const Vertex& vertex) {
     return neighbors;
 }
 
-double HeatMapDist::computeCotan(const Vertex& v1, const Vertex& v2, std::vector<Face>* faces) {
+double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vector<Face>* faces) {
     Eigen::Vector3d a, b;
     bool found = false;
 
     for (auto f : *faces) {
-
-        if (f.v1 == &v1 && f.v2 == &v2) {
+        if ((*f.v1 == *v1) && (*f.v2 == *v2)) {
             
             auto v3 = f.v3; 
             
-            Eigen::Vector3d p1 = Eigen::Vector3d(v1.mPosition.x, v1.mPosition.y, v1.mPosition.z);
-            Eigen::Vector3d p2 = Eigen::Vector3d(v2.mPosition.x, v2.mPosition.y, v2.mPosition.z);
+            Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
+            Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
             Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
 
             a = p1 - p3;
@@ -110,23 +117,33 @@ double HeatMapDist::computeCotan(const Vertex& v1, const Vertex& v2, std::vector
 
             found = true;
             break;
-                
         }
     }
 
+    // error val
     if (!found) {
-        return 0.0; //or handle the error in an appropriate way.
+        return 0.0;
     }
+
+    // cos = a . b / magnitude 
+    // cot = cos / sqrt(1 - cos ^ 2)
+
+    /*a.normalize();
+    b.normalize(); 
+
+    auto cos = a.dot(b); 
+    auto cot = cos / sqrt(1 - cos * cos); 
+
+    return cot; */
 
     double dotProduct = a.dot(b);
     double crossProductMagnitude = a.cross(b).norm();
 
-    // Handle the case where the cross product magnitude is zero (degenerate triangle).
-    if (crossProductMagnitude < 1e-8) {
-        return 0.0; // Or handle it in a way appropriate for your application.
+    if (crossProductMagnitude < 1e-8) { // Handle degenerate triangles
+        return 0.0;
     }
 
-    return dotProduct / crossProductMagnitude;    
+    return dotProduct / crossProductMagnitude;
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
@@ -134,21 +151,21 @@ void HeatMapDist::computeM(WireSculptPlugin& ws) {
         std::unordered_set<Vertex*> s = getNeighbor(ws.verticies[i]);
         double tmp = A(i, i) - t * Lc.coeff(i, i); // Use coeff() for sparse matrix access
 
-        M.insert(i, i) = tmp;
+        this->M.insert(i, i) = tmp;
 
-        int indx = 0; 
+        //int indx = 0; 
 
         for (Vertex* v : s) {
-            tmp = -t * Lc.coeff(i, indx); // Use coeff() for sparse matrix access
+            tmp = -t * Lc.coeff(i, v->id); // Use coeff() for sparse matrix access
             if (std::abs(tmp) != 0.0) {
-                M.insert(i, indx) = tmp;
+                this->M.insert(i, v->id) = tmp;
             }
-            indx++; 
+            //indx++; 
         }
     }
 
-    M.makeCompressed();
-    this->M = M; 
+    this->M.makeCompressed();
+    //this->M = M; 
 }
 
 void HeatMapDist::heatDiffusion(int sInput) {
@@ -157,14 +174,14 @@ void HeatMapDist::heatDiffusion(int sInput) {
 
     K(s) = 1.0f; 
 
-    this->L = lu.solve(K);
+    this->L = this->lu.solve(K);
 }
 
 void HeatMapDist::computePhi(int sInput) {
     s = sInput;
     Eigen::VectorXd b = computeB(s);
 
-    this->phi = lulc.solve(b);
+    this->phi = this->lulc.solve(b);
     
     double mini = std::numeric_limits<double>::infinity();
     

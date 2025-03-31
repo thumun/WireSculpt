@@ -8,6 +8,7 @@
 
 #include "WireSculptPlugin.h"
 #include "ExtremePoints.h"
+#include "HeatMapDist.h"
 
 #include <igl/read_triangle_mesh.h>
 #include <Eigen/Core>
@@ -105,7 +106,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 norm.push_back(crossProd.y);
                 norm.push_back(crossProd.z);
 
-                faces.push_back(Face(&verticies[faceVerts[0]], &verticies[faceVerts[1]], &verticies[faceVerts[2]], norm));
+                faces.push_back(Face(&verticies[faceVerts[0]-1], &verticies[faceVerts[1]-1], &verticies[faceVerts[2]-1], norm));
                 //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
                 
             }
@@ -416,6 +417,12 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
+void GetHeatMapDistance(WireSculptPlugin ws) {
+    HeatMapDist dist = HeatMapDist(ws);
+    dist.heatDiffusion(0);
+    dist.computePhi(0);
+    dist.colorScheme(ws, 'd');
+}
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
@@ -425,14 +432,16 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    //ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
-    std::vector<Vertex>* verticies = ws.GetVerticies();
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
+    //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
+    //std::vector<Vertex>* verticies = ws.GetVerticies();
     //Vertex* source = &verticies[2];
     //Vertex* goal = &verticies[5];   // arbitrary
     //std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
 
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+
+    GetHeatMapDistance(ws);
 }
 #endif // EXEDEBUG
