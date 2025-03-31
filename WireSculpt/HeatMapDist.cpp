@@ -78,7 +78,7 @@ void HeatMapDist::computeLc(WireSculptPlugin& ws) {
 
         for (Vertex* v : neighbors) {
             double cotan = computeCotan(&vertices[i], v, &ws.faces); // Compute cotan formula
-            LcCalc.insert(i, v->id) = -1.0 * cotan;
+            LcCalc.coeffRef(i, v->id) = -1.0 * cotan;
             sum += cotan;
         }
 
@@ -101,49 +101,67 @@ std::unordered_set<Vertex*> HeatMapDist::getNeighbor(const Vertex& vertex) {
 
 double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vector<Face>* faces) {
     Eigen::Vector3d a, b;
+    Vertex* v3 = nullptr;
     bool found = false;
 
     for (auto f : *faces) {
-        if ((*f.v1 == *v1) && (*f.v2 == *v2)) {
-            
-            auto v3 = f.v3; 
-            
-            Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
-            Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
-            Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
 
-            a = p1 - p3;
-            b = p2 - p3;
-
+        if ((*f.v1 == *v1 && *f.v2 == *v2) || (*f.v2 == *v1 && *f.v3 == *v2) || (*f.v3 == *v1 && *f.v1 == *v2)) {
+            v3 = (f.v1 != v1 && f.v1 != v2) ? f.v1 :
+                (f.v2 != v1 && f.v2 != v2) ? f.v2 : f.v3;
             found = true;
             break;
         }
+
+        //if ((*f.v1 == *v1) && (*f.v2 == *v2)) {
+        //    
+        //    //auto v3 = f.v3; 
+        //    
+        //    Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
+        //    Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
+        //    Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
+
+        //    a = p1 - p3;
+        //    b = p2 - p3;
+
+        //    found = true;
+        //    break;
+        //}
     }
 
     // error val
     if (!found) {
         return 0.0;
     }
+    else {
 
-    // cos = a . b / magnitude 
-    // cot = cos / sqrt(1 - cos ^ 2)
+        // cos = a . b / magnitude 
+        // cot = cos / sqrt(1 - cos ^ 2)
 
-    /*a.normalize();
-    b.normalize(); 
+        /*a.normalize();
+        b.normalize();
 
-    auto cos = a.dot(b); 
-    auto cot = cos / sqrt(1 - cos * cos); 
+        auto cos = a.dot(b);
+        auto cot = cos / sqrt(1 - cos * cos);
 
-    return cot; */
+        return cot; */
 
-    double dotProduct = a.dot(b);
-    double crossProductMagnitude = a.cross(b).norm();
+        Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
+        Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
+        Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
 
-    if (crossProductMagnitude < 1e-8) { // Handle degenerate triangles
-        return 0.0;
+        a = p1 - p3;
+        b = p2 - p3;
+
+        double dotProduct = a.dot(b);
+        double crossProductMagnitude = a.cross(b).norm();
+
+        if (crossProductMagnitude < 1e-8) { // Handle degenerate triangles
+            return 0.0;
+        }
+
+        return dotProduct / crossProductMagnitude;
     }
-
-    return dotProduct / crossProductMagnitude;
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
