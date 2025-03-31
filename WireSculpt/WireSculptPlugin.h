@@ -24,7 +24,8 @@ public:
 	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
-	void setUpContours(const char* filename);
+	// Suggestive contours code
+	std::vector<std::vector<float>> setUpContours(const char* filename);
 
 private:
 	std::vector<Vertex> verticies;
@@ -40,6 +41,9 @@ private:
 	int pickUnvisitedCity(std::vector<int> used);
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
 	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
+
+	// Suggestive contours helper functions
+	
 };
 
 

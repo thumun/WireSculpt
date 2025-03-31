@@ -246,9 +246,9 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        SphereMesh sphere(start, radius);
+        /*SphereMesh sphere(start, radius);
         sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        sphere.appendToMesh(points, faceCounts, faceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);*/
     }
     
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
@@ -272,9 +272,9 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
             landmarks.push_back(&verticies[index]);
 
             // Draw each Landmark Vertex
-            SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            /*SphereMesh sphere(verticies[index].mPosition, radius * 2);
             sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            sphere.appendToMesh(points, faceCounts, faceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);*/
         }
     }
 
@@ -311,15 +311,42 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
                 MIntArray currFaceCounts;
                 MIntArray currFaceConnects;
 
-                CylinderMesh cylinder(start, end, radius * 0.5);
+                /*CylinderMesh cylinder(start, end, radius * 0.5);
                 cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);
+                cylinder.appendToMesh(points, faceCounts, faceConnects);*/
             }
         }
     }
 
-    ws.setUpContours(filePath.c_str());
+    std::vector<std::vector<float>> featurePoints = ws.setUpContours(filePath.c_str());
+    if (featurePoints.size() == 0) {
+        MGlobal::displayInfo("No feature points sadly hahhaha");
+        featurePoints.push_back({ 0, 1, 0 });
+    }
+    else {
+        for (int i = 0; i < featurePoints.size() - 1; i++) {
+            std::vector<float> p1 = featurePoints[i];
+            std::vector<float> p2 = featurePoints[i + 1];
 
+            MPoint start(p1[0], p1[1], p1[2]);
+            MPoint end(p2[0], p2[1], p2[2]);
+
+
+            MPointArray currPoints;
+            MIntArray currFaceCounts;
+            MIntArray currFaceConnects;
+
+            // Draw each Landmark Vertex
+            /*SphereMesh sphere(start, radius * 2);
+            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);*/
+
+            CylinderMesh cylinder(start, end, radius * 0.5);
+            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);
+        }
+    }
+    
     MGlobal::displayInfo("Finished: set up contours");
     
     MFnMesh meshFS;

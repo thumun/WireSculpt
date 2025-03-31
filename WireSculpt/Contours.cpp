@@ -1,31 +1,6 @@
-/*
-Authors:
-  Szymon Rusinkiewicz, Princeton University
-  Doug DeCarlo, Rutgers University
-
-With contributions by:
-  Xiaofeng Mi, Rutgers University
-  Tilke Judd, MIT
-
-rtsc.cc
-Real-time suggestive contours - these days, it also draws many other lines.
-*/
-
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include "TriMesh.h"
-//#include "TriMesh_algo.h"
-//#include "XForm.h"
-////#include "GLCamera.h"
-//#include "timestamp.h"
-////#include "GL/glui.h"
-//#ifndef DARWIN
-////#include <GL/glext.h>
-//#endif
-//#include <algorithm>
-
 #include "Contours.h"
 #include <maya/MGlobal.h>
+
 using namespace trimesh;
 using namespace std;
 
@@ -34,64 +9,47 @@ using namespace std;
 const bool use_dlists = true;
 // Set to false for hardware that has problems with supplying 3D texture coords
 const bool use_3dtexc = false;
-/*
 
-// Globals: mesh...
-TriMesh* themesh;
 
-// Two cameras: the primary one, and an alternate one to fix the lines
-// and see them from a different direction
-//GLCamera camera;
-xform xf;
-float fov = 0.7f;
-char* xffilename; // Filename where we look for "home" position
-point viewpos;    // Current view position
+Contours::Contours(float fovVal, const char* filename) {
 
-// Toggles for drawing various lines
-int draw_c = 1, draw_sc = 1;
-
-// Toggles for tests we perform
-int test_sc = 1;
-float sug_thresh = 0.01;
-
-// Toggles for style
-//int draw_faded = 0;
-
-//int lighting_style = 0;
-////GLUI_Rotation* lightdir = NULL;
-//float lightdir_matrix[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-//int light_wrt_camera = true;
-
-// Other miscellaneous variables
-float feature_size;	// Used to make thresholds dimensionless
-vec currcolor;		// Current line color
-*/
-//void Contours::setUpContours(const char* filename) {
-//	themesh = TriMesh::read(filename);
-//	if (!themesh)
-//		MGlobal::displayInfo("Contours: Error reading file");
-//
-//	xffilename = new char[strlen(filename) + 4];
-//	strcpy(xffilename, filename);
-//	char* dot = strrchr(xffilename, '.');
-//	if (!dot)
-//		dot = strrchr(xffilename, 0);
-//	strcpy(dot, ".xf");
-//
-//	themesh->need_tstrips();
-//	themesh->need_bsphere();
-//	themesh->need_normals();
-//	themesh->need_curvatures();
-//	themesh->need_dcurv();
-//	compute_feature_size();
-//
-//	redraw();
-//
-//	resetview();
-//}
-
-Contours::Contours(float fovVal) {
 	this->fov = fovVal;
+	this->feature_size = 0;
+	this->featurePoints = {};
+
+	this->themesh = TriMesh::read(filename);
+	if (!this->themesh)
+		MGlobal::displayInfo("Contours: Error reading file");
+	
+
+	this->xffilename = new char[strlen(filename) + 4];
+	strcpy(this->xffilename, filename);
+	char* dot = strrchr(this->xffilename, '.');
+	if (!dot)
+		dot = strrchr(this->xffilename, 0);
+	strcpy(dot, ".xf");
+	
+}
+
+// Camera helper functions
+MPoint Contours::getCameraPosition()
+{
+	M3dView view = M3dView::active3dView();
+	MDagPath cameraDagPath;
+	view.getCamera(cameraDagPath);
+	MFnCamera cameraFn(cameraDagPath);
+
+	return cameraFn.eyePoint(MSpace::kWorld);
+}
+
+MVector Contours::getCameraDirection()
+{
+	M3dView view = M3dView::active3dView();
+	MDagPath cameraDagPath;
+	view.getCamera(cameraDagPath);
+	MFnCamera cameraFn(cameraDagPath);
+
+	return cameraFn.viewDirection(MSpace::kWorld);
 }
 
 // Compute per-vertex n dot l, n dot v, radial curvature, and
@@ -358,6 +316,12 @@ void Contours::draw_face_isoline2(int v0, int v1, int v2,
 		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
 			test_num1 / (test_den1 * fade + test_num1));
 		glVertex3fv(p1);*/
+		point fp = p1;
+		//MGlobal::displayInfo("p1 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
+		featurePoints.push_back({ static_cast<float>(fp.x),
+								  static_cast<float>(fp.y),
+								  static_cast<float>(fp.z) });
+		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (z1) {
@@ -366,6 +330,12 @@ void Contours::draw_face_isoline2(int v0, int v1, int v2,
 		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
 			num / (den * fade + num));
 		glVertex3fv((1.0f - z1) * p1 + z1 * p2);*/
+		point fp = (1.0f - z1) * p1 + z1 * p2;
+		//MGlobal::displayInfo("p1 2 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
+		featurePoints.push_back({ static_cast<float>(fp.x),
+								  static_cast<float>(fp.y),
+								  static_cast<float>(fp.z) });
+		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (z2) {
@@ -374,12 +344,24 @@ void Contours::draw_face_isoline2(int v0, int v1, int v2,
 		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
 			num / (den * fade + num));
 		glVertex3fv((1.0f - z2) * p1 + z2 * p2);*/
+		point fp = (1.0f - z2) * p1 + z2 * p2;
+		//MGlobal::displayInfo("p1 3 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
+		featurePoints.push_back({ static_cast<float>(fp.x),
+								  static_cast<float>(fp.y),
+								  static_cast<float>(fp.z) });
+		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (npts != 2) {
 		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
 			test_num2 / (test_den2 * fade + test_num2));
 		glVertex3fv(p2);*/
+		point fp = p2;
+		//MGlobal::displayInfo("p1 4  is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
+		featurePoints.push_back({ static_cast<float>(fp.x),
+								  static_cast<float>(fp.y),
+								  static_cast<float>(fp.z) });
+		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 	}
 
 }
@@ -420,6 +402,8 @@ void Contours::draw_face_isoline(int v0, int v1, int v2,
 		}
 	}
 
+	//MGlobal::displayInfo("Contours drawface isoline entered");
+
 	// Figure out which val has different sign, and draw
 	if ((val[v0] < 0.0f && val[v1] >= 0.0f && val[v2] >= 0.0f) ||
 		(val[v0] > 0.0f && val[v1] <= 0.0f && val[v2] <= 0.0f))
@@ -436,6 +420,9 @@ void Contours::draw_face_isoline(int v0, int v1, int v2,
 		draw_face_isoline2(v2, v0, v1,
 			val, test_num, test_den,
 			do_hermite, do_test, fade);
+
+	//MGlobal::displayInfo("Contours drawface isoline exited");
+
 }
 
 
@@ -488,12 +475,6 @@ void Contours::draw_mesh()
 		q1, t1, Dt1q1);
 	int nv = themesh->vertices.size();
 
-	// Enable antialiased lines
-	/*glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
-
 	// Kr = 0 loops
 	if (draw_sc && !test_sc) {
 		currcolor = vec(0.6, 0.6, 0.6);
@@ -521,60 +502,6 @@ void Contours::draw_mesh()
 			false, false, true, 0.0f);
 		/*glEnd();*/
 	}
-
-	/*glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_POINT_SMOOTH);
-	glDisable(GL_BLEND);
-	glDepthMask(GL_TRUE);*/
-}
-
-
-// Signal a redraw
-void need_redraw()
-{
-	/*glutPostRedisplay();*/
-}
-
-
-// Clear the screen and reset OpenGL modes to something sane
-void cls()
-{
-	/*glDisable(GL_DITHER);
-	glDisable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_NORMALIZE);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_COLOR_MATERIAL);
-	glClearColor(1, 1, 1, 0);
-	glClearDepth(1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
-}
-
-
-// Set up viewport and scissoring for the subwindow, and optionally draw
-// a box around it (actually, just clears a rectangle one pixel bigger
-// to black).  Assumes current viewport is set up for the whole window.
-void set_subwindow_viewport(bool draw_box = false)
-{
-	/*GLint V[4];
-	glGetIntegerv(GL_VIEWPORT, V);
-	GLint x = V[0], y = V[1], w = V[2], h = V[3];*/
-	/*int boxsize = min(w, h) / 3;
-
-	x += w - boxsize * 11 / 10;
-	y += h - boxsize * 11 / 10;
-	w = h = boxsize;*/
-
-	if (draw_box) {
-		/*glViewport(x - 1, y - 1, w + 2, h + 2);
-		glScissor(x - 1, y - 1, w + 2, h + 2);
-		glClearColor(0, 0, 0, 0);
-		glEnable(GL_SCISSOR_TEST);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glScissor(x, y, w, h);*/
-	}
-
-	/*glViewport(x, y, w, h);*/
 }
 
 
@@ -583,11 +510,9 @@ void Contours::redraw()
 {
 	timestamp t = now();
 	viewpos = inv(xf) * point(0, 0, 0);
-	/*GLUI_Master.auto_set_viewport();*/
 
 	//camera.setupGL(xf * themesh->bsphere.center, themesh->bsphere.r);
 
-	cls();
 
 	// Transform and draw
 	/*glPushMatrix();
@@ -609,14 +534,9 @@ void Contours::redraw()
 // Set the view to look at the middle of the mesh, from reasonably far away
 void Contours::resetview()
 {
-	//camera.stopspin();
-
 	if (!xf.read(xffilename))
 		xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
 		xform::trans(-themesh->bsphere.center);
-
-	// Reset light position too
-	//lightdir->reset();
 }
 
 
@@ -652,175 +572,3 @@ void Contours::compute_feature_size()
 }
 
 
-// Handle mouse button and motion events
-static unsigned buttonstate = 0;
-static const unsigned ctrl_pressed = 1 << 30;
-
-void mousemotionfunc(int x, int y)
-{
-	// Ctrl+mouse = relight
-	if (buttonstate & ctrl_pressed) {
-		/*GLUI_Master.auto_set_viewport();
-		GLint V[4];
-		glGetIntegerv(GL_VIEWPORT, V);*/
-		//y = V[1] + V[3] - 1 - y; // Adjust for top-left vs. bottom-left
-		//float xx = 2.0f * float(x - V[0]) / float(V[2]) - 1.0f;
-		//float yy = 2.0f * float(y - V[1]) / float(V[3]) - 1.0f;
-		//float theta = M_PI * min(sqrt(xx * xx + yy * yy), 1.0f);
-		//float phi = atan2(yy, xx);
-		//XForm<float> lightxf = lightxf.rot(phi, 0, 0, 1) *
-		//	lightxf.rot(theta, 0, 1, 0);
-		/*lightdir->set_float_array_val((float*)lightxf);*/
-		need_redraw();
-		return;
-	}
-
-	/*static const Mouse::button physical_to_logical_map[] = {
-		Mouse::NONE, Mouse::ROTATE, Mouse::MOVEXY, Mouse::MOVEZ,
-		Mouse::MOVEZ, Mouse::MOVEXY, Mouse::MOVEXY, Mouse::MOVEXY,
-	};
-	Mouse::button b = Mouse::NONE;
-	if (buttonstate & (1 << 3))
-		b = Mouse::WHEELUP;
-	else if (buttonstate & (1 << 4))
-		b = Mouse::WHEELDOWN;
-	else
-		b = physical_to_logical_map[buttonstate & 7];
-
-	camera.mouse(x, y, b,
-		xf * themesh->bsphere.center,
-		themesh->bsphere.r, xf);*/
-
-	need_redraw();
-	/*GLUI_Master.sync_live_all();*/
-}
-
-void mousebuttonfunc(int button, int state, int x, int y)
-{
-	/*if (state == GLUT_DOWN)
-		buttonstate |= (1 << button);
-	else
-		buttonstate &= ~(1 << button);
-
-	if (glutGetModifiers() & GLUT_ACTIVE_CTRL)
-		buttonstate |= ctrl_pressed;
-	else
-		buttonstate &= ~ctrl_pressed;
-
-	mousemotionfunc(x, y);*/
-}
-
-
-#define Ctrl (1-'a')
-
-// Reshape the window.  We clear the window here to possibly avoid some
-// weird problems.  Yuck.
-void reshape(int x, int y)
-{
-	/*GLUI_Master.auto_set_viewport();
-	cls();
-	glutSwapBuffers();
-	need_redraw();*/
-}
-
-
-//void usage(const char* myname)
-//{
-//	fprintf(stderr, "Usage: %s [-options] infile\n", myname);
-//	exit(1);
-//}
-
-
-int Contours::main(int argc, char* argv[])
-{
-
-	int wwid = 820, wht = 700;
-	/*for (int j = 1; j < argc; j++) {
-		if (argv[j][0] == '+') {
-			sscanf(argv[j] + 1, "%d,%d,%f,%f", &wwid, &wht,
-				&sug_thresh, &ph_thresh);
-		}
-	}*/
-
-	/*glutInitWindowSize(wwid, wht);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-	glutInit(&argc, argv);*/
-
-	//if (argc < 2)
-		//usage(argv[0]);
-
-	// Skip over any parameter beginning with a '-' or '+'
-	int i = 1;
-	while (i < argc - 1 && argv[i][0] == '-' && argv[i][0] == '+') {
-		i++;
-		if (!strcmp(argv[i - 1], "--"))
-			break;
-	}
-	const char* filename = argv[i];
-
-	themesh = TriMesh::read(filename);
-	//if (!themesh)
-		//usage(argv[0]);
-
-	xffilename = new char[strlen(filename) + 4];
-	strcpy(xffilename, filename);
-	char* dot = strrchr(xffilename, '.');
-	if (!dot)
-		dot = strrchr(xffilename, 0);
-	strcpy(dot, ".xf");
-
-	themesh->need_tstrips();
-	themesh->need_bsphere();
-	themesh->need_normals();
-	themesh->need_curvatures();
-	themesh->need_dcurv();
-	compute_feature_size();
-	//currsmooth = 0.5f * themesh->feature_size();
-
-	char windowname[255];
-	sprintf(windowname, "RTSC - %s", filename);
-	//int main_win = glutCreateWindow(windowname);
-
-	//glutDisplayFunc(redraw);
-	//GLUI_Master.set_glutMouseFunc(mousebuttonfunc);
-	//glutMotionFunc(mousemotionfunc);
-	//GLUI_Master.set_glutReshapeFunc(reshape);
-
-	//GLUI* glui = GLUI_Master.create_glui_subwindow(main_win, GLUI_SUBWINDOW_BOTTOM);
-	//glui->set_main_gfx_window(main_win);
-	//GLUI_Rollout* g = glui->add_rollout("Options", false);
-	//glui->add_statictext_to_panel(g, "Lines:");
-	//glui->add_checkbox_to_panel(g, "Occluding contours", &draw_c);
-	//glui->add_checkbox_to_panel(g, "Suggestive contours", &draw_sc);
-
-	//glui->add_column_to_panel(g, false);
-	//glui->add_statictext_to_panel(g, "Line tests:");
-	//glui->add_checkbox_to_panel(g, "Trim SC", &test_sc);
-	//glui->add_slider_to_panel(g, "SC thresh", GLUI_SLIDER_FLOAT,
-	//	0.0, 0.1, &sug_thresh);
-
-	//glui->add_statictext_to_panel(g, " ");
-	//glui->add_statictext_to_panel(g, "Mesh style:");
-	//GLUI_RadioGroup* r = glui->add_radiogroup_to_panel(g, 0 /*&color_style*/);
-	//glui->add_radiobutton_to_group(r, "White");
-	//if (!themesh->colors.empty())
-	//	glui->add_radiobutton_to_group(r, "Mesh colors");
-
-	//glui->add_column_to_panel(g, false);
-	//glui->add_statictext_to_panel(g, "Lighting:");
-	//r = glui->add_radiogroup_to_panel(g, &lighting_style);
-	//glui->add_radiobutton_to_group(r, "None");
-	//lightdir = glui->add_rotation_to_panel(g, "Direction",
-	//	(float*)&lightdir_matrix);
-	//glui->add_checkbox_to_panel(g, "On camera", &light_wrt_camera);
-	//lightdir->reset();
-
-	//glui->add_column_to_panel(g, false);
-	//glui->add_button_to_panel(g, "Exit", 0, exit);
-
-	//resetview();
-
-	//glutMainLoop();
-	return 0;
-
-}

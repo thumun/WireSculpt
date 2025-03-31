@@ -1,3 +1,16 @@
+/*
+Authors:
+  Szymon Rusinkiewicz, Princeton University
+  Doug DeCarlo, Rutgers University
+
+With contributions by:
+  Xiaofeng Mi, Rutgers University
+  Tilke Judd, MIT
+
+rtsc.cc
+Real-time suggestive contours - these days, it also draws many other lines.
+*/
+
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,28 +24,36 @@
 //#include <GL/glext.h>
 #endif
 #include <algorithm>
+#include <maya/M3dView.h>
+#include <maya/MDagPath.h>
+#include <maya/MFnCamera.h>
+#include <maya/MGlobal.h>
 
 using namespace trimesh;
 using namespace std;
 
 class Contours {
 public:
-	Contours(float fovVal);
+	Contours(float fovVal, const char* filename);
 
 	// Variables
 	TriMesh* themesh;
 	xform xf;
-	float fov = 0.7f;
+	float fov;
 	char* xffilename; // Filename where we look for "home" position
 	point viewpos;    // Current view position
 	int draw_c = 1, draw_sc = 1;
 	int test_sc = 1;
 	float sug_thresh = 0.01;
+	std::vector<std::vector<float>> featurePoints;
 
 	// Other miscellaneous variables
 	float feature_size;	// Used to make thresholds dimensionless
 	vec currcolor;
 
+	// camera helper functions
+	MPoint getCameraPosition();
+	MVector getCameraDirection();
 
 	void compute_perview(vector<float>& ndotv, vector<float>& kr,
 		vector<float>& sctest_num, vector<float>& sctest_den,
