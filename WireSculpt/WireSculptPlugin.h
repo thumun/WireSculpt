@@ -6,6 +6,11 @@
 
 #include <Eigen/Core>
 
+struct vec3f {
+	float x, y, z;
+	vec3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+};
+
 class WireSculptPlugin
 {
 public:
@@ -25,7 +30,7 @@ public:
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
 	// Suggestive contours code
-	std::vector<std::vector<std::vector<float>>> setUpContours(const char* filename);
+	std::vector<std::pair<vec3f, vec3f>> GetContours(const char* filename);
 
 private:
 	std::vector<Vertex> verticies;

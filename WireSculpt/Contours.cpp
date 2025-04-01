@@ -21,7 +21,6 @@ Contours::Contours(float fovVal, const char* filename) {
 	this->themesh = TriMesh::read(filename);
 	if (!this->themesh)
 		MGlobal::displayInfo("Contours: Error reading file");
-	
 
 	this->xffilename = new char[strlen(filename) + 4];
 	strcpy(this->xffilename, filename);
@@ -29,6 +28,17 @@ Contours::Contours(float fovVal, const char* filename) {
 	if (!dot)
 		dot = strrchr(this->xffilename, 0);
 	strcpy(dot, ".xf");
+
+	this->themesh->need_tstrips();
+	this->themesh->need_bsphere();
+	this->themesh->need_normals();
+	this->themesh->need_curvatures();
+	this->themesh->need_dcurv();
+	this->compute_feature_size();
+
+	this->resetview();
+
+	this->redraw();
 	
 }
 
@@ -314,57 +324,35 @@ void Contours::draw_face_isoline2(int v0, int v1, int v2,
 	// Draw the valid piece(s)
 	int npts = 0;
 	if (valid1) {
-		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
-			test_num1 / (test_den1 * fade + test_num1));
-		glVertex3fv(p1);*/
 		point fp = p1;
-		//MGlobal::displayInfo("p1 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
 		featurePoints.push_back({ static_cast<float>(fp.x),
 								  static_cast<float>(fp.y),
 								  static_cast<float>(fp.z) });
-		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (z1) {
 		float num = (1.0f - z1) * test_num1 + z1 * test_num2;
 		float den = (1.0f - z1) * test_den1 + z1 * test_den2;
-		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
-			num / (den * fade + num));
-		glVertex3fv((1.0f - z1) * p1 + z1 * p2);*/
 		point fp = (1.0f - z1) * p1 + z1 * p2;
-		//MGlobal::displayInfo("p1 2 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
 		featurePoints.push_back({ static_cast<float>(fp.x),
 								  static_cast<float>(fp.y),
 								  static_cast<float>(fp.z) });
-		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (z2) {
 		float num = (1.0f - z2) * test_num1 + z2 * test_num2;
 		float den = (1.0f - z2) * test_den1 + z2 * test_den2;
-		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
-			num / (den * fade + num));
-		glVertex3fv((1.0f - z2) * p1 + z2 * p2);*/
 		point fp = (1.0f - z2) * p1 + z2 * p2;
-		//MGlobal::displayInfo("p1 3 is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
 		featurePoints.push_back({ static_cast<float>(fp.x),
 								  static_cast<float>(fp.y),
 								  static_cast<float>(fp.z) });
-		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
 		npts++;
 	}
 	if (npts != 2) {
-		/*glColor4f(currcolor[0], currcolor[1], currcolor[2],
-			test_num2 / (test_den2 * fade + test_num2));
-		glVertex3fv(p2);*/
 		point fp = p2;
-		//MGlobal::displayInfo("p1 4  is: " + MString() + fp.x + MString() + fp.y + MString() + fp.z);
 		featurePoints.push_back({ static_cast<float>(fp.x),
 								  static_cast<float>(fp.y),
 								  static_cast<float>(fp.z) });
-		//featurePoints.push_back(std::vector<float>({ fp.x, fp.y, fp.z }));
-		
-		// unsure if im supposed to be pushing back here!
 	}
 
 }
@@ -405,8 +393,6 @@ void Contours::draw_face_isoline(int v0, int v1, int v2,
 		}
 	}
 
-	//MGlobal::displayInfo("Contours drawface isoline entered");
-
 	// Figure out which val has different sign, and draw
 	if ((val[v0] < 0.0f && val[v1] >= 0.0f && val[v2] >= 0.0f) ||
 		(val[v0] > 0.0f && val[v1] <= 0.0f && val[v2] <= 0.0f))
@@ -423,9 +409,6 @@ void Contours::draw_face_isoline(int v0, int v1, int v2,
 		draw_face_isoline2(v2, v0, v1,
 			val, test_num, test_den,
 			do_hermite, do_test, fade);
-
-	//MGlobal::displayInfo("Contours drawface isoline exited");
-
 }
 
 
@@ -478,46 +461,23 @@ void Contours::draw_mesh()
 		q1, t1, Dt1q1);
 	int nv = themesh->vertices.size();
 
-	// Kr = 0 loops
-	//if (draw_sc && !test_sc) {
-	//	currcolor = vec(0.6, 0.6, 0.6);
-	//	/*glLineWidth(1.5);
-	//	glBegin(GL_LINES);*/
-	//	
-	//	draw_isolines(kr, sctest_num, sctest_den, ndotv,
-	//		true, false, false, 0.0f);
-	//	if (featurePoints.size() > 0) {
-	//		//featureLines.push_back(featurePoints);
-	//	}
-	//	featurePoints = {};
-
-	//	/*glEnd();*/
-	//	currcolor = vec(0.0, 0.0, 0.0);
-	//}
-
 	// Suggestive contours and contours
 	if (draw_sc) {
 		float fade = 0.0f;
-		/*glLineWidth(2.5);
-		glBegin(GL_LINES);*/
 		draw_isolines(kr, sctest_num, sctest_den, ndotv,
 			true, false, true, fade);
 		if (featurePoints.size() > 0) {
 			featureLines.push_back(featurePoints);
 		}
 		featurePoints = {};
-		/*glEnd();*/
 	}
 	if (draw_c) {
-		/*glLineWidth(2.5);
-		glBegin(GL_LINES);*/
 		draw_isolines(ndotv, kr, vector<float>(), ndotv,
 			false, false, true, 0.0f);
 		if (featurePoints.size() > 0) {
 			featureLines.push_back(featurePoints);
 		}
 		featurePoints = {};
-		/*glEnd();*/
 	}
 }
 
@@ -540,9 +500,12 @@ void Contours::redraw()
 // Set the view to look at the middle of the mesh, from reasonably far away
 void Contours::resetview()
 {
-	if (!xf.read(xffilename))
-		xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
-		xform::trans(-themesh->bsphere.center);
+	if (!xf.read(xffilename)) {
+		/*xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
+			xform::trans(-themesh->bsphere.center);*/
+		xf = xform::trans(-3.5f / fov * themesh->bsphere.r, 0, 0) *
+			xform::trans(-themesh->bsphere.center);
+	}
 }
 
 

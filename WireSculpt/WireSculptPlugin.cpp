@@ -417,24 +417,31 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
-std::vector<std::vector<std::vector<float>>> WireSculptPlugin::setUpContours(const char* filename) {
+std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(const char* filename) {
     Contours contour(0.7, filename);
 
+    std::vector<std::pair<vec3f, vec3f>> featureSegments;
 
-    contour.themesh->need_tstrips();
-    contour.themesh->need_bsphere();
-    contour.themesh->need_normals();
-    contour.themesh->need_curvatures();
-    contour.themesh->need_dcurv();
-    contour.compute_feature_size();
+    if (contour.featureLines.size() == 0) {
+        MGlobal::displayInfo("No feature lines");
+        return std::vector<std::pair<vec3f, vec3f>>();
+    }
 
+    for (int index = 0; index < contour.featureLines.size(); index++) {
+        std::vector<std::vector<float>> featurePoints = contour.featureLines[index];
+        for (int i = 0; i < featurePoints.size() - 1; i += 2) {
+            std::vector<float> p1 = featurePoints[i];
+            std::vector<float> p2 = featurePoints[i + 1];
 
-    contour.resetview(); // originally after redraw?
+            vec3f start(p1[0], p1[1], p1[2]);
+            vec3f end(p2[0], p2[1], p2[2]);
 
+            featureSegments.push_back({ start, end });
 
-    contour.redraw();
-    return contour.featureLines;
-
+        }
+    }
+    
+    return featureSegments;
 }
 
 
