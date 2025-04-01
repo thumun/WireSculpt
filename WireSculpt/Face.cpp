@@ -3,5 +3,9 @@
 #include <vector>
 #include "Vertex.h"
 
-Face::Face(Vertex * v1, Vertex * v2, Vertex * v3, std::vector<float> norm): 
-	v1(v1), v2(v2), v3(v3), normal(norm) {}
+Face::Face(Vertex * v1, Vertex * v2, Vertex * v3, std::vector<float> norm): normal(norm) {
+
+	verticies.push_back(v1);
+	verticies.push_back(v2);
+	verticies.push_back(v3);
+}

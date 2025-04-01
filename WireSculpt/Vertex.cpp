@@ -29,7 +29,7 @@ void Vertex::setNeighbor(Vertex* v, Edge* e) {
 
 bool Vertex::operator==(const Vertex& other) const
 {
-	return (other.mPosition == this->mPosition);
+	return (other.id == this->id);
 }
 
 void Vertex::resetFGH() {

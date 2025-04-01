@@ -454,7 +454,7 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/dodecahedron.obj");
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     //std::vector<Vertex>* verticies = ws.GetVerticies();

@@ -45,9 +45,9 @@ void HeatMapDist::computeFaceArea(std::vector<Face> * faces, std::unordered_map<
     // Calculate the sum of one-third of the areas of incident faces.
 
     for (auto f : *faces) {
-        double area = 0.5 * (f.v1->mPosition.x * (f.v2->mPosition.y - f.v3->mPosition.y) +
-                            f.v2->mPosition.x * (f.v3->mPosition.y - f.v1->mPosition.y) +
-                            f.v3->mPosition.x * (f.v1->mPosition.y - f.v2->mPosition.y));
+        double area = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
+                            f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
+                            f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
 
         mp->insert({&f, area});
     }
@@ -59,7 +59,7 @@ double HeatMapDist::computeVertexArea(Vertex* vert, std::unordered_map<Face*, do
 
     double area = 0.0;
     for (auto f : *faces) {
-        if (&f.v1 == &vert || &f.v2 == &vert || &f.v3 == &vert) {
+        if (&f.verticies[0] == &vert || &f.verticies[1] == &vert || &f.verticies[2] == &vert) {
             area += (mp->at(&f) / 3.0f);
         }
     }
@@ -104,33 +104,33 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
     Vertex* v3 = nullptr;
     bool found = false;
 
+    std::cout << "v1 input:" << v1->id;
+    std::cout << "\tv2 input:" << v2->id << std::endl;
+
     for (auto f : *faces) {
 
-        if ((*f.v1 == *v1 && *f.v2 == *v2) || (*f.v1 == *v2 && *f.v2 == *v1) 
-            || (*f.v2 == *v1 && *f.v3 == *v2) || (*f.v3 == *v1 && *f.v1 == *v2) 
-            || (*f.v3 == *v1 && *f.v1 == *v2) || (*f.v1 == *v1 && *f.v3 == *v2)) {
+        std::cout << "\nface verts:" << f.verticies[0]->id << ", " << f.verticies[1]->id << ", " << f.verticies[2]->id << std::endl; 
 
-            v3 = (f.v1 != v1 && f.v1 != v2) ? f.v1 :
-                (f.v2 != v1 && f.v2 != v2) ? f.v2 : f.v3;
+        bool foundV1 = false; 
+        bool foundV2 = false; 
 
-            found = true;
+        for (auto v : f.verticies) {
+            if (*v == *v1) {
+                foundV1 = true; 
+            }
+            else if (*v == *v2) {
+                foundV2 = true; 
+            }
+            else {
+                v3 = v; 
+            }
+        }
+
+        if (foundV1 && foundV2) {
+            found = true; 
             break;
         }
 
-        //if ((*f.v1 == *v1) && (*f.v2 == *v2)) {
-        //    
-        //    //auto v3 = f.v3; 
-        //    
-        //    Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
-        //    Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
-        //    Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
-
-        //    a = p1 - p3;
-        //    b = p2 - p3;
-
-        //    found = true;
-        //    break;
-        //}
     }
 
     // error val
@@ -169,25 +169,28 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
+    Eigen::SparseMatrix<double> MCalc(ws.verticies.size(), ws.verticies.size()); // Create M |V| x |V| matrix
+
     for (int i = 0; i < A.rows(); ++i) {
+
         std::unordered_set<Vertex*> s = getNeighbor(ws.verticies[i]);
         double tmp = A(i, i) - t * Lc.coeff(i, i); // Use coeff() for sparse matrix access
 
-        this->M.insert(i, i) = tmp;
+        MCalc.insert(i, i) = tmp;
 
         //int indx = 0; 
 
         for (Vertex* v : s) {
             tmp = -t * Lc.coeff(i, v->id); // Use coeff() for sparse matrix access
             if (std::abs(tmp) != 0.0) {
-                this->M.insert(i, v->id) = tmp;
+                MCalc.insert(i, v->id) = tmp;
             }
             //indx++; 
         }
     }
 
-    this->M.makeCompressed();
-    //this->M = M; 
+    MCalc.makeCompressed();
+    this->M = MCalc;
 }
 
 void HeatMapDist::heatDiffusion(int sInput) {
