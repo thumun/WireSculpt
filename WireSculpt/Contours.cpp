@@ -501,10 +501,10 @@ void Contours::redraw()
 void Contours::resetview()
 {
 	if (!xf.read(xffilename)) {
-		/*xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
-			xform::trans(-themesh->bsphere.center);*/
-		xf = xform::trans(-3.5f / fov * themesh->bsphere.r, 0, 0) *
+		xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
 			xform::trans(-themesh->bsphere.center);
+		/*xf = xform::trans(-3.5f / fov * themesh->bsphere.r, 0, 0) *
+			xform::trans(-themesh->bsphere.center);*/
 	}
 }
 

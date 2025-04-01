@@ -437,10 +437,8 @@ std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(const char* f
             vec3f end(p2[0], p2[1], p2[2]);
 
             featureSegments.push_back({ start, end });
-
         }
     }
-    
     return featureSegments;
 }
 

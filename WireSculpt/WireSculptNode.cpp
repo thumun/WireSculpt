@@ -326,17 +326,14 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
             MPoint start(line.first.x, line.first.y, line.first.z);
             MPoint end(line.second.x, line.second.y, line.second.z);
 
-
             MPointArray currPoints;
             MIntArray currFaceCounts;
             MIntArray currFaceConnects;
 
-            CylinderMesh cylinder(start, end, radius * 0.5);
+            CylinderMesh cylinder(start, end, radius);
             cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
             cylinder.appendToMesh(points, faceCounts, faceConnects);
-            
         }
-
     }
     
     MGlobal::displayInfo("Finished: set up contours");
@@ -433,7 +430,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
             returnStatus.perror("ERROR getting thickness data handle\n");
             return returnStatus;
         }
-        double thicknessVal = thicknessData.asDouble();
+        double thicknessVal = thicknessData.asDouble() * 0.1f;
 
         /* Process file */
         WireSculptPlugin ws = WireSculptPlugin();
