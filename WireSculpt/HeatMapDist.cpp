@@ -104,12 +104,12 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
     Vertex* v3 = nullptr;
     bool found = false;
 
-    std::cout << "v1 input:" << v1->id;
-    std::cout << "\tv2 input:" << v2->id << std::endl;
+    //std::cout << "v1 input:" << v1->id;
+    //std::cout << "\tv2 input:" << v2->id << std::endl;
 
     for (auto f : *faces) {
 
-        std::cout << "\nface verts:" << f.verticies[0]->id << ", " << f.verticies[1]->id << ", " << f.verticies[2]->id << std::endl; 
+        //std::cout << "\nface verts:" << f.verticies[0]->id << ", " << f.verticies[1]->id << ", " << f.verticies[2]->id << std::endl; 
 
         bool foundV1 = false; 
         bool foundV2 = false; 
@@ -202,9 +202,9 @@ void HeatMapDist::heatDiffusion(int sInput) {
     this->L = this->lu.solve(K);
 }
 
-void HeatMapDist::computePhi(int sInput) {
+void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
     s = sInput;
-    Eigen::VectorXd b = computeB(s);
+    Eigen::VectorXd b = computeB(s, ws);
 
     this->phi = this->lulc.solve(b);
     
@@ -222,14 +222,151 @@ void HeatMapDist::computePhi(int sInput) {
     
 }
 
-Eigen::VectorXd HeatMapDist::computeB(int s) {
-    Eigen::VectorXd b(A.rows());
+Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
+    /*Eigen::VectorXd b(A.rows());
     for (int i = 0; i < b.rows(); i++) {
         b(i) = 0.0;
     }
-    return b;
+    return b;*/
+
+    std::unordered_map<Vertex, double> vu;
+    std::vector<Vertex> vertices = ws.verticies;
+
+    heatDiffusion(s); // compute the heat diffusion
+
+    // store in a map the heat associated with each vector
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        vu[vertices[i]] = L(i);
+    }
+
+    // compute the gradient vector for each face and store it in a map.
+    std::vector<Face> faces = ws.faces;
+    std::unordered_map<Face, Eigen::Vector3d> fv;
+
+    for (size_t i = 0; i < faces.size(); ++i) {
+        Eigen::Vector3d x = gradientFace(faces[i], vu);
+        // normalize x
+        auto sum = std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+        x[0] /= sum;
+        x[1] /= sum;
+        x[2] /= sum;
+        //x = Utilities::normalize(x);
+        fv[faces[i]] = x;
+    }
+
+    // compute delta X
+    Eigen::VectorXd X(vertices.size());
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        X(i) = -1.0 * computeDeltaXu(vertices[i], fv);
+    }
+    return X;
 }
 
+Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_map<Vertex, double> vu) {
+    double Af = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
+        f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
+        f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
+
+    auto v1 = f.verticies[0];
+    auto v2 = f.verticies[1];
+    auto v3 = f.verticies[2];
+
+    Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
+    Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
+    Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
+
+    auto a = p1 - p3;
+    auto b = p2 - p3;
+
+    double N = a.cross(b);
+
+    double u = vu.at(*v2);
+    Eigen::Vector3d c1 = N.crossProduct(v1);
+    c1 = c1 * u;
+
+    u = vu.at(*v3);
+    Eigen::Vector3d c2 = N.crossProduct(v2);
+    c2 = c2 * u;
+
+    u = vu.at(*v1);
+    Eigen::Vector3d c3 = N.crossProduct(v3);
+    c3 = c3 * u;
+
+    double delta_x = c1.x + c2.x + c3.x;
+    double delta_y = c1.y + c2.y + c3.y;
+    double delta_z = c1.z + c2.z + c3.z;
+
+    double area = 1.0 / (2.0 * Af);
+    delta_x = delta_x * area;
+    delta_y = delta_y * area;
+    delta_z = delta_z * area;
+
+    return Eigen::Vector3d(delta_x, delta_y, delta_z);
+}
+
+double computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
+    // get each f on v & divide by num faces 
+    
+    double delta = -1.0f; 
+
+    bool v1 = false;  
+    bool v2 = false; 
+    bool v3 = false; 
+
+    for (auto f : ws.faces) {
+        if (*f.verticies[0] == *u) {
+            v1 = true; 
+            delta += computeDeltaXuFace(u, f.verticies[1], f.verticies[2]);
+        }
+        else if (*f.verticies[1] == *u) {
+            v2 = true;
+            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[2]);
+        }
+        else if (*f.verticies[2] == *u) {
+            v3 = true;
+            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[1]);
+        }
+    }
+
+    //double delta = computeDeltaXuFace(h, fv.at(h.getFace()));
+    /*Halfedge<Point_3> current = h.next.opposite;
+    while (current != h) {
+        delta += computeDeltaXuFace(current, fv.at(current.getFace()));
+        current = current.next.opposite;
+    }*/
+
+    return 0.5 * delta;
+}
+
+// what is this
+double computeDeltaXuFace(Vertex * curr, Vertex * v1, Vertex * v2) {
+    
+    auto ahh = curr->mPosition - curr->mPosition;
+    auto argh = v1->mPosition - curr->mPosition;
+
+    Eigen::Vector3d c = {ahh[0], ahh[1], ahh[2]};
+    Eigen::Vector3d d = {argh[0], argh[1], argh[2]};
+    double dotProduct = c.dot(d);
+    double magnitudeC = c.norm();
+    double magnitudeD = d.norm();
+
+    double cosTheta = dotProduct / (magnitudeC * magnitudeD);
+
+    cosTheta = std::max(std::min(cosTheta, 1.0), -1.0);
+    double theta = acos(cosTheta);
+
+    double theta2 = Utilities.computeAngele(v3, v2);
+    v3 = Utilities.getVector(e3.opposite);
+    double theta1 = Utilities.computeAngele(v1, v3);
+
+    double inner1 = E1.innerProduct(Xj).doubleValue();
+    double inner2 = E2.innerProduct(Xj).doubleValue();
+
+    double cot1 = 1 / std::tan(theta1);
+    double cot2 = 1 / std::tan(theta2);
+
+    return (cot1 * inner1 + cot2 * inner2);
+}
 
 void HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
     Eigen::VectorXd cs;
