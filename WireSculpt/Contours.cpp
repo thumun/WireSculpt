@@ -11,12 +11,15 @@ const bool use_dlists = true;
 const bool use_3dtexc = false;
 
 
-Contours::Contours(float fovVal, const char* filename) {
+Contours::Contours(float fovVal, int viewChoice, int contourChoice, float testSCVal, const char* filename) {
 
 	this->fov = fovVal;
 	this->feature_size = 0;
 	this->featurePoints = {};
 	this->featureLines = {};
+	this->viewChoice = viewChoice;		// 1-indexed
+	this->draw_sc = contourChoice - 1;	// 1-indexed
+	this->sug_thresh = testSCVal;
 
 	this->themesh = TriMesh::read(filename);
 	if (!this->themesh)
@@ -501,10 +504,14 @@ void Contours::redraw()
 void Contours::resetview()
 {
 	if (!xf.read(xffilename)) {
-		xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
+		if (this->viewChoice == 1) {	// front
+			xf = xform::trans(0, 0, -3.5f / fov * themesh->bsphere.r) *
+				xform::trans(-themesh->bsphere.center);
+		}
+		else {		// side
+			xf = xform::trans(-3.5f / fov * themesh->bsphere.r, 0, 0) *
 			xform::trans(-themesh->bsphere.center);
-		/*xf = xform::trans(-3.5f / fov * themesh->bsphere.r, 0, 0) *
-			xform::trans(-themesh->bsphere.center);*/
+		}
 	}
 }
 

@@ -417,8 +417,8 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
-std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(const char* filename) {
-    Contours contour(0.7, filename);
+std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {
+    Contours contour(fovChoice, viewChoice, contoursChoice, testSCChoice, filename);
 
     std::vector<std::pair<vec3f, vec3f>> featureSegments;
 

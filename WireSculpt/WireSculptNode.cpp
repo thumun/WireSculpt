@@ -24,7 +24,10 @@ MObject WireSculptNode::K;
 MObject WireSculptNode::M;
 MObject WireSculptNode::thickness;
 MObject WireSculptNode::outGeom;
-
+MObject WireSculptNode::fov;
+MObject WireSculptNode::view;
+MObject WireSculptNode::contour;
+MObject WireSculptNode::testSC;
 
 WireSculptNode::WireSculptNode() : MPxNode()
 {
@@ -152,6 +155,55 @@ MStatus WireSculptNode::initialize()
         return returnStatus;
     }
 
+    /* Feature Lines parameters */
+
+    // Fov
+    WireSculptNode::fov = numAttr.create("fieldOfView", "fov", MFnNumericData::kDouble, 0.0, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating fov attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::fov);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding fov attribute\n");
+        return returnStatus;
+    }
+
+    // View
+    WireSculptNode::view = numAttr.create("viewChoice", "view", MFnNumericData::kInt, 0, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating view attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::view);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding view attribute\n");
+        return returnStatus;
+    }
+
+    // Contour Choice
+    WireSculptNode::contour = numAttr.create("contourChoice", "contour", MFnNumericData::kInt, 0, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating contour attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::contour);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding contour attribute\n");
+        return returnStatus;
+    }
+
+    // Test SC Value
+    WireSculptNode::testSC = numAttr.create("testSC", "tsc", MFnNumericData::kDouble, 0, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating testSC attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::testSC);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding testSC attribute\n");
+        return returnStatus;
+    }
 
     // Output Geometry
     WireSculptNode::outGeom = typedAttr.create("geometry", "geo", MFnData::kMesh, MObject::kNullObj, &returnStatus);
@@ -232,10 +284,40 @@ MStatus WireSculptNode::initialize()
         return returnStatus;
     }
 
+    returnStatus = attributeAffects(WireSculptNode::fov,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::view,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::contour,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::testSC,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
     return MS::kSuccess;
 }
 
-MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
+    const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
+    std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
 
     // Making sphere wireframe
     for (auto vertex : verticies) {
@@ -319,7 +401,7 @@ MObject WireSculptNode::createMesh(const double& radius, WireSculptPlugin& ws, c
     }
 
     // Draw Contours
-    std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(filePath.c_str());
+    std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
     if (featureSegments.size() > 0) {
         for (int index = 0; index < featureSegments.size(); index++) {
             std::pair<vec3f, vec3f> line = featureSegments[index];
@@ -432,6 +514,38 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double thicknessVal = thicknessData.asDouble() * 0.1f;
 
+        // FOV
+        MDataHandle fovData = data.inputValue(fov, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting fov data handle\n");
+            return returnStatus;
+        }
+        double fovVal = fovData.asDouble();
+
+        // View Choice
+        MDataHandle viewData = data.inputValue(view, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting view data handle\n");
+            return returnStatus;
+        }
+        double viewVal = viewData.asInt();
+
+        // Contour Choice
+        MDataHandle contourData = data.inputValue(contour, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting contour data handle\n");
+            return returnStatus;
+        }
+        double contourVal = contourData.asInt();
+
+        // Contour Choice
+        MDataHandle testSCData = data.inputValue(testSC, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting testSC data handle\n");
+            return returnStatus;
+        }
+        double testSCVal = testSCData.asDouble() * 0.1f;
+
         /* Process file */
         WireSculptPlugin ws = WireSculptPlugin();
         bool returnVal = ws.ProcessFile(meshFilePathStr);
@@ -460,7 +574,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, ws, meshFilePathStr, *(ws.GetVerticies()), newOutputData, returnStatus);
+        createMesh(thicknessVal, fovVal, viewVal, contourVal, testSCVal, ws, meshFilePathStr, *(ws.GetVerticies()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");

@@ -34,7 +34,7 @@ using namespace std;
 
 class Contours {
 public:
-	Contours(float fovVal, const char* filename);
+	Contours(float fovVal, int viewChoice, int contourChoice, float testSCVal, const char* filename);
 
 	// Variables
 	TriMesh* themesh;
@@ -42,6 +42,7 @@ public:
 	float fov;
 	char* xffilename; // Filename where we look for "home" position
 	point viewpos;    // Current view position
+	int viewChoice;		// front vs side view
 	int draw_c = 1, draw_sc = 1;
 	int test_sc = 1;
 	float sug_thresh = 0.01;
@@ -50,7 +51,7 @@ public:
 	// Other miscellaneous variables
 	float feature_size;	// Used to make thresholds dimensionless
 	vec currcolor;
-
+	
 	// camera helper functions
 	MPoint getCameraPosition();
 	MVector getCameraDirection();
