@@ -10,6 +10,10 @@ global string $gMSlider;
 global string $gLambdaSlider;
 global string $gThicknessSlider;
 global string $gOutputSlider;
+global string $gViewChoice;
+global string $gFOVSlider;
+global string $gContourChoice;
+global string $gContourSlider;
 
 // Function to create the GUI
 global proc createWireSculptGUI() {
@@ -25,6 +29,10 @@ global proc createWireSculptGUI() {
     global string $gLambdaSlider;
     global string $gThicknessSlider;
     global string $gOutputSlider;
+    global string $gViewChoice;
+    global string $gFOVSlider;
+    global string $gContourChoice;
+    global string $gContourSlider;
 
     // Delete the window if it already exists
     if (`window -exists $gWireSculptWindow`) {
@@ -32,7 +40,7 @@ global proc createWireSculptGUI() {
     }
 
     // Create the window
-    $gWireSculptWindow = `window -title "WireSculpt" -widthHeight 400 600`;
+    $gWireSculptWindow = `window -title "WireSculpt" -widthHeight 500 700`;
     $mainLayout = `columnLayout -adjustableColumn true`;
 
     // Heading
@@ -45,6 +53,11 @@ global proc createWireSculptGUI() {
     button -label "Load from File" -command "loadFromFile";
     setParent ..;
     setParent ..;
+    
+    separator -style "none" -height 10;
+
+    // Italic Heading
+    text -label "Path Construction Options" -font "obliqueLabelFont" -align "center";
 
     // Feature Attraction Weights
     string $attractionGroup = `frameLayout -label "Feature Attraction Weights" -collapsable false`;
@@ -75,6 +88,11 @@ global proc createWireSculptGUI() {
     $gLambdaSlider = `floatSliderGrp -label "lambda" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
     setParent ..;
     setParent ..;
+    
+    separator -style "none" -height 10;
+
+    // Italic Heading
+    text -label "Wire Appearance Options" -font "obliqueLabelFont" -align "center";
 
     // Thickness for NURBs Curve Extrusion
     string $thicknessGroup = `frameLayout -label "NURBs Curve Thickness" -collapsable false`;
@@ -89,6 +107,41 @@ global proc createWireSculptGUI() {
     $gOutputSlider = `intSliderGrp -label "Output Path" -field true -minValue 1 -maxValue 10 -value 1`;
     setParent ..;
     setParent ..;
+    
+    separator -style "none" -height 10;
+
+    // Italic Heading
+    text -label "Feature Line Options" -font "obliqueLabelFont" -align "center";
+    
+    // Front or Side View Checkmark
+    string $viewGroup = `frameLayout -label "Front/Side View" -collapsable false`;
+    columnLayout;
+    $gViewChoice = `radioButtonGrp -numberOfRadioButtons 2 -label "" -labelArray2 "Front" "Side" -select 1`;
+    setParent ..;
+    setParent ..;
+    
+    // FOV
+    string $fovGroup = `frameLayout -label "FOV" -collapsable false`;
+    columnLayout;
+    $gFOVSlider = `floatSliderGrp -label "FOV" -field true -minValue 0.1 -maxValue 1 -value 0.7`;
+    setParent ..;
+    setParent ..;
+    
+    // Suggestive Contours
+    string $contoursGroup = `frameLayout -label "Suggestive Contours Options" -collapsable false`;
+    columnLayout;
+    $gContourChoice = `radioButtonGrp -numberOfRadioButtons 2 -label "" -labelArray2 "No SC" "Include SC" -select 2`;
+    setParent ..;
+    setParent ..;
+    
+    // Test SC
+    string $testSCGroup = `rowLayout`;
+    columnLayout;
+    $gContourSlider = `floatSliderGrp -label "Test SC" -field true -minValue 0 -maxValue 1 -value 0.1`;
+    setParent ..;
+    setParent ..;
+    
+    separator -style "none" -height 10;
 
     // Buttons
     rowLayout -numberOfColumns 2;
@@ -130,6 +183,10 @@ global proc generatePaths() {
     global string $gMSlider;
     global string $gLambdaSlider;
     global string $gThicknessSlider;
+    global string $gViewChoice;
+    global string $gFOVSlider;
+    global string $gContourChoice;
+    global string $gContourSlider;
 
     string $filePath = `textField -query -text $gFilePathField`;
     float $aAttraction = `floatSliderGrp -query -value $gAAttractionSlider`;
@@ -140,17 +197,11 @@ global proc generatePaths() {
     int $M = `intSliderGrp -query -value $gMSlider`;
     float $lambda = `floatSliderGrp -query -value $gLambdaSlider`;
     float $thickness = `floatSliderGrp -query -value $gThicknessSlider`;
+    int $viewChoice = `radioButtonGrp -query -select $gViewChoice`;
+    float $fov = `floatSliderGrp -query -value $gFOVSlider`;
+    int $contourChoice = `radioButtonGrp -query -select $gContourChoice`;
+    float $contour = `floatSliderGrp -query -value $gContourSlider`;
 
-    // Print the parameters (replace this with your actual logic)
-    //print("Starting process with the following parameters:\n");
-    //print("File Path: " + $filePath + "\n");
-    //print("Feature Attraction: a=" + $aAttraction + ", b=" + $bAttraction + "\n");
-    //print("Path Repulsion: a*=" + $aRepulsion + ", b*=" + $bRepulsion + "\n");
-    //print("Multi-Path Construction: K=" + $K + ", M=" + $M + "\n");
-    //print("Custom lambda: " + $lambda + "\n");
-    //print("Thickness: " + $thickness + "\n");
-        
-    //WireSculpt -fp $filePath -asr $aAttraction -ase $bAttraction -rsr $aRepulsion -rse $bRepulsion -e $K -k $M -l $lambda -t $thickness;
     if (!`objExists "WireSculptNode1"`) {
         createNode transform -n WireTransform1; 
         createNode mesh -n WireShape1 -p WireTransform1; 
@@ -168,7 +219,10 @@ global proc generatePaths() {
     setAttr WireSculptNode1.kValue $K;
     setAttr WireSculptNode1.mValue $M;
     setAttr WireSculptNode1.wireThickness $thickness;
-    
+    setAttr WireSculptNode1.fov $fov;
+    setAttr WireSculptNode1.view $viewChoice;
+    setAttr WireSculptNode1.contour $contourChoice;
+    setAttr WireSculptNode1.testSC $contour;
 }
 
 // Create the GUI

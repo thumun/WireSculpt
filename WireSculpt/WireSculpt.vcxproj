@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;NT_PLUGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include;..\trimesh2\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -203,6 +203,7 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Contours.h" />
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="ExtremePoints.h" />
@@ -216,6 +217,19 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     <ClInclude Include="WireSculptPlugin.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\trimesh2\libsrc\KDtree.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\remove.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\reorder_verts.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_bounding.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_connectivity.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_curvature.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_grid.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_io.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_normals.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_pointareas.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_stats.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_tstrips.cc" />
+    <ClCompile Include="Contours.cpp" />
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="ExtremePoints.cpp" />

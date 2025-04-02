@@ -6,6 +6,11 @@
 
 #include <Eigen/Core>
 
+struct vec3f {
+	float x, y, z;
+	vec3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+};
+
 class WireSculptPlugin
 {
 public:
@@ -24,6 +29,8 @@ public:
 	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 
+	// Suggestive contours
+	std::vector<std::pair<vec3f, vec3f>> GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename);
 
 private:
 	std::vector<Vertex> verticies;
@@ -39,6 +46,7 @@ private:
 	int pickUnvisitedCity(std::vector<int> used);
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
 	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
+	
 };
 
 
