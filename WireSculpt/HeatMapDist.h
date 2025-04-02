@@ -49,5 +49,9 @@ private:
     double computeTime(WireSculptPlugin& ws);
 
     Eigen::Vector3d gradientFace(const Face& f, const std::unordered_map<Vertex, double> vu);
+    double computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws);
+    double computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2);
+
+    double computeAngle(Vertex * u, Vertex * v);
 };
 

@@ -223,12 +223,6 @@ void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
 }
 
 Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
-    /*Eigen::VectorXd b(A.rows());
-    for (int i = 0; i < b.rows(); i++) {
-        b(i) = 0.0;
-    }
-    return b;*/
-
     std::unordered_map<Vertex, double> vu;
     std::vector<Vertex> vertices = ws.verticies;
 
@@ -257,7 +251,7 @@ Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
     // compute delta X
     Eigen::VectorXd X(vertices.size());
     for (size_t i = 0; i < vertices.size(); ++i) {
-        X(i) = -1.0 * computeDeltaXu(vertices[i], fv);
+        X(i) = -1.0 * computeDeltaXu(&vertices[i], fv, ws);
     }
     return X;
 }
@@ -278,23 +272,23 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
     auto a = p1 - p3;
     auto b = p2 - p3;
 
-    double N = a.cross(b);
+    auto N = a.cross(b);
 
     double u = vu.at(*v2);
-    Eigen::Vector3d c1 = N.crossProduct(v1);
+    Eigen::Vector3d c1 = N.cross(p1);
     c1 = c1 * u;
 
     u = vu.at(*v3);
-    Eigen::Vector3d c2 = N.crossProduct(v2);
+    Eigen::Vector3d c2 = N.cross(p2);
     c2 = c2 * u;
 
     u = vu.at(*v1);
-    Eigen::Vector3d c3 = N.crossProduct(v3);
+    Eigen::Vector3d c3 = N.cross(p3);
     c3 = c3 * u;
 
-    double delta_x = c1.x + c2.x + c3.x;
-    double delta_y = c1.y + c2.y + c3.y;
-    double delta_z = c1.z + c2.z + c3.z;
+    double delta_x = c1(0) + c2(0) + c3(0);
+    double delta_y = c1(1) + c2(1) + c3(1);
+    double delta_z = c1(2) + c2(2) + c3(2);
 
     double area = 1.0 / (2.0 * Af);
     delta_x = delta_x * area;
@@ -304,7 +298,7 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
     return Eigen::Vector3d(delta_x, delta_y, delta_z);
 }
 
-double computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
+double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
     // get each f on v & divide by num faces 
     
     double delta = -1.0f; 
@@ -339,33 +333,52 @@ double computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, W
 }
 
 // what is this
-double computeDeltaXuFace(Vertex * curr, Vertex * v1, Vertex * v2) {
+double HeatMapDist::computeDeltaXuFace(Vertex * curr, Vertex * v1, Vertex * v2) {
     
-    auto ahh = curr->mPosition - curr->mPosition;
+    /*auto ahh = curr->mPosition - curr->mPosition;
     auto argh = v1->mPosition - curr->mPosition;
 
     Eigen::Vector3d c = {ahh[0], ahh[1], ahh[2]};
     Eigen::Vector3d d = {argh[0], argh[1], argh[2]};
     double dotProduct = c.dot(d);
     double magnitudeC = c.norm();
-    double magnitudeD = d.norm();
+    double magnitudeD = d.norm();*/
 
-    double cosTheta = dotProduct / (magnitudeC * magnitudeD);
+   /* Halfedge<Point_3> e1 = h;
+    Halfedge<Point_3> e2 = e1.next;
+    Halfedge<Point_3> e3 = e2.next;
 
-    cosTheta = std::max(std::min(cosTheta, 1.0), -1.0);
-    double theta = acos(cosTheta);
+    Vector_3 v1 = Utilities.getVector(e1);
+    Vector_3 v2 = Utilities.getVector(e2.opposite);
+    Vector_3 v3 = Utilities.getVector(e3);*/
 
-    double theta2 = Utilities.computeAngele(v3, v2);
-    v3 = Utilities.getVector(e3.opposite);
-    double theta1 = Utilities.computeAngele(v1, v3);
+    double theta2 = computeAngle(v2, v1);
+    double theta1 = computeAngle(curr, v2);
 
+    Vector_3 E2 = Utilities.getVector(e1.opposite);
+    Vector_3 E1 = Utilities.getVector(e2);
     double inner1 = E1.innerProduct(Xj).doubleValue();
     double inner2 = E2.innerProduct(Xj).doubleValue();
 
-    double cot1 = 1 / std::tan(theta1);
-    double cot2 = 1 / std::tan(theta2);
+    double cot1 = 1 / Math.tan(theta1);
+    double cot2 = 1 / Math.tan(theta2);
 
     return (cot1 * inner1 + cot2 * inner2);
+    
+}
+
+double HeatMapDist::computeAngle(Vertex * v1, Vertex * v2) {
+
+    Eigen::Vector3d u = { v1->mPosition[0], v1->mPosition[1], v1->mPosition[2] };
+    Eigen::Vector3d v = { v2->mPosition[0], v2->mPosition[1], v2->mPosition[2] };
+
+    double innerProduct = u.dot(v); 
+
+    double lu = std::sqrt(u.dot(u));
+    double lv = std::sqrt(v.dot(v));
+
+    double cos = innerProduct / (lu * lv);
+    return std::acos(cos);
 }
 
 void HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
