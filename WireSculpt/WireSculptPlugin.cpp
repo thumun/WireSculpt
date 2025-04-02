@@ -442,8 +442,8 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 void GetHeatMapDistance(WireSculptPlugin ws) {
     HeatMapDist dist = HeatMapDist(ws);
     dist.heatDiffusion(0);
-    dist.computePhi(0);
-    dist.colorScheme(ws, 'd');
+    dist.computePhi(0, ws);
+    auto verts = dist.colorScheme(ws, 'd');
 }
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
@@ -454,7 +454,7 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     //std::vector<Vertex>* verticies = ws.GetVerticies();

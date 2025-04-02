@@ -20,7 +20,7 @@ public:
 
     void heatDiffusion(int sInput);
     void computePhi(int sInput, WireSculptPlugin& ws);
-    void colorScheme(WireSculptPlugin ws, char c);
+    std::unordered_map<Vertex*, float> colorScheme(WireSculptPlugin ws, char c);
 
     std::vector<double> colors;
     double MaxColor;
@@ -48,9 +48,9 @@ private:
     Eigen::VectorXd computeB(int s, WireSculptPlugin& ws);
     double computeTime(WireSculptPlugin& ws);
 
-    Eigen::Vector3d gradientFace(const Face& f, const std::unordered_map<Vertex, double> vu);
-    double computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws);
-    double computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2);
+    Eigen::Vector3d gradientFace(const Face& f, const std::unordered_map<int, double> vu);
+    double computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vector3d> fv, WireSculptPlugin& ws);
+    double computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj);
 
     double computeAngle(Vertex * u, Vertex * v);
 };

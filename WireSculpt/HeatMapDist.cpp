@@ -223,19 +223,19 @@ void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
 }
 
 Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
-    std::unordered_map<Vertex, double> vu;
+    std::unordered_map<int, double> vu;
     std::vector<Vertex> vertices = ws.verticies;
 
     heatDiffusion(s); // compute the heat diffusion
 
     // store in a map the heat associated with each vector
     for (size_t i = 0; i < vertices.size(); ++i) {
-        vu[vertices[i]] = L(i);
+        vu[vertices[i].id] = L(i);
     }
 
     // compute the gradient vector for each face and store it in a map.
     std::vector<Face> faces = ws.faces;
-    std::unordered_map<Face, Eigen::Vector3d> fv;
+    std::unordered_map<int, Eigen::Vector3d> fv;
 
     for (size_t i = 0; i < faces.size(); ++i) {
         Eigen::Vector3d x = gradientFace(faces[i], vu);
@@ -245,7 +245,7 @@ Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
         x[1] /= sum;
         x[2] /= sum;
         //x = Utilities::normalize(x);
-        fv[faces[i]] = x;
+        fv[faces[i].id] = x;
     }
 
     // compute delta X
@@ -256,7 +256,7 @@ Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
     return X;
 }
 
-Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_map<Vertex, double> vu) {
+Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_map<int, double> vu) {
     double Af = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
         f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
         f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
@@ -274,15 +274,15 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
 
     auto N = a.cross(b);
 
-    double u = vu.at(*v2);
+    double u = vu.at(v2->id);
     Eigen::Vector3d c1 = N.cross(p1);
     c1 = c1 * u;
 
-    u = vu.at(*v3);
+    u = vu.at(v3->id);
     Eigen::Vector3d c2 = N.cross(p2);
     c2 = c2 * u;
 
-    u = vu.at(*v1);
+    u = vu.at(v1->id);
     Eigen::Vector3d c3 = N.cross(p3);
     c3 = c3 * u;
 
@@ -298,7 +298,7 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
     return Eigen::Vector3d(delta_x, delta_y, delta_z);
 }
 
-double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
+double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
     // get each f on v & divide by num faces 
     
     double delta = -1.0f; 
@@ -310,15 +310,15 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Ve
     for (auto f : ws.faces) {
         if (*f.verticies[0] == *u) {
             v1 = true; 
-            delta += computeDeltaXuFace(u, f.verticies[1], f.verticies[2]);
+            delta += computeDeltaXuFace(u, f.verticies[1], f.verticies[2], fv[f.id]);
         }
         else if (*f.verticies[1] == *u) {
             v2 = true;
-            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[2]);
+            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[2], fv[f.id]);
         }
         else if (*f.verticies[2] == *u) {
             v3 = true;
-            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[1]);
+            delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[1], fv[f.id]);
         }
     }
 
@@ -333,8 +333,8 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<Face, Eigen::Ve
 }
 
 // what is this
-double HeatMapDist::computeDeltaXuFace(Vertex * curr, Vertex * v1, Vertex * v2) {
-    
+double HeatMapDist::computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj) {
+
     /*auto ahh = curr->mPosition - curr->mPosition;
     auto argh = v1->mPosition - curr->mPosition;
 
@@ -344,24 +344,28 @@ double HeatMapDist::computeDeltaXuFace(Vertex * curr, Vertex * v1, Vertex * v2) 
     double magnitudeC = c.norm();
     double magnitudeD = d.norm();*/
 
-   /* Halfedge<Point_3> e1 = h;
-    Halfedge<Point_3> e2 = e1.next;
-    Halfedge<Point_3> e3 = e2.next;
+    /* Halfedge<Point_3> e1 = h;
+     Halfedge<Point_3> e2 = e1.next;
+     Halfedge<Point_3> e3 = e2.next;
 
-    Vector_3 v1 = Utilities.getVector(e1);
-    Vector_3 v2 = Utilities.getVector(e2.opposite);
-    Vector_3 v3 = Utilities.getVector(e3);*/
+     Vector_3 v1 = Utilities.getVector(e1);
+     Vector_3 v2 = Utilities.getVector(e2.opposite);
+     Vector_3 v3 = Utilities.getVector(e3);*/
 
     double theta2 = computeAngle(v2, v1);
     double theta1 = computeAngle(curr, v2);
 
-    Vector_3 E2 = Utilities.getVector(e1.opposite);
-    Vector_3 E1 = Utilities.getVector(e2);
-    double inner1 = E1.innerProduct(Xj).doubleValue();
-    double inner2 = E2.innerProduct(Xj).doubleValue();
+    //Vector_3 E2 = Utilities.getVector(e1.opposite);
+    //Vector_3 E1 = Utilities.getVector(e2);
 
-    double cot1 = 1 / Math.tan(theta1);
-    double cot2 = 1 / Math.tan(theta2);
+    Eigen::Vector3d E2 = { v2->mPosition.x - curr->mPosition.x, v2->mPosition.y - curr->mPosition.y, v2->mPosition.z - curr->mPosition.z };
+    Eigen::Vector3d E1 = { v1->mPosition.x - curr->mPosition.x, v1->mPosition.y - curr->mPosition.y, v1->mPosition.z - curr->mPosition.z };
+
+    double inner1 = E1.dot(Xj);
+    double inner2 = E2.dot(Xj);
+
+    double cot1 = 1 / std::tan(theta1);
+    double cot2 = 1 / std::tan(theta2);
 
     return (cot1 * inner1 + cot2 * inner2);
     
@@ -381,7 +385,7 @@ double HeatMapDist::computeAngle(Vertex * v1, Vertex * v2) {
     return std::acos(cos);
 }
 
-void HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
+std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
     Eigen::VectorXd cs;
 
     if (c == 'h') {
@@ -400,4 +404,6 @@ void HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
     for (int i = 0; i < vertices.size(); i++) {
         lv.insert({&vertices[i], cs(i)});
     }
+
+    return lv;
 }
