@@ -28,9 +28,16 @@ public:
     static MObject  M;
     static MObject  thickness;
     static MObject  outGeom;
+    static MObject  fov;
+    static MObject  view;
+    static MObject  contour;
+    static MObject  testSC;
 
 protected:
-    MObject createMesh(const double& radius, WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, MObject& outData, MStatus& status);
+    MObject createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
+        const int& contourChoice, const double& testSCVal, 
+        WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
+        MObject& outData, MStatus& status);
     
     MPointArray points;
     MIntArray faceCounts;

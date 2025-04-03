@@ -9,6 +9,7 @@
 #include "WireSculptPlugin.h"
 #include "ExtremePoints.h"
 #include "HeatMapDist.h"
+#include "Contours.h"
 
 #include <igl/read_triangle_mesh.h>
 #include <Eigen/Core>
@@ -446,10 +447,34 @@ void GetHeatMapDistance(WireSculptPlugin ws) {
     auto verts = dist.colorScheme(ws, 'd');
 }
 
+std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {
+    Contours contour(fovChoice, viewChoice, contoursChoice, testSCChoice, filename);
+
+    std::vector<std::pair<vec3f, vec3f>> featureSegments;
+
+    if (contour.featureLines.size() == 0) {
+        MGlobal::displayInfo("No feature lines");
+        return std::vector<std::pair<vec3f, vec3f>>();
+    }
+
+    for (int index = 0; index < contour.featureLines.size(); index++) {
+        std::vector<std::vector<float>> featurePoints = contour.featureLines[index];
+        for (int i = 0; i < featurePoints.size() - 1; i += 2) {
+            std::vector<float> p1 = featurePoints[i];
+            std::vector<float> p2 = featurePoints[i + 1];
+
+            vec3f start(p1[0], p1[1], p1[2]);
+            vec3f end(p2[0], p2[1], p2[2]);
+
+            featureSegments.push_back({ start, end });
+        }
+    }
+    return featureSegments;
+}
+
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
-
 
 #if EXEDEBUG
 int main() {
