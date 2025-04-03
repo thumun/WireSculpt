@@ -2,6 +2,7 @@
 #include <string>
 #include "Vertex.h"
 #include "Edge.h"
+#include "Face.h"
 #include <vector>
 
 #include <Eigen/Core>
@@ -19,7 +20,7 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
-	
+	void GetHeatMapDistance(WireSculptPlugin ws);
 	
 	// Path finding procedure:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors
@@ -34,7 +35,8 @@ public:
 
 private:
 	std::vector<Vertex> verticies;
-	std::vector<Edge> edges; 
+	std::vector<Edge> edges;
+	std::vector<Face> faces;
 
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
@@ -46,8 +48,4 @@ private:
 	int pickUnvisitedCity(std::vector<int> used);
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
 	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
-	
 };
-
-
-

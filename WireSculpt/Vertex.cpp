@@ -4,17 +4,32 @@
 #include <iostream>
 #include <maya/MGlobal.h>
 
-Vertex::Vertex(const MPoint& position, int idNum, bool landmark) : 
-	mPosition(position), id(idNum) {
+int Vertex::lastId = 0;
+
+Vertex::Vertex(const MPoint& position, bool landmark) : 
+	mPosition(position), id(lastId) {
+
 	this->isLandmark.first = landmark;
 	resetFGH();
 	this->neighbors = {};
+	lastId++;
 }
+
+//Vertex::Vertex(const Vertex& v) : mPosition(v.mPosition), 
+//	id(lastId++), isLandmark(v.isLandmark), neighbors(v.neighbors) {
+//
+//	resetFGH();
+//}
 
 Vertex::~Vertex() {}
 
 void Vertex::setNeighbor(Vertex* v, Edge* e) {
 	this->neighbors.insert(std::make_pair( v, e ));
+}
+
+bool Vertex::operator==(const Vertex& other) const
+{
+	return (other.id == this->id);
 }
 
 void Vertex::resetFGH() {

@@ -48,6 +48,10 @@
     <ClInclude Include="ExtremePoints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HeatMapDist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Face.h">
     <ClInclude Include="Contours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -86,6 +90,10 @@
     <ClCompile Include="ExtremePoints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HeatMapDist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Face.cpp">
     <ClCompile Include="Contours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

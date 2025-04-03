@@ -8,6 +8,7 @@
 
 #include "WireSculptPlugin.h"
 #include "ExtremePoints.h"
+#include "HeatMapDist.h"
 #include "Contours.h"
 
 #include <igl/read_triangle_mesh.h>
@@ -63,10 +64,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     vector<MVector> pos; 
     vector<MVector> vertexNormals;
 
-    // id
-    int idV = 0;
-    int idE = 0;
-
     while (getline(fin, line)) {
 
         vector<string> fields = SplitString(line, ' ');
@@ -77,14 +74,13 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
         // adding vert positions to temp vector
         else if (fields[0] == "v") {
             pos.push_back(MVector(stof(fields[1]), stof(fields[2]), stof(fields[3])));
-            verticies.push_back(Vertex(MPoint(pos[pos.size()-1]), idV, false));
-            idV++;
+            verticies.push_back(Vertex(MPoint(pos[pos.size() - 1]), false));
         }
 
         // calculating normals by going through faces 
         else if (fields[0] == "f") {
             // temp storage to calc normals w/ vert pos
-            vector<int> faceVerts; 
+            vector<int> faceVerts;
 
             // going through verticies that make up a face 
             for (int i = 1; i < fields.size(); i++) {
@@ -93,21 +89,50 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 faceVerts.push_back(stoi(triplets[0]));
             }
 
-            // draw edges with verts to get cross prod
-            for (int i = 0; i < faceVerts.size(); i++) {
-                
-                int indx = faceVerts[i] - 1;
+            //if (faceVerts.size() < 3) return;
 
-                MVector current = pos[indx];
-                MVector prev = pos[(indx - 1)%pos.size()];
-                MVector next = pos[(indx + 1)%pos.size()];
+            // Compute face normal
+            MVector v0 = pos[faceVerts[0]-1];
+            MVector v1 = pos[faceVerts[1]-1];
+            MVector v2 = pos[faceVerts[2]-1];
+            MVector crossProd = (v1 - v0) ^ (v2 - v0);
+            crossProd.normalize();
 
-                MVector crossProd = (current - prev) ^ (next-current);
-                crossProd.normalize();
+            std::vector<float> norm;
+            norm.push_back(crossProd.x); 
+            norm.push_back(crossProd.y);
+            norm.push_back(crossProd.z);
 
-                // for each calc can make Vertex obj and add to list
-                //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
+            // Triangulate the face (assumes convex polygons)
+            for (size_t i = 1; i + 1 < faceVerts.size(); i++) {
+                faces.push_back(Face(&verticies[faceVerts[0]-1],
+                    &verticies[faceVerts[i]-1],
+                    &verticies[faceVerts[i + 1]-1],
+                    norm));
             }
+
+            // draw edges with verts to get cross prod
+            //for (int i = 0; i < faceVerts.size(); i++) {
+            //    
+            //    int indx = faceVerts[i] - 1;
+
+            //    MVector current = pos[indx];
+            //    MVector prev = pos[(indx - 1)%pos.size()];
+            //    MVector next = pos[(indx + 1)%pos.size()];
+
+            //    MVector crossProd = (current - prev) ^ (next-current);
+            //    crossProd.normalize();
+
+            //    // for each calc can make Vertex obj and add to list
+            //    std::vector<float> norm; 
+            //    norm.push_back(crossProd.x);
+            //    norm.push_back(crossProd.y);
+            //    norm.push_back(crossProd.z);
+
+            //    faces.push_back(Face(&verticies[faceVerts[0]-1], &verticies[faceVerts[1]-1], &verticies[faceVerts[2]-1], norm));
+            //    //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
+            //    
+            //}
 
             edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
 
@@ -135,9 +160,8 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 }
 
                 if (!edgeFound) {
-                    edges.push_back(Edge(idE, &verticies[vertOne], &verticies[vertTwo]));
+                    edges.push_back(Edge(&verticies[vertOne], &verticies[vertTwo]));
                     edgeIndx = edges.size() - 1;
-                    idE++;
                 }
 
                 verticies[vertOne].setNeighbor(&verticies[vertTwo], &edges[edgeIndx]);
@@ -146,7 +170,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     }
 
     fin.close();
-
     return true;
 }
 
@@ -417,6 +440,13 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
+void GetHeatMapDistance(WireSculptPlugin ws) {
+    HeatMapDist dist = HeatMapDist(ws);
+    dist.heatDiffusion(0);
+    dist.computePhi(0, ws);
+    auto verts = dist.colorScheme(ws, 'd');
+}
+
 std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {
     Contours contour(fovChoice, viewChoice, contoursChoice, testSCChoice, filename);
 
@@ -442,23 +472,23 @@ std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoi
     return featureSegments;
 }
 
-
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
 
-
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    //ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
-    std::vector<Vertex>* verticies = ws.GetVerticies();
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
+    //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
+    //std::vector<Vertex>* verticies = ws.GetVerticies();
     //Vertex* source = &verticies[2];
     //Vertex* goal = &verticies[5];   // arbitrary
     //std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
 
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+
+    GetHeatMapDistance(ws);
 }
 #endif // EXEDEBUG

@@ -207,6 +207,8 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="ExtremePoints.h" />
+    <ClInclude Include="Face.h" />
+    <ClInclude Include="HeatMapDist.h" />
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="NonLandmark.h" />
     <ClInclude Include="Path.h" />
@@ -233,6 +235,8 @@ xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="ExtremePoints.cpp" />
+    <ClCompile Include="Face.cpp" />
+    <ClCompile Include="HeatMapDist.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="NonLandmark.cpp" />
     <ClCompile Include="Path.cpp" />
