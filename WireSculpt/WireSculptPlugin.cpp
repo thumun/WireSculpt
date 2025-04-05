@@ -111,29 +111,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                     norm));
             }
 
-            // draw edges with verts to get cross prod
-            //for (int i = 0; i < faceVerts.size(); i++) {
-            //    
-            //    int indx = faceVerts[i] - 1;
-
-            //    MVector current = pos[indx];
-            //    MVector prev = pos[(indx - 1)%pos.size()];
-            //    MVector next = pos[(indx + 1)%pos.size()];
-
-            //    MVector crossProd = (current - prev) ^ (next-current);
-            //    crossProd.normalize();
-
-            //    // for each calc can make Vertex obj and add to list
-            //    std::vector<float> norm; 
-            //    norm.push_back(crossProd.x);
-            //    norm.push_back(crossProd.y);
-            //    norm.push_back(crossProd.z);
-
-            //    faces.push_back(Face(&verticies[faceVerts[0]-1], &verticies[faceVerts[1]-1], &verticies[faceVerts[2]-1], norm));
-            //    //verticies.push_back(Vertex(MPoint(pos[0]), crossProd));
-            //    
-            //}
-
             edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
 
             // setting up neighbors 

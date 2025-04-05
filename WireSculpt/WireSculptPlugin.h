@@ -33,10 +33,11 @@ public:
 	// Suggestive contours
 	std::vector<std::pair<vec3f, vec3f>> GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename);
 
-private:
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
+
+private:
 
 	std::vector<std::string> SplitString(const std::string& input, char delimiter);
 	bool GetFileExtension(const std::string& filePath);
