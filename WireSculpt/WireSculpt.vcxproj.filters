@@ -1,137 +1,47 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="..\trimesh2\libsrc\KDtree.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\remove.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\reorder_verts.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_bounding.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_connectivity.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_curvature.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_grid.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_io.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_normals.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_pointareas.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_stats.cc" />
+    <ClCompile Include="..\trimesh2\libsrc\TriMesh_tstrips.cc" />
+    <ClCompile Include="Contours.cpp" />
+    <ClCompile Include="cylinder.cpp" />
+    <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="ExtremePoints.cpp" />
+    <ClCompile Include="Face.cpp" />
+    <ClCompile Include="HeatMapDist.cpp" />
+    <ClCompile Include="Landmark.cpp" />
+    <ClCompile Include="NonLandmark.cpp" />
+    <ClCompile Include="Path.cpp" />
+    <ClCompile Include="sphere.cpp" />
+    <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="WireSculpt.cpp" />
+    <ClCompile Include="WireSculptNode.cpp" />
+    <ClCompile Include="WireSculptPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WireSculpt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WireSculptNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Edge.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Landmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NonLandmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Path.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WireSculptPlugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cylinder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtremePoints.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HeatMapDist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Face.h">
-    <ClInclude Include="Contours.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="WireSculpt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WireSculptNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Vertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Edge.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Landmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NonLandmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Path.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WireSculptPlugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cylinder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtremePoints.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HeatMapDist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Face.cpp">
-    <ClCompile Include="Contours.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_curvature.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_normals.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_tstrips.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_io.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\KDtree.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_grid.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_pointareas.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\remove.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_connectivity.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_stats.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\reorder_verts.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\trimesh2\libsrc\TriMesh_bounding.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="Contours.h" />
+    <ClInclude Include="cylinder.h" />
+    <ClInclude Include="Edge.h" />
+    <ClInclude Include="ExtremePoints.h" />
+    <ClInclude Include="Face.h" />
+    <ClInclude Include="HeatMapDist.h" />
+    <ClInclude Include="Landmark.h" />
+    <ClInclude Include="NonLandmark.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="sphere.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="WireSculpt.h" />
+    <ClInclude Include="WireSculptNode.h" />
+    <ClInclude Include="WireSculptPlugin.h" />
   </ItemGroup>
 </Project>

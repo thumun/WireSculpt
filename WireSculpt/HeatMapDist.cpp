@@ -394,9 +394,6 @@ std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin ws,
     else if (c == 'd') {
         cs = phi;
     }
-    else {
-        return;
-    }
 
     std::unordered_map<Vertex*, float> lv; 
     std::vector<Vertex> vertices = ws.verticies;
