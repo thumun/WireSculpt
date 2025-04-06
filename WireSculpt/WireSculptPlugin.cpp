@@ -46,6 +46,10 @@ vector<string> WireSculptPlugin::SplitString(const string& input, char delimiter
 // returns true: success 
 bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
+    faces.clear();
+    edges.clear();
+    verticies.clear();
+
     // incorrect obj type 
     if (!GetFileExtension(filePath)) {
         return false; 
