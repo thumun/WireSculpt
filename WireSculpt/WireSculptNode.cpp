@@ -13,6 +13,15 @@
 #include <random>
 
 
+#include <maya/MFnLambertShader.h>
+#include <maya/MFnSet.h>
+#include <maya/MItMeshPolygon.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MItMeshVertex.h>
+
 MTypeId WireSculptNode::id(0x0007F015);
 MObject WireSculptNode::inMeshFile;
 MObject WireSculptNode::aAttract;
@@ -318,7 +327,10 @@ MStatus WireSculptNode::initialize()
 MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
     const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
-
+    
+   
+    // ARE ALL FACE COUNTS NOW CONNECTS??? 
+    // 
     // Making sphere wireframe
     for (auto vertex : verticies) {
       
@@ -333,6 +345,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         sphere.appendToMesh(points, faceCounts, faceConnects);*/
     }
     
+
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
     std::vector<int> extremePoints = ws.GetExtremePoints(filePath);
     MGlobal::displayInfo("Extreme points: ");
@@ -412,16 +425,51 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             MIntArray currFaceCounts;
             MIntArray currFaceConnects;
 
-            CylinderMesh cylinder(start, end, radius);
+            /*CylinderMesh cylinder(start, end, radius);
             cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);*/
         }
     }
     
     MGlobal::displayInfo("Finished: set up contours");
     
-    MFnMesh meshFS;
-    MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+    MPoint start(0, 0, 0);
+    MPointArray currPoints1;
+    MIntArray currFaceCounts1;
+    MIntArray currFaceConnects1;
+    SphereMesh sphere(start, radius);
+    sphere.getMesh(currPoints1, currFaceCounts1, currFaceConnects1);
+    sphere.appendToMesh(points, faceCounts, faceConnects);
+
+    MFnMesh meshFn;
+    MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+
+   
+    //MStatus status;
+    //MFnMesh meshFn(meshObject, &status);
+
+    // Get all vertex indices
+    MItMeshVertex itVertex(meshObject, &status);
+
+    MIntArray vertexIndices;
+    while (!itVertex.isDone()) {
+        vertexIndices.append(itVertex.index());
+        itVertex.next();
+    }
+
+    // Create color array with the same size
+    MColorArray colors;
+    for (unsigned int i = 0; i < vertexIndices.length(); ++i) {
+        MColor color(1, 0, 0);
+        colors.append(color);
+    }
+
+    // Create or use the default color set
+    MString colorSetName = "colorSet1";
+    meshFn.createColorSetWithName(colorSetName, nullptr, nullptr, &status);
+
+    // Assign colors to vertices
+    status = meshFn.setVertexColors(colors, vertexIndices);
 
     return meshObject;
 }
