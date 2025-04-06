@@ -433,21 +433,39 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     
     MGlobal::displayInfo("Finished: set up contours");
     
-    MPoint start(0, 0, 0);
-    MPointArray currPoints1;
-    MIntArray currFaceCounts1;
-    MIntArray currFaceConnects1;
-    SphereMesh sphere(start, radius);
-    sphere.getMesh(currPoints1, currFaceCounts1, currFaceConnects1);
-    sphere.appendToMesh(points, faceCounts, faceConnects);
+    /* Outputting Colored Vertices Example */
+    MColorArray colors;
+    float r = 1.0;
+    float b = 0.0;
+    float g = 0.0;
+    for (auto vertex : verticies) {
+
+        MPoint start = vertex.mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+
+        // Record how many vertices this sphere has
+        int numVerticesThisSphere = currPoints.length();
+        
+        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            MColor color(r, g, b);
+            colors.append(color);
+        }
+
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+        r -= 1.0 / verticies.size();
+        b += 1.0 / verticies.size();
+    }
 
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
 
-   
-    //MStatus status;
-    //MFnMesh meshFn(meshObject, &status);
-
+    /* Color Data */
     // Get all vertex indices
     MItMeshVertex itVertex(meshObject, &status);
 
@@ -458,11 +476,11 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     }
 
     // Create color array with the same size
-    MColorArray colors;
+    /*MColorArray colors;
     for (unsigned int i = 0; i < vertexIndices.length(); ++i) {
         MColor color(1, 0, 0);
         colors.append(color);
-    }
+    }*/
 
     // Create or use the default color set
     MString colorSetName = "colorSet1";
