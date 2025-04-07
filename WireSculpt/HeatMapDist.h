@@ -19,6 +19,7 @@ public:
     ~HeatMapDist() {};
 
     void heatDiffusion(int sInput);
+    void heatDiffusionFromPath(const std::vector<Vertex*>& sourceVertexIndices);
     void computePhi(int sInput, WireSculptPlugin& ws);
     std::unordered_map<Vertex*, float> colorScheme(WireSculptPlugin& ws, char c);
 

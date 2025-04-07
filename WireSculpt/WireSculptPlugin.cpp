@@ -42,18 +42,17 @@ vector<string> WireSculptPlugin::SplitString(const string& input, char delimiter
 }
 
 void WireSculptPlugin::resetIDs() {
-    Vertex::lastId = 0;
-    Edge::lastId = 0;
-    Face::lastId = 0;
+    Vertex::lastId = 0; 
+    Edge::lastId = 0; 
+    Face::lastId = 0; 
 }
+
 // processes the obj file 
 // returns false: issue with file (contents or type) 
 // returns true: success 
 bool WireSculptPlugin::ProcessFile(std::string filePath) {
 
-    faces.clear();
-    edges.clear();
-    verticies.clear();
+    resetIDs();
 
     // incorrect obj type 
     if (!GetFileExtension(filePath)) {
@@ -72,8 +71,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     // temp storage 
     vector<MVector> pos; 
     vector<MVector> vertexNormals;
-
-    resetIDs();
 
     while (getline(fin, line)) {
 
@@ -101,7 +98,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
             }
 
             //if (faceVerts.size() < 3) return;
-            
+
             // Compute face normal
             MVector v0 = pos[faceVerts[0]-1];
             MVector v1 = pos[faceVerts[1]-1];
@@ -121,19 +118,19 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                     &verticies[faceVerts[i + 1]-1],
                     norm));
             }
-            
+
             edges.reserve(verticies.size() * (verticies.size() - 1) * 0.5f);
 
             // setting up neighbors 
             for (int i = 0; i < faceVerts.size(); i++) {
                 // check if edge already exists before creating 
-                
+
                 auto vertOne = faceVerts[i] - 1; 
                 auto vertTwo = faceVerts[(i + 1)%faceVerts.size()] - 1;
-                
+
                 bool edgeFound = false; 
                 int edgeIndx = -1; 
-                
+
                 // want to do while but how to loop at same time
                 if (edges.size() > 0) {
                     for (int j = 0; j < edges.size(); j++) {
@@ -151,7 +148,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                     edges.push_back(Edge(&verticies[vertOne], &verticies[vertTwo]));
                     edgeIndx = edges.size() - 1;
                 }
-                
+
                 verticies[vertOne].setNeighbor(&verticies[vertTwo], &edges[edgeIndx]);
             }
         }
@@ -370,7 +367,7 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     // Start vertex
     openList.push(start);
     inOpenList[start->id] = true;
-    
+
     // Main loop
     while (!openList.empty()) {
 
@@ -416,13 +413,13 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
                 nVert->h = newH;
                 nVert->f = newF;
                 parentList[nVert->id] = current->id;
-
+                        
                 if (!inOpenList[nVert->id]) {
                     openList.push(nVert);
                     inOpenList[nVert->id] = true;
                 }
             }
-            
+
         }
     }
     return std::vector<Vertex*>();
