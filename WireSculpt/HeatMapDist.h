@@ -20,7 +20,7 @@ public:
 
     void heatDiffusion(int sInput);
     void computePhi(int sInput, WireSculptPlugin& ws);
-    std::unordered_map<Vertex*, float> colorScheme(WireSculptPlugin ws, char c);
+    std::unordered_map<Vertex*, float> colorScheme(WireSculptPlugin& ws, char c);
 
     std::vector<double> colors;
     double MaxColor;

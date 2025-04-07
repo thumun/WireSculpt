@@ -428,11 +428,11 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
-void WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin ws) {
+std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {
     HeatMapDist dist = HeatMapDist(ws);
     dist.heatDiffusion(0);
     dist.computePhi(0, ws);
-    auto verts = dist.colorScheme(ws, 'd');
+    return dist.colorScheme(ws, 'd');
 }
 
 std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {

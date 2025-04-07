@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 
+#include <unordered_map>
 struct vec3f {
 	float x, y, z;
 	vec3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
@@ -20,7 +21,7 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
-	void GetHeatMapDistance(WireSculptPlugin ws);
+	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws);
 	
 	// Path finding procedure:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors
