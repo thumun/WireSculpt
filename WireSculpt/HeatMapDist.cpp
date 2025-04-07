@@ -202,6 +202,18 @@ void HeatMapDist::heatDiffusion(int sInput) {
     this->L = this->lu.solve(K);
 }
 
+void HeatMapDist::heatDiffusionFromPath(const std::vector<Vertex*>& sourceVertexIndices) {
+    Eigen::VectorXd K = Eigen::VectorXd::Zero(A.rows());
+
+    double heatPerVertex = 1.0 / sourceVertexIndices.size();
+
+    for (auto v : sourceVertexIndices) {
+        K(v->id) = heatPerVertex;
+    }
+
+    this->L = this->lu.solve(K);
+}
+
 void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
     s = sInput;
     Eigen::VectorXd b = computeB(s, ws);

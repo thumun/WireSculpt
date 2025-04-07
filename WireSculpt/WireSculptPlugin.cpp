@@ -421,9 +421,45 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
     return std::vector<Vertex*>();
 }
 
-void GetHeatMapDistance(WireSculptPlugin ws) {
+std::vector<Vertex*> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
+    // first convert to verts 
+    std::vector<Vertex*> pathVerts; 
+    for (int i = 0; i < segments->size(); i++) {
+        auto vert = (*segments)[i].first;
+
+        Eigen::Vector3d vertPos = {vert.x, vert.y, vert.z};
+
+        Vertex * storeVert = nullptr; 
+        constexpr double dist = std::numeric_limits<double>::max();
+
+        // find based on pos?
+        for (auto &v : this->verticies) {
+            Eigen::Vector3d comparePos = {v.mPosition.x, v.mPosition.y, v.mPosition.z};
+            
+            auto distCompare = (comparePos - vertPos).norm();
+
+            if (distCompare < dist) {
+                storeVert = &v; 
+                break;
+            }
+
+          /*  if (comparePos == vertPos) {
+                storeVert = &v;
+                break;
+            }*/
+
+        }
+        
+        pathVerts.push_back(storeVert);
+    }
+
+    return pathVerts;
+}
+
+void WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin ws, std::vector<Vertex*> * segments) {
     HeatMapDist dist = HeatMapDist(ws);
-    dist.heatDiffusion(0);
+    dist.heatDiffusionFromPath(*segments);
+    //dist.heatDiffusion(0);
     dist.computePhi(0, ws);
     auto verts = dist.colorScheme(ws, 'd');
 }
@@ -460,7 +496,7 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj");
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     //std::vector<Vertex>* verticies = ws.GetVerticies();
@@ -470,6 +506,9 @@ int main() {
 
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
 
-    GetHeatMapDistance(ws);
+    auto featSeg = ws.GetContours(0.7f, 0, 1, 0.1f, "D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj");
+    auto test = ws.processSegments(&featSeg);
+
+    ws.GetHeatMapDistance(ws, &test);
 }
 #endif // EXEDEBUG
