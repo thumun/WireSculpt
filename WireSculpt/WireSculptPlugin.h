@@ -52,4 +52,5 @@ private:
 	int findMinTriangularDistanceEdge(int newLM, std::vector<int> tour, std::vector<Vertex*> landmarks);
 	std::vector<int> swapEdge(std::vector<int> tour, int i, int j);
 
+	void resetIDs();
 };
