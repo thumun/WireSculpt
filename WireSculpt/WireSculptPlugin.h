@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 
+#include <unordered_map>
 struct vec3f {
 	float x, y, z;
 	vec3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
@@ -20,6 +21,7 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
+	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws);
 	void GetHeatMapDistance(WireSculptPlugin ws, std::vector<Vertex*> * segments);
 	
 	// Path finding procedure:

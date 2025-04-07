@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <maya/MGlobal.h>
 
 HeatMapDist::HeatMapDist(WireSculptPlugin ws) {
     colors.resize(ws.faces.size());
@@ -352,7 +353,7 @@ double HeatMapDist::computeAngle(Vertex * v1, Vertex * v2) {
     return std::acos(cos);
 }
 
-std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin ws, char c) {
+std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin& ws, char c) {
     Eigen::VectorXd cs;
 
     if (c == 'h') {
@@ -363,10 +364,11 @@ std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin ws,
     }
 
     std::unordered_map<Vertex*, float> lv; 
-    std::vector<Vertex> vertices = ws.verticies;
+    std::vector<Vertex>* vertices = ws.GetVerticies();
     
-    for (int i = 0; i < vertices.size(); i++) {
-        lv.insert({&vertices[i], cs(i)});
+    for (int i = 0; i < vertices->size(); i++) {
+        Vertex* v = &((*vertices)[i]);
+        lv.insert({ v, cs(i) });
     }
 
     return lv;

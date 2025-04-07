@@ -13,6 +13,15 @@
 #include <random>
 
 
+#include <maya/MFnLambertShader.h>
+#include <maya/MFnSet.h>
+#include <maya/MItMeshPolygon.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MItMeshVertex.h>
+
 MTypeId WireSculptNode::id(0x0007F015);
 MObject WireSculptNode::inMeshFile;
 MObject WireSculptNode::aAttract;
@@ -318,7 +327,7 @@ MStatus WireSculptNode::initialize()
 MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
     const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
-
+    
     // Making sphere wireframe
     for (auto vertex : verticies) {
       
@@ -329,10 +338,11 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         MIntArray currFaceConnects;
 
         /*SphereMesh sphere(start, radius);
-        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);*/
     }
     
+
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
     std::vector<int> extremePoints = ws.GetExtremePoints(filePath);
     MGlobal::displayInfo("Extreme points: ");
@@ -355,7 +365,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
             // Draw each Landmark Vertex
             /*SphereMesh sphere(verticies[index].mPosition, radius * 2);
-            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
             sphere.appendToMesh(points, faceCounts, faceConnects);*/
         }
     }
@@ -394,7 +404,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
                 MIntArray currFaceConnects;
 
                 /*CylinderMesh cylinder(start, end, radius * 0.5);
-                cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
+                cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
                 cylinder.appendToMesh(points, faceCounts, faceConnects);*/
             }
         }
@@ -412,16 +422,72 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             MIntArray currFaceCounts;
             MIntArray currFaceConnects;
 
-            CylinderMesh cylinder(start, end, radius);
-            cylinder.getMesh(currPoints, currFaceConnects, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
+            /*CylinderMesh cylinder(start, end, radius);
+            cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
+            cylinder.appendToMesh(points, faceCounts, faceConnects);*/
         }
     }
     
     MGlobal::displayInfo("Finished: set up contours");
     
-    MFnMesh meshFS;
-    MObject meshObject = meshFS.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+    /* Outputting Colored Vertices Example */
+    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    MColorArray colors;
+    float r = 1.0;
+    float b = 0.0;
+    float g = 0.0;
+    float maxDist = -1;
+    for (auto vc : colorScheme) {
+        if (vc.second > maxDist) {
+            maxDist = vc.second;
+        }
+    }
+    for (auto vc : colorScheme) {
+        //MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
+        MPoint start = (vc.first)->mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        int numVerticesThisSphere = currPoints.length();
+
+        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            float distance = colorScheme[(vc.first)];
+
+            r = 1.0 * distance / maxDist; // 1.0 / verticies.size();
+            b = 1.0 - 1.0 * distance / maxDist; // 1.0 / verticies.size();
+            //MGlobal::displayInfo("Vertex distance is " + MString() + distance + "; max distance is " + MString() + maxDist + " and color is " + MString() + r + " " + MString() + b);
+
+            MColor color(r, g, b);
+            colors.append(color);
+        }
+
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+    }
+    
+
+    MFnMesh meshFn;
+    MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
+
+    /* Color Data */
+    // Get all vertex indices
+    MItMeshVertex itVertex(meshObject, &status);
+
+    MIntArray vertexIndices;
+    while (!itVertex.isDone()) {
+        vertexIndices.append(itVertex.index());
+        itVertex.next();
+    }
+
+    // Create or use the default color set
+    MString colorSetName = "colorSet1";
+    meshFn.createColorSetWithName(colorSetName, nullptr, nullptr, &status);
+
+    // Assign colors to vertices
+    status = meshFn.setVertexColors(colors, vertexIndices);
 
     return meshObject;
 }
