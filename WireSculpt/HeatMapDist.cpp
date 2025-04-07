@@ -104,12 +104,7 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
     Vertex* v3 = nullptr;
     bool found = false;
 
-    //std::cout << "v1 input:" << v1->id;
-    //std::cout << "\tv2 input:" << v2->id << std::endl;
-
     for (auto f : *faces) {
-
-        //std::cout << "\nface verts:" << f.verticies[0]->id << ", " << f.verticies[1]->id << ", " << f.verticies[2]->id << std::endl; 
 
         bool foundV1 = false; 
         bool foundV2 = false; 
@@ -138,17 +133,6 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
         return 0.0;
     }
     else {
-
-        // cos = a . b / magnitude 
-        // cot = cos / sqrt(1 - cos ^ 2)
-
-        /*a.normalize();
-        b.normalize();
-
-        auto cos = a.dot(b);
-        auto cot = cos / sqrt(1 - cos * cos);
-
-        return cot; */
 
         Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
         Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
@@ -334,41 +318,12 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vec
         }
     }
 
-    //double delta = computeDeltaXuFace(h, fv.at(h.getFace()));
-    /*Halfedge<Point_3> current = h.next.opposite;
-    while (current != h) {
-        delta += computeDeltaXuFace(current, fv.at(current.getFace()));
-        current = current.next.opposite;
-    }*/
-
     return 0.5 * delta;
 }
 
-// what is this
 double HeatMapDist::computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj) {
-
-    /*auto ahh = curr->mPosition - curr->mPosition;
-    auto argh = v1->mPosition - curr->mPosition;
-
-    Eigen::Vector3d c = {ahh[0], ahh[1], ahh[2]};
-    Eigen::Vector3d d = {argh[0], argh[1], argh[2]};
-    double dotProduct = c.dot(d);
-    double magnitudeC = c.norm();
-    double magnitudeD = d.norm();*/
-
-    /* Halfedge<Point_3> e1 = h;
-     Halfedge<Point_3> e2 = e1.next;
-     Halfedge<Point_3> e3 = e2.next;
-
-     Vector_3 v1 = Utilities.getVector(e1);
-     Vector_3 v2 = Utilities.getVector(e2.opposite);
-     Vector_3 v3 = Utilities.getVector(e3);*/
-
     double theta2 = computeAngle(v2, v1);
     double theta1 = computeAngle(curr, v2);
-
-    //Vector_3 E2 = Utilities.getVector(e1.opposite);
-    //Vector_3 E1 = Utilities.getVector(e2);
 
     Eigen::Vector3d E2 = { v2->mPosition.x - curr->mPosition.x, v2->mPosition.y - curr->mPosition.y, v2->mPosition.z - curr->mPosition.z };
     Eigen::Vector3d E1 = { v1->mPosition.x - curr->mPosition.x, v1->mPosition.y - curr->mPosition.y, v1->mPosition.z - curr->mPosition.z };

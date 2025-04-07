@@ -442,12 +442,6 @@ std::vector<Vertex*> WireSculptPlugin::processSegments(std::vector<std::pair<vec
                 storeVert = &v; 
                 break;
             }
-
-          /*  if (comparePos == vertPos) {
-                storeVert = &v;
-                break;
-            }*/
-
         }
         
         pathVerts.push_back(storeVert);
