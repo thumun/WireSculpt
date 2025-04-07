@@ -33,6 +33,8 @@ public:
 	// Suggestive contours
 	std::vector<std::pair<vec3f, vec3f>> GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename);
 
+	void resetIDs();
+
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
 	std::vector<Face> faces;

@@ -41,10 +41,18 @@ vector<string> WireSculptPlugin::SplitString(const string& input, char delimiter
     return tokens;
 }
 
+void WireSculptPlugin::resetIDs() {
+    Vertex::lastId = 0; 
+    Edge::lastId = 0; 
+    Face::lastId = 0; 
+}
+
 // processes the obj file 
 // returns false: issue with file (contents or type) 
 // returns true: success 
 bool WireSculptPlugin::ProcessFile(std::string filePath) {
+
+    resetIDs();
 
     // incorrect obj type 
     if (!GetFileExtension(filePath)) {
