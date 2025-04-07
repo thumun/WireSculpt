@@ -359,7 +359,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             sphere.appendToMesh(points, faceCounts, faceConnects);*/
         }
     }
-
+    
     // Run TSP Optimized Nearest Neighbors on five vertices
     std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
 
@@ -399,7 +399,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             }
         }
     }
-
+    
     // Draw Contours
     std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
     if (featureSegments.size() > 0) {
