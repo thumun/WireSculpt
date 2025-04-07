@@ -35,8 +35,6 @@ public:
 	
 	std::vector<Vertex*> processSegments(std::vector<std::pair<vec3f, vec3f>>* segments);
 
-	void resetIDs();
-
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
