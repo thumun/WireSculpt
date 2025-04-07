@@ -397,14 +397,11 @@ std::unordered_map<Vertex*, float> HeatMapDist::colorScheme(WireSculptPlugin& ws
     }
 
     std::unordered_map<Vertex*, float> lv; 
-    //std::vector<Vertex> vertices = ws.verticies;
     std::vector<Vertex>* vertices = ws.GetVerticies();
     
     for (int i = 0; i < vertices->size(); i++) {
         Vertex* v = &((*vertices)[i]);
         lv.insert({ v, cs(i) });
-        MGlobal::displayInfo("vertex position is " + MString() + v->mPosition.x + " " + MString() + v->mPosition.y + " " + MString() + v->mPosition.z);
-
     }
 
     return lv;

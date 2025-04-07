@@ -328,9 +328,6 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
     
-   
-    // ARE ALL FACE COUNTS NOW CONNECTS??? 
-    // 
     // Making sphere wireframe
     for (auto vertex : verticies) {
       
@@ -446,7 +443,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         }
     }
     for (auto vc : colorScheme) {
-        MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
+        //MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
         MPoint start = (vc.first)->mPosition;
 
         MPointArray currPoints;
@@ -461,7 +458,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             float distance = colorScheme[(vc.first)];
 
             r = 1.0 * distance / maxDist; // 1.0 / verticies.size();
-            b = 1.0 * distance / maxDist; // 1.0 / verticies.size();
+            b = 1.0 - 1.0 * distance / maxDist; // 1.0 / verticies.size();
             //MGlobal::displayInfo("Vertex distance is " + MString() + distance + "; max distance is " + MString() + maxDist + " and color is " + MString() + r + " " + MString() + b);
 
             MColor color(r, g, b);
@@ -470,40 +467,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
         sphere.appendToMesh(points, faceCounts, faceConnects);
     }
-    //MColorArray colors;
-    //float r = 1.0;
-    //float b = 0.0;
-    //float g = 0.0;
-    //for (Vertex& vertex : verticies) {
-
-    //    MPoint start = vertex.mPosition;
-
-    //    MPointArray currPoints;
-    //    MIntArray currFaceCounts;
-    //    MIntArray currFaceConnects;
-
-    //    SphereMesh sphere(start, radius);
-    //    sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-
-    //    // Record how many vertices this sphere has
-    //    int numVerticesThisSphere = currPoints.length();
-    //    
-    //    for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-    //        float distance = colorScheme[&vertex];
-
-    //        r -= 1.0 * distance / maxDist; // 1.0 / verticies.size();
-    //        b += 1.0 * distance / maxDist; // 1.0 / verticies.size();
-    //        MGlobal::displayInfo("Vertex distance is " + MString() + distance + " and color is " + MString() + r + " " + MString() + b);
-
-    //        MColor color(r, g, b);
-    //        colors.append(color);
-    //    }
-
-    //    sphere.appendToMesh(points, faceCounts, faceConnects);
-
-    //    //r -= 1.0 * distance / maxDist; // 1.0 / verticies.size();
-    //    //b += 1.0 * distance / maxDist; // 1.0 / verticies.size();
-    //}
+    
 
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
@@ -517,13 +481,6 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         vertexIndices.append(itVertex.index());
         itVertex.next();
     }
-
-    // Create color array with the same size
-    /*MColorArray colors;
-    for (unsigned int i = 0; i < vertexIndices.length(); ++i) {
-        MColor color(1, 0, 0);
-        colors.append(color);
-    }*/
 
     // Create or use the default color set
     MString colorSetName = "colorSet1";
