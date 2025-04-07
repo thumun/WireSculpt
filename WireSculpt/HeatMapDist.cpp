@@ -46,9 +46,19 @@ void HeatMapDist::computeFaceArea(std::vector<Face> * faces, std::unordered_map<
     // Calculate the sum of one-third of the areas of incident faces.
 
     for (auto f : *faces) {
-        double area = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
+
+        Eigen::Vector3d p0 = {f.verticies[0]->mPosition.x, f.verticies[0]->mPosition.y, f.verticies[0]->mPosition.z};
+        Eigen::Vector3d p1 = {f.verticies[1]->mPosition.x, f.verticies[1]->mPosition.y, f.verticies[1]->mPosition.z};
+        Eigen::Vector3d p2 = { f.verticies[2]->mPosition.x, f.verticies[2]->mPosition.y, f.verticies[2]->mPosition.z};
+
+        Eigen::Vector3d edge1 = p1 - p0;
+        Eigen::Vector3d edge2 = p2 - p0;
+
+        double area = 0.5 * edge1.cross(edge2).norm();
+
+        /*double area = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
                             f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
-                            f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
+                            f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));*/
 
         mp->insert({&f, area});
     }
@@ -151,6 +161,58 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
 
         return dotProduct / crossProductMagnitude;
     }
+
+    //Eigen::Vector3d p_i = {v1->mPosition.x, v1->mPosition.y, v1->mPosition.z};
+    //Eigen::Vector3d p_j = { v2->mPosition.x, v2->mPosition.y, v2->mPosition.z };
+
+    //// Find the two adjacent faces (if they exist)
+    //Vertex* v_alpha = nullptr; // Third vertex in the first adjacent face
+    //Vertex* v_beta = nullptr;  // Third vertex in the second adjacent face
+
+    //for (const Face& f : *faces) {
+    //    bool has_vi = false, has_vj = false;
+    //    Vertex* third_vertex = nullptr;
+
+    //    for (Vertex* v : f.verticies) {
+    //        if (v == v1) has_vi = true;
+    //        else if (v == v2) has_vj = true;
+    //        else third_vertex = v;
+    //    }
+
+    //    if (has_vi && has_vj) {
+    //        if (!v_alpha) v_alpha = third_vertex;
+    //        else if (!v_beta) v_beta = third_vertex;
+    //    }
+    //}
+
+    //double cot_alpha = 0.0, cot_beta = 0.0;
+
+    //// Compute cotangent for the first adjacent face (if it exists)
+    //if (v_alpha) {
+    //    Eigen::Vector3d p_alpha = { v_alpha->mPosition.x, v_alpha->mPosition.y, v_alpha->mPosition.z };
+    //    Eigen::Vector3d e1 = p_i - p_alpha;
+    //    Eigen::Vector3d e2 = p_j - p_alpha;
+    //    double dot = e1.dot(e2);
+    //    double cross_norm = e1.cross(e2).norm();
+    //    if (cross_norm > 1e-8) { // Avoid division by zero
+    //        cot_alpha = dot / cross_norm;
+    //    }
+    //}
+
+    //// Compute cotangent for the second adjacent face (if it exists)
+    //if (v_beta) {
+    //    Eigen::Vector3d p_beta = { v_beta->mPosition.x, v_beta->mPosition.y, v_beta->mPosition.z };
+    //    Eigen::Vector3d e1 = p_i - p_beta;
+    //    Eigen::Vector3d e2 = p_j - p_beta;
+    //    double dot = e1.dot(e2);
+    //    double cross_norm = e1.cross(e2).norm();
+    //    if (cross_norm > 1e-8) { // Avoid division by zero
+    //        cot_beta = dot / cross_norm;
+    //    }
+    //}
+
+    //// Return the average cotangent weight
+    //return 0.5 * (cot_alpha + cot_beta);
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
