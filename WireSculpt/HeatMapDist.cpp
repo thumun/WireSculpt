@@ -111,6 +111,7 @@ std::unordered_set<Vertex*> HeatMapDist::getNeighbor(const Vertex& vertex) {
 }
 
 double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vector<Face>* faces) {
+    /*
     Eigen::Vector3d a, b;
     Vertex* v3 = nullptr;
     bool found = false;
@@ -161,58 +162,69 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
 
         return dotProduct / crossProductMagnitude;
     }
+    */
 
-    //Eigen::Vector3d p_i = {v1->mPosition.x, v1->mPosition.y, v1->mPosition.z};
-    //Eigen::Vector3d p_j = { v2->mPosition.x, v2->mPosition.y, v2->mPosition.z };
-
-    //// Find the two adjacent faces (if they exist)
-    //Vertex* v_alpha = nullptr; // Third vertex in the first adjacent face
-    //Vertex* v_beta = nullptr;  // Third vertex in the second adjacent face
-
-    //for (const Face& f : *faces) {
-    //    bool has_vi = false, has_vj = false;
-    //    Vertex* third_vertex = nullptr;
-
-    //    for (Vertex* v : f.verticies) {
-    //        if (v == v1) has_vi = true;
-    //        else if (v == v2) has_vj = true;
-    //        else third_vertex = v;
-    //    }
-
-    //    if (has_vi && has_vj) {
-    //        if (!v_alpha) v_alpha = third_vertex;
-    //        else if (!v_beta) v_beta = third_vertex;
-    //    }
-    //}
-
-    //double cot_alpha = 0.0, cot_beta = 0.0;
-
-    //// Compute cotangent for the first adjacent face (if it exists)
-    //if (v_alpha) {
-    //    Eigen::Vector3d p_alpha = { v_alpha->mPosition.x, v_alpha->mPosition.y, v_alpha->mPosition.z };
-    //    Eigen::Vector3d e1 = p_i - p_alpha;
-    //    Eigen::Vector3d e2 = p_j - p_alpha;
-    //    double dot = e1.dot(e2);
-    //    double cross_norm = e1.cross(e2).norm();
-    //    if (cross_norm > 1e-8) { // Avoid division by zero
-    //        cot_alpha = dot / cross_norm;
-    //    }
-    //}
-
-    //// Compute cotangent for the second adjacent face (if it exists)
-    //if (v_beta) {
-    //    Eigen::Vector3d p_beta = { v_beta->mPosition.x, v_beta->mPosition.y, v_beta->mPosition.z };
-    //    Eigen::Vector3d e1 = p_i - p_beta;
-    //    Eigen::Vector3d e2 = p_j - p_beta;
-    //    double dot = e1.dot(e2);
-    //    double cross_norm = e1.cross(e2).norm();
-    //    if (cross_norm > 1e-8) { // Avoid division by zero
-    //        cot_beta = dot / cross_norm;
-    //    }
-    //}
-
-    //// Return the average cotangent weight
-    //return 0.5 * (cot_alpha + cot_beta);
+    Eigen::Vector3d p_i = {v1->mPosition.x, v1->mPosition.y, v1->mPosition.z};
+    Eigen::Vector3d p_j = { v2->mPosition.x, v2->mPosition.y, v2->mPosition.z };
+    
+    // Find the two adjacent faces (if they exist)
+    Vertex* v_alpha = nullptr; // Third vertex in the first adjacent face
+    Vertex* v_beta = nullptr;  // Third vertex in the second adjacent face
+    
+    for (const Face& f : *faces) {
+        bool has_vi = false, has_vj = false;
+        Vertex* third_vertex = nullptr;
+    
+        for (auto v : f.verticies) {
+            if (*v == *v1) {
+                has_vi = true;
+            }
+            else if (*v == *v2) {
+                has_vj = true;
+            }
+            else {
+                third_vertex = v;
+            }
+        }
+    
+        if (has_vi && has_vj) {
+            if (!v_alpha) {
+                v_alpha = third_vertex;
+            }
+            else if (!v_beta) {
+                v_beta = third_vertex;
+            }
+        }
+    }
+    
+    double cot_alpha = 0.0, cot_beta = 0.0;
+    
+    // Compute cotangent for the first adjacent face (if it exists)
+    if (v_alpha) {
+        Eigen::Vector3d p_alpha = { v_alpha->mPosition.x, v_alpha->mPosition.y, v_alpha->mPosition.z };
+        Eigen::Vector3d e1 = p_i - p_alpha;
+        Eigen::Vector3d e2 = p_j - p_alpha;
+        double dot = e1.dot(e2);
+        double cross_norm = e1.cross(e2).norm();
+        if (cross_norm > 1e-8) { // Avoid division by zero
+            cot_alpha = dot / cross_norm;
+        }
+    }
+    
+    // Compute cotangent for the second adjacent face (if it exists)
+    if (v_beta) {
+        Eigen::Vector3d p_beta = { v_beta->mPosition.x, v_beta->mPosition.y, v_beta->mPosition.z };
+        Eigen::Vector3d e1 = p_i - p_beta;
+        Eigen::Vector3d e2 = p_j - p_beta;
+        double dot = e1.dot(e2);
+        double cross_norm = e1.cross(e2).norm();
+        if (cross_norm > 1e-8) { // Avoid division by zero
+            cot_beta = dot / cross_norm;
+        }
+    }
+    
+    // Return the average cotangent weight
+    return 0.5 * (cot_alpha + cot_beta);
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
