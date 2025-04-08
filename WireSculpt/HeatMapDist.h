@@ -54,5 +54,6 @@ private:
     double computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj);
 
     double computeAngle(Vertex * u, Vertex * v);
+    //double computeAngle(Vertex* center, Vertex* a, Vertex* b);
 };
 

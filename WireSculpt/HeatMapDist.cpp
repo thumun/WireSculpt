@@ -328,6 +328,8 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vec
 }
 
 double HeatMapDist::computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj) {
+    /*double theta2 = computeAngle(v2, v1);
+    double theta1 = computeAngle(curr, v2);*/
     double theta1 = computeAngle(curr, v2);
     double theta2 = computeAngle(curr, v1);
 
@@ -368,6 +370,13 @@ double HeatMapDist::computeAngle(Vertex * v1, Vertex * v2) {
     else if (cos < -1.0) {
         cos = -1.0;
     }
+
+    /*double innerProduct = u.dot(v); 
+
+    double lu = std::sqrt(u.dot(u));
+    double lv = std::sqrt(v.dot(v));
+
+    double cos = innerProduct / (lu * lv);*/
 
     return std::acos(cos);
 }
