@@ -328,8 +328,10 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vec
 }
 
 double HeatMapDist::computeDeltaXuFace(Vertex* curr, Vertex* v1, Vertex* v2, Eigen::Vector3d Xj) {
-    double theta2 = computeAngle(v2, v1);
+    /*double theta2 = computeAngle(v2, v1);
+    double theta1 = computeAngle(curr, v2);*/
     double theta1 = computeAngle(curr, v2);
+    double theta2 = computeAngle(curr, v1);
 
     Eigen::Vector3d E2 = { v2->mPosition.x - curr->mPosition.x, v2->mPosition.y - curr->mPosition.y, v2->mPosition.z - curr->mPosition.z };
     Eigen::Vector3d E1 = { v1->mPosition.x - curr->mPosition.x, v1->mPosition.y - curr->mPosition.y, v1->mPosition.z - curr->mPosition.z };
@@ -349,12 +351,33 @@ double HeatMapDist::computeAngle(Vertex * v1, Vertex * v2) {
     Eigen::Vector3d u = { v1->mPosition[0], v1->mPosition[1], v1->mPosition[2] };
     Eigen::Vector3d v = { v2->mPosition[0], v2->mPosition[1], v2->mPosition[2] };
 
-    double innerProduct = u.dot(v); 
+    Eigen::Vector3d e1 = u - v;
+
+    // For typical usage, you'll want to pass a second adjacent vertex
+    // to compute the angle between two edges
+    Eigen::Vector3d e2 = v - u; 
+
+    double dot = e1.dot(e2);
+    double norm_e1 = e1.norm();
+    double norm_e2 = e2.norm();
+
+    // Clamp to avoid numerical issues with acos()
+    double cos = dot / (norm_e1 * norm_e2);
+    //cos = std::clamp(cos, -1.0, 1.0);
+    if (cos > 1.0) {
+        cos = 1.0; 
+    }
+    else if (cos < -1.0) {
+        cos = -1.0;
+    }
+
+    /*double innerProduct = u.dot(v); 
 
     double lu = std::sqrt(u.dot(u));
     double lv = std::sqrt(v.dot(v));
 
-    double cos = innerProduct / (lu * lv);
+    double cos = innerProduct / (lu * lv);*/
+
     return std::acos(cos);
 }
 
