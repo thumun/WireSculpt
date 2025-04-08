@@ -41,7 +41,6 @@ void HeatMapDist::computeA(WireSculptPlugin& ws) {
 }
 
 void HeatMapDist::computeFaceArea(std::vector<Face> * faces, std::unordered_map<Face*, double>* mp) {
-    double area = 0.0;
     // Implement your vertex area calculation here.
     // Calculate the sum of one-third of the areas of incident faces.
 
@@ -176,10 +175,10 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
         Vertex* third_vertex = nullptr;
     
         for (auto v : f.verticies) {
-            if (*v == *v1) {
+            if (v->id == v1->id) {
                 has_vi = true;
             }
-            else if (*v == *v2) {
+            else if (v->id == v2->id) {
                 has_vj = true;
             }
             else {
@@ -224,7 +223,13 @@ double HeatMapDist::computeCotan(const Vertex * v1, const Vertex * v2, std::vect
     }
     
     // Return the average cotangent weight
-    return 0.5 * (cot_alpha + cot_beta);
+    if (!v_beta) {
+        return cot_alpha;
+    } 
+    else {
+        return 0.5 * (cot_alpha + cot_beta);
+    }
+
 }
 
 void HeatMapDist::computeM(WireSculptPlugin& ws) {
@@ -328,9 +333,9 @@ Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
 }
 
 Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_map<int, double> vu) {
-    double Af = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
-        f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
-        f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
+    //double Af = 0.5 * (f.verticies[0]->mPosition.x * (f.verticies[1]->mPosition.y - f.verticies[2]->mPosition.y) +
+    //    f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
+    //    f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
 
     auto v1 = f.verticies[0];
     auto v2 = f.verticies[1];
@@ -379,15 +384,15 @@ double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vec
     bool v3 = false; 
 
     for (auto f : ws.faces) {
-        if (*f.verticies[0] == *u) {
+        if (f.verticies[0]->id == u->id) {
             v1 = true; 
             delta += computeDeltaXuFace(u, f.verticies[1], f.verticies[2], fv[f.id]);
         }
-        else if (*f.verticies[1] == *u) {
+        else if (f.verticies[1]->id == u->id) {
             v2 = true;
             delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[2], fv[f.id]);
         }
-        else if (*f.verticies[2] == *u) {
+        else if (f.verticies[2]->id == u->id) {
             v3 = true;
             delta += computeDeltaXuFace(u, f.verticies[0], f.verticies[1], fv[f.id]);
         }
