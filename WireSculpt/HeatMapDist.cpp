@@ -314,14 +314,14 @@ Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
     std::unordered_map<int, Eigen::Vector3d> fv;
 
     for (size_t i = 0; i < faces.size(); ++i) {
-        Eigen::Vector3d x = gradientFace(faces[i], vu);
+        fv[faces[i].id] = gradientFace(faces[i], vu);
         // normalize x
-        auto sum = std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
-        x[0] /= sum;
-        x[1] /= sum;
-        x[2] /= sum;
-        //x = Utilities::normalize(x);
-        fv[faces[i].id] = x;
+        //auto sum = std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+        //x[0] /= sum;
+        //x[1] /= sum;
+        //x[2] /= sum;
+        ////x = Utilities::normalize(x);
+        //fv[faces[i].id] = x;
     }
 
     // compute delta X
@@ -337,20 +337,48 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
     //    f.verticies[1]->mPosition.x * (f.verticies[2]->mPosition.y - f.verticies[0]->mPosition.y) +
     //    f.verticies[2]->mPosition.x * (f.verticies[0]->mPosition.y - f.verticies[1]->mPosition.y));
 
-    auto v1 = f.verticies[0];
+   /* auto v1 = f.verticies[0];
     auto v2 = f.verticies[1];
-    auto v3 = f.verticies[2];
+    auto v3 = f.verticies[2];*/
 
-    Eigen::Vector3d p1 = Eigen::Vector3d(v1->mPosition.x, v1->mPosition.y, v1->mPosition.z);
-    Eigen::Vector3d p2 = Eigen::Vector3d(v2->mPosition.x, v2->mPosition.y, v2->mPosition.z);
-    Eigen::Vector3d p3 = Eigen::Vector3d(v3->mPosition.x, v3->mPosition.y, v3->mPosition.z);
+    Eigen::Vector3d p0 = {f.verticies[0]->mPosition.x, f.verticies[0]->mPosition.y, f.verticies[0]->mPosition.z};
+    Eigen::Vector3d p1 = {f.verticies[1]->mPosition.x, f.verticies[1]->mPosition.y, f.verticies[1]->mPosition.z};
+    Eigen::Vector3d p2 = { f.verticies[2]->mPosition.x, f.verticies[2]->mPosition.y, f.verticies[2]->mPosition.z};
 
-    auto a = p1 - p3;
-    auto b = p2 - p3;
+    auto a = p1 - p0;
+    auto b = p2 - p0;
 
     auto N = a.cross(b);
 
-    double u = vu.at(v2->id);
+    double Af = 0.5 * N.norm();
+
+    if (Af < 1e-8) {
+        return Eigen::Vector3d::Zero();
+    }
+
+    double u0 = vu.at(f.verticies[0]->id);
+    double u1 = vu.at(f.verticies[1]->id);
+    double u2 = vu.at(f.verticies[2]->id);
+
+    Eigen::Vector3d gradient =
+        (u0 * (p2 - p1) +
+            u1 * (p0 - p2) +
+            u2 * (p1 - p0)) / (2.0 * Af);
+
+    //double grad_norm = gradient.norm();
+    //if (grad_norm > 1e-8) {
+    //    return gradient / grad_norm;  // Unit vector
+    //}
+    //else {
+    //    return Eigen::Vector3d::Zero();
+    //}
+
+    // Optional: Normalize the gradient (if needed for visualization)
+    // gradient.normalize();
+
+    return gradient;
+
+    /*double u = vu.at(v2->id);
     Eigen::Vector3d c1 = N.cross(p1);
     c1 = c1 * u;
 
@@ -369,9 +397,9 @@ Eigen::Vector3d HeatMapDist::gradientFace(const Face& f, const std::unordered_ma
     double area = 1.0 / (2.0 * Af);
     delta_x = delta_x * area;
     delta_y = delta_y * area;
-    delta_z = delta_z * area;
+    delta_z = delta_z * area;*/
 
-    return Eigen::Vector3d(delta_x, delta_y, delta_z);
+    //return Eigen::Vector3d(delta_x, delta_y, delta_z);
 }
 
 double HeatMapDist::computeDeltaXu(Vertex* u, std::unordered_map<int, Eigen::Vector3d> fv, WireSculptPlugin& ws) {
