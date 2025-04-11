@@ -429,8 +429,17 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     }
     
     MGlobal::displayInfo("Finished: set up contours");
+
+    // Process Segments -> convert featureSegments into vertices on the mesh
+    std::vector<Vertex*> featureVerts = ws.processSegments(&featureSegments);
     
-    /* Outputting Colored Vertices Example */
+    // Todo
+    // refactor
+    // find obj models
+
+
+    /* Outputting Colored Segment Example */
+    // std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVerts);
     std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
     MColorArray colors;
     float r = 1.0;
@@ -450,8 +459,16 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        SphereMesh sphere(start, radius);
-        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+        if (vc.first->id == 0) {
+            SphereMesh sphere(start, radius * 2);
+            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);
+        }
+        else {
+            SphereMesh sphere(start, radius);
+            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.appendToMesh(points, faceCounts, faceConnects);
+        }
         int numVerticesThisSphere = currPoints.length();
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
@@ -465,9 +482,46 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             colors.append(color);
         }
 
-        sphere.appendToMesh(points, faceCounts, faceConnects);
+        
     }
-    
+
+    /* Outputting Colored Vertices Example */
+    //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    //MColorArray colors;
+    //float r = 1.0;
+    //float b = 0.0;
+    //float g = 0.0;
+    //float maxDist = -1;
+    //for (auto vc : colorScheme) {
+    //    if (vc.second > maxDist) {
+    //        maxDist = vc.second;
+    //    }
+    //}
+    //for (auto vc : colorScheme) {
+    //    //MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
+    //    MPoint start = (vc.first)->mPosition;
+
+    //    MPointArray currPoints;
+    //    MIntArray currFaceCounts;
+    //    MIntArray currFaceConnects;
+
+    //    /*SphereMesh sphere(start, radius);
+    //    sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);*/
+    //    int numVerticesThisSphere = currPoints.length();
+
+    //    for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+    //        float distance = colorScheme[(vc.first)];
+
+    //        r = 1.0 * distance / maxDist; // 1.0 / verticies.size();
+    //        b = 1.0 - 1.0 * distance / maxDist; // 1.0 / verticies.size();
+    //        //MGlobal::displayInfo("Vertex distance is " + MString() + distance + "; max distance is " + MString() + maxDist + " and color is " + MString() + r + " " + MString() + b);
+
+    //        MColor color(r, g, b);
+    //        colors.append(color);
+    //    }
+
+    //    /*sphere.appendToMesh(points, faceCounts, faceConnects);*/
+    //}
 
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);

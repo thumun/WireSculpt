@@ -430,15 +430,16 @@ std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireScul
     dist.heatDiffusion(0);
     dist.computePhi(0, ws);
     return dist.colorScheme(ws, 'd');
+    //return std::unordered_map<Vertex*, float>();
 }
 
-void WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws, std::vector<Vertex*>* segments) {
-    HeatMapDist dist = HeatMapDist(ws);
-    dist.heatDiffusion(0);
+std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws, std::vector<Vertex*>* segments) {
+    /*HeatMapDist dist = HeatMapDist(ws);
     dist.heatDiffusionFromPath(*segments);
-    //dist.heatDiffusion(0);
-    dist.computePhi(0, ws);
-    auto verts = dist.colorScheme(ws, 'd');
+    dist.computePhi(segments, ws);
+    return dist.colorScheme(ws, 'd');*/
+    return std::unordered_map<Vertex*, float>();
+
 }
 
 std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {

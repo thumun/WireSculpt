@@ -20,7 +20,9 @@ public:
 
     void heatDiffusion(int sInput);
     void heatDiffusionFromPath(const std::vector<Vertex*>& sourceVertexIndices);
+    //void computePhi(std::vector<Vertex*>* segments, WireSculptPlugin& ws);
     void computePhi(int sInput, WireSculptPlugin& ws);
+
     std::unordered_map<Vertex*, float> colorScheme(WireSculptPlugin& ws, char c);
 
     std::vector<double> colors;
@@ -46,7 +48,9 @@ private:
     std::unordered_set<Vertex*> getNeighbor(const Vertex& vertex);
     double computeCotan(const Vertex * v1, const Vertex * v2, std::vector<Face>* faces); 
 
-    Eigen::VectorXd computeB(int s, WireSculptPlugin& ws);
+    //Eigen::VectorXd computeB(std::vector<Vertex*>* segments, WireSculptPlugin& ws);
+    Eigen::VectorXd computeB(int sInput, WireSculptPlugin& ws);
+
     double computeTime(WireSculptPlugin& ws);
 
     Eigen::Vector3d gradientFace(const Face& f, const std::unordered_map<int, double> vu);

@@ -226,8 +226,12 @@ void HeatMapDist::heatDiffusionFromPath(const std::vector<Vertex*>& sourceVertex
 }
 
 void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
+//void HeatMapDist::computePhi(std::vector<Vertex*>*segments, WireSculptPlugin & ws) {
+
     s = sInput;
     Eigen::VectorXd b = computeB(s, ws);
+
+    //Eigen::VectorXd b = computeB(segments, ws);
 
     this->phi = this->lulc.solve(b);
     
@@ -245,11 +249,14 @@ void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
     
 }
 
-Eigen::VectorXd HeatMapDist::computeB(int s, WireSculptPlugin& ws) {
+Eigen::VectorXd HeatMapDist::computeB(int sInput, WireSculptPlugin& ws) {
+// Eigen::VectorXd HeatMapDist::computeB(std::vector<Vertex*>*segments, WireSculptPlugin & ws) {
+
     std::unordered_map<int, double> vu;
     std::vector<Vertex> vertices = ws.verticies;
 
-    heatDiffusion(s); // compute the heat diffusion
+    //heatDiffusionFromPath(*segments); // compute the heat diffusion
+    heatDiffusion(s);
 
     // store in a map the heat associated with each vector
     for (size_t i = 0; i < vertices.size(); ++i) {
