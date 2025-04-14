@@ -426,6 +426,13 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 }
 
 std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi F;
+    igl::read_triangle_mesh("D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj", V, F);
+
+    igl::HeatGeodesicsData<double> geodesicData;
+    igl::heat_geodesics_precompute(V, F, geodesicData);
+
     HeatMapDist dist = HeatMapDist(ws);
     dist.heatDiffusion(0);
     dist.computePhi(0, ws);

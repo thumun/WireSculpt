@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <Eigen/Core>
+#include <igl/heat_geodesics.h>
 
 #include <unordered_map>
 struct vec3f {
@@ -40,6 +41,8 @@ public:
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
+
+	//static igl::HeatGeodesicsData<double> geodesicData;
 
 private:
 
