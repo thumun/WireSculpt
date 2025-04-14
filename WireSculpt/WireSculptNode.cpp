@@ -441,6 +441,9 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     /* Outputting Colored Segment Example */
     // std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVerts);
     std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    for (int i = 0; i < verticies.size(); i++) {
+        MGlobal::displayInfo("Iteration i is " + MString() + i + "; Vertex ID is " + MString() + verticies[i].id);
+    }
     MColorArray colors;
     float r = 1.0;
     float b = 0.0;
@@ -459,20 +462,22 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        if (vc.first->id == 0) {
+        if (vc.first->id == 22) {
             SphereMesh sphere(start, radius * 2);
-            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
             sphere.appendToMesh(points, faceCounts, faceConnects);
+            MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
+
         }
         else {
             SphereMesh sphere(start, radius);
-            sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
+            sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
             sphere.appendToMesh(points, faceCounts, faceConnects);
         }
         int numVerticesThisSphere = currPoints.length();
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-            float distance = colorScheme[(vc.first)];
+            float distance = vc.second; //colorScheme[(vc.first)];
 
             r = 1.0 * distance / maxDist; // 1.0 / verticies.size();
             b = 1.0 - 1.0 * distance / maxDist; // 1.0 / verticies.size();

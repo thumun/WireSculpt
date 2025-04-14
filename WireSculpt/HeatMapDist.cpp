@@ -231,6 +231,10 @@ void HeatMapDist::computePhi(int sInput, WireSculptPlugin& ws) {
     s = sInput;
     Eigen::VectorXd b = computeB(s, ws);
 
+    std::vector<Vertex>* vertices = ws.GetVerticies();
+    Vertex& vertex = (*vertices)[s];
+    MGlobal::displayInfo("Vertex index: " + MString() + vertex.id + " and position is " + 
+        MString() + vertex.mPosition.x + " " + MString() + vertex.mPosition.y + MString() + vertex.mPosition.z);
     //Eigen::VectorXd b = computeB(segments, ws);
 
     this->phi = this->lulc.solve(b);

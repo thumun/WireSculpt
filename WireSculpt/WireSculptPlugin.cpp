@@ -427,8 +427,8 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 
 std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {
     HeatMapDist dist = HeatMapDist(ws);
-    dist.heatDiffusion(0);
-    dist.computePhi(0, ws);
+    dist.heatDiffusion(22);
+    dist.computePhi(22, ws);
     return dist.colorScheme(ws, 'd');
     //return std::unordered_map<Vertex*, float>();
 }
