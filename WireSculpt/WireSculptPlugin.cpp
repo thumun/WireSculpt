@@ -469,28 +469,71 @@ std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoi
 std::vector<Vertex*> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
     // first convert to verts 
     std::vector<Vertex*> pathVerts;
+    //std::vector<bool> found
+    MGlobal::displayInfo("In processSegments, segments size: " + MString() + segments->size());
     for (int i = 0; i < segments->size(); i++) {
-        auto vert = (*segments)[i].first;
+        auto vert = (*segments)[i].first;   // should we do this for the second vertex as well?
+        MGlobal::displayInfo("Outer loop: Curr segment's vertPos: " + MString() + vert.x + "; " + MString() + vert.y + "; " + MString() + vert.z);
 
         Eigen::Vector3d vertPos = { vert.x, vert.y, vert.z };
 
         Vertex* storeVert = nullptr;
-        constexpr double dist = std::numeric_limits<double>::max();
+        double dist = std::numeric_limits<double>::max();
 
         // find based on pos?
         for (auto& v : this->verticies) {
             Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
 
             auto distCompare = (comparePos - vertPos).norm();
+            MGlobal::displayInfo("     Inner loop: Curr vertex's id: " + MString() + v.id + 
+                "; and distCompare: " + MString() + distCompare +
+                "; and position: " + MString() + v.mPosition.x + "; " + MString() + v.mPosition.y + "; " + MString() + v.mPosition.z);
 
             if (distCompare < dist) {
                 storeVert = &v;
-                break;
+                dist = distCompare;
+                //break;
             }
         }
 
         pathVerts.push_back(storeVert);
+        
+        MGlobal::displayInfo("Outer loop finished: Curr segment's storeVert id: " + MString() + storeVert->id +
+           "; and Pos: " + MString() + storeVert->mPosition.x + "; " + MString() + storeVert->mPosition.y + "; " + MString() + storeVert->mPosition.z);
+
+
+
+        auto vert2 = (*segments)[i].second;   // should we do this for the second vertex as well?
+        MGlobal::displayInfo("Outer loop: Curr segment's vertPos 2: " + MString() + vert2.x + "; " + MString() + vert2.y + "; " + MString() + vert2.z);
+
+        Eigen::Vector3d vertPos2 = { vert2.x, vert2.y, vert2.z };
+
+        Vertex* storeVert2 = nullptr;
+        double dist2 = std::numeric_limits<double>::max();
+
+        // find based on pos?
+        for (auto& v : this->verticies) {
+            Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
+
+            auto distCompare = (comparePos - vertPos2).norm();
+            MGlobal::displayInfo("     Inner loop: Curr vertex's 2 id: " + MString() + v.id +
+                "; and distCompare: " + MString() + distCompare +
+                "; and position: " + MString() + v.mPosition.x + "; " + MString() + v.mPosition.y + "; " + MString() + v.mPosition.z);
+
+            if (distCompare < dist2) {
+                storeVert2 = &v;
+                dist2 = distCompare;
+                //break;
+            }
+        }
+
+        pathVerts.push_back(storeVert2);
+        MGlobal::displayInfo("Outer loop finished: Curr segment's storeVert2 id: " + MString() + storeVert->id +
+            "; and Pos: " + MString() + storeVert2->mPosition.x + "; " + MString() + storeVert2->mPosition.y + "; " + MString() + storeVert2->mPosition.z);
+
+    
     }
+    MGlobal::displayInfo("In processSegments, pathVerts finished size: " + MString() + pathVerts.size());
 
     return pathVerts;
 }
