@@ -46,6 +46,7 @@ protected:
         MColorArray* colors, MColor color);
     void createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
         std::vector<int> featureVertices, MColorArray* colors, MColor color);
+    void createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors);
     
     MPointArray points;
     MIntArray faceCounts;

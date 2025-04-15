@@ -369,6 +369,7 @@ void WireSculptNode::createContoursMesh(const double& radius, std::vector<std::p
     }
 }
 
+// Visualizing Mesh Contours Vertices
 void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
     std::vector<int> featureVertices, MColorArray* colors, MColor color) {
     for (int index = 0; index < featureVertices.size(); index++) {
@@ -390,37 +391,55 @@ void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Ve
     }
 }
 
-MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
-    const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
-    std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
-    
-    // Color variables intitialization
-    MColorArray colorsContours;
-    MColorArray colorsHeatMap;
-    MColor gray(0.5, 0.5, 0.5);
-    MColor red(1.0, 0, 0);
-
-    // Making sphere wireframe
-    createWireframeMesh(radius, verticies, &colorsContours, gray);
-    /*for (auto vertex : verticies) {
-      
-        MPoint start = vertex.mPosition;
+// Visualizing Heatmap Mesh
+void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors) {
+    float r = 1.0;
+    float b = 0.0;
+    float g = 0.0;
+    float maxDist = -1;
+    for (auto vc : colorScheme) {
+        if (vc.second > maxDist) {
+            maxDist = vc.second;
+        }
+    }
+    for (auto vc : colorScheme) {
+        MPoint start = (vc.first)->mPosition;
 
         MPointArray currPoints;
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
         SphereMesh sphere(start, radius);
-        sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
-        sphere.appendToMesh(points, faceCounts, faceConnects);
+        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
         int numVerticesThisSphere = currPoints.length();
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-            MColor color(0.5, 0.5, 0.5);
-            colorsContours.append(color);
+            float distance = colorScheme[(vc.first)];
+
+            r = 1.0 * distance / maxDist;
+            b = 1.0 - 1.0 * distance / maxDist;
+
+            MColor color(r, g, b);
+            (*colors).append(color);
         }
-    }*/
+
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+    }
+
+}
+
+MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
+    const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
+    std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
     
+    /* Color variables intitialization */
+    MColorArray colorsContours;
+    MColorArray colorsHeatMap;
+    MColor gray(0.5, 0.5, 0.5);
+    MColor red(1.0, 0, 0);
+
+    // Making sphere wireframe
+    // createWireframeMesh(radius, verticies, &colorsContours, gray);
 
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
     std::vector<int> extremePoints = ws.GetExtremePoints(filePath);
@@ -492,91 +511,17 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     /* Extracting feature lines and visualizing */
     // Draw Contours
     std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
-    createContoursMesh(radius, featureSegments, &colorsContours, gray);
-    /*if (featureSegments.size() > 0) {
-        for (int index = 0; index < featureSegments.size(); index++) {
-            std::pair<vec3f, vec3f> line = featureSegments[index];
-            MPoint start(line.first.x, line.first.y, line.first.z);
-            MPoint end(line.second.x, line.second.y, line.second.z);
+    // createContoursMesh(radius, featureSegments, &colorsContours, gray);
 
-            MPointArray currPoints;
-            MIntArray currFaceCounts;
-            MIntArray currFaceConnects;
-
-            CylinderMesh cylinder(start, end, radius);
-            cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
-            cylinder.appendToMesh(points, faceCounts, faceConnects);
-            int numVerticesThisSphere = currPoints.length();
-
-            for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-                MColor color(0.5, 0.5, 0.5);
-                colorsContours.append(color);
-            }
-        }
-    }*/
     std::vector<int> featureVertices = ws.processSegments(&featureSegments);
-    createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
-    /*MGlobal::displayInfo("Num process segments verts: " + MString() + featureVertices.size());
-    for (int index = 0; index < featureVertices.size(); index++) {
-        Vertex* featureVert = &verticies[featureVertices[index]];
-        MPoint start = (*featureVert).mPosition;
-
-        MPointArray currPoints;
-        MIntArray currFaceCounts;
-        MIntArray currFaceConnects;
-
-        SphereMesh sphere(start, radius);
-        sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
-        sphere.appendToMesh(points, faceCounts, faceConnects);
-        int numVerticesThisSphere = currPoints.length();
-
-        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-            MColor color(1.0, 0, 0);
-            colorsContours.append(color);
-        }
-    }*/
+    // createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
     
     MGlobal::displayInfo("Finished: set up contours");
     
+    
     /* Heat Map Visualization - Outputting Colored Vertices Example */
-    /*
     std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
-    MColorArray colors;
-    float r = 1.0;
-    float b = 0.0;
-    float g = 0.0;
-    float maxDist = -1;
-    for (auto vc : colorScheme) {
-        if (vc.second > maxDist) {
-            maxDist = vc.second;
-        }
-    }
-    for (auto vc : colorScheme) {
-        //MGlobal::displayInfo("Vertex position is " + MString() + (vc.first)->mPosition.x + " " + MString() + (vc.first)->mPosition.y + " " + MString() + (vc.first)->mPosition.z);
-        MPoint start = (vc.first)->mPosition;
-
-        MPointArray currPoints;
-        MIntArray currFaceCounts;
-        MIntArray currFaceConnects;
-
-        SphereMesh sphere(start, radius);
-        sphere.getMesh(currPoints, currFaceConnects, currFaceConnects);
-        int numVerticesThisSphere = currPoints.length();
-
-        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-            float distance = colorScheme[(vc.first)];
-
-            r = 1.0 * distance / maxDist; // 1.0 / verticies.size();
-            b = 1.0 - 1.0 * distance / maxDist; // 1.0 / verticies.size();
-            //MGlobal::displayInfo("Vertex distance is " + MString() + distance + "; max distance is " + MString() + maxDist + " and color is " + MString() + r + " " + MString() + b);
-
-            MColor color(r, g, b);
-            colors.append(color);
-        }
-
-        sphere.appendToMesh(points, faceCounts, faceConnects);
-    }
-    */
+    createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
 
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
@@ -596,8 +541,8 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     meshFn.createColorSetWithName(colorSetName, nullptr, nullptr, &status);
 
     // Assign colors to vertices
+    status = meshFn.setVertexColors(colorsHeatMap, vertexIndices);
     //status = meshFn.setVertexColors(colorsContours, vertexIndices);
-    status = meshFn.setVertexColors(colorsContours, vertexIndices);
 
     return meshObject;
 }
