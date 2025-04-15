@@ -492,33 +492,47 @@ std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoi
     return featureSegments;
 }
 
-std::vector<Vertex*> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
-    // first convert to verts 
-    std::vector<Vertex*> pathVerts;
+int WireSculptPlugin::findClosestVertex(float x, float y, float z) {
+    Eigen::Vector3d vertPos = { x, y, z};
+    int storeIndex = -1;
+    double dist = std::numeric_limits<double>::max();
+
+    // find based on pos
+    int index = 0;
+    for (auto& v : this->verticies) {
+        Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
+        auto distCompare = (comparePos - vertPos).norm();
+
+        if (distCompare < dist) {
+            storeIndex = index;
+            dist = distCompare;
+        }
+        index += 1;
+    }
+    return storeIndex;
+}
+std::vector<int> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
+    std::vector<int> vertIndices;
+    std::vector<bool> inIndexList(this->verticies.size(), false);
+
+    // Find index of closest vertex for start and end point
     for (int i = 0; i < segments->size(); i++) {
-        auto vert = (*segments)[i].first;
-
-        Eigen::Vector3d vertPos = { vert.x, vert.y, vert.z };
-
-        Vertex* storeVert = nullptr;
-        constexpr double dist = std::numeric_limits<double>::max();
-
-        // find based on pos?
-        for (auto& v : this->verticies) {
-            Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
-
-            auto distCompare = (comparePos - vertPos).norm();
-
-            if (distCompare < dist) {
-                storeVert = &v;
-                break;
-            }
+        vec3f start = (*segments)[i].first;   
+        int startIndex = findClosestVertex(start.x, start.y, start.z);
+        if (!inIndexList[startIndex]) {
+            inIndexList[startIndex] = true;
+            vertIndices.push_back(startIndex);
         }
 
-        pathVerts.push_back(storeVert);
+        vec3f end = (*segments)[i].second;  
+        int endIndex = findClosestVertex(end.x, end.y, end.z);
+        if (!inIndexList[endIndex]) {
+            inIndexList[endIndex] = true;
+            vertIndices.push_back(endIndex);
+        }
     }
 
-    return pathVerts;
+    return vertIndices;
 }
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {

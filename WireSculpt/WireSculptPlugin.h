@@ -36,7 +36,8 @@ public:
 	// Suggestive contours
 	std::vector<std::pair<vec3f, vec3f>> GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename);
 	
-	std::vector<Vertex*> processSegments(std::vector<std::pair<vec3f, vec3f>>* segments);
+	std::vector<int> processSegments(std::vector<std::pair<vec3f, vec3f>>* segments);
+	int findClosestVertex(float x, float y, float z);	// processSegments helper function
 
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
