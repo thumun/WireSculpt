@@ -466,76 +466,47 @@ std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoi
     return featureSegments;
 }
 
-std::vector<Vertex*> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
-    // first convert to verts 
-    std::vector<Vertex*> pathVerts;
-    //std::vector<bool> found
-    MGlobal::displayInfo("In processSegments, segments size: " + MString() + segments->size());
-    for (int i = 0; i < segments->size(); i++) {
-        auto vert = (*segments)[i].first;   // should we do this for the second vertex as well?
-        MGlobal::displayInfo("Outer loop: Curr segment's vertPos: " + MString() + vert.x + "; " + MString() + vert.y + "; " + MString() + vert.z);
+int WireSculptPlugin::findClosestVertex(float x, float y, float z) {
+    Eigen::Vector3d vertPos = { x, y, z};
+    int storeIndex = -1;
+    double dist = std::numeric_limits<double>::max();
 
-        Eigen::Vector3d vertPos = { vert.x, vert.y, vert.z };
+    // find based on pos
+    int index = 0;
+    for (auto& v : this->verticies) {
+        Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
+        auto distCompare = (comparePos - vertPos).norm();
 
-        Vertex* storeVert = nullptr;
-        double dist = std::numeric_limits<double>::max();
-
-        // find based on pos?
-        for (auto& v : this->verticies) {
-            Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
-
-            auto distCompare = (comparePos - vertPos).norm();
-            MGlobal::displayInfo("     Inner loop: Curr vertex's id: " + MString() + v.id + 
-                "; and distCompare: " + MString() + distCompare +
-                "; and position: " + MString() + v.mPosition.x + "; " + MString() + v.mPosition.y + "; " + MString() + v.mPosition.z);
-
-            if (distCompare < dist) {
-                storeVert = &v;
-                dist = distCompare;
-                //break;
-            }
+        if (distCompare < dist) {
+            storeIndex = index;
+            dist = distCompare;
         }
-
-        pathVerts.push_back(storeVert);
-        
-        MGlobal::displayInfo("Outer loop finished: Curr segment's storeVert id: " + MString() + storeVert->id +
-           "; and Pos: " + MString() + storeVert->mPosition.x + "; " + MString() + storeVert->mPosition.y + "; " + MString() + storeVert->mPosition.z);
-
-
-
-        auto vert2 = (*segments)[i].second;   // should we do this for the second vertex as well?
-        MGlobal::displayInfo("Outer loop: Curr segment's vertPos 2: " + MString() + vert2.x + "; " + MString() + vert2.y + "; " + MString() + vert2.z);
-
-        Eigen::Vector3d vertPos2 = { vert2.x, vert2.y, vert2.z };
-
-        Vertex* storeVert2 = nullptr;
-        double dist2 = std::numeric_limits<double>::max();
-
-        // find based on pos?
-        for (auto& v : this->verticies) {
-            Eigen::Vector3d comparePos = { v.mPosition.x, v.mPosition.y, v.mPosition.z };
-
-            auto distCompare = (comparePos - vertPos2).norm();
-            MGlobal::displayInfo("     Inner loop: Curr vertex's 2 id: " + MString() + v.id +
-                "; and distCompare: " + MString() + distCompare +
-                "; and position: " + MString() + v.mPosition.x + "; " + MString() + v.mPosition.y + "; " + MString() + v.mPosition.z);
-
-            if (distCompare < dist2) {
-                storeVert2 = &v;
-                dist2 = distCompare;
-                //break;
-            }
-        }
-
-        pathVerts.push_back(storeVert2);
-        MGlobal::displayInfo("Outer loop finished: Curr segment's storeVert2 id: " + MString() + storeVert->id +
-            "; and Pos: " + MString() + storeVert2->mPosition.x + "; " + MString() + storeVert2->mPosition.y + "; " + MString() + storeVert2->mPosition.z);
-
-    
+        index += 1;
     }
-    MGlobal::displayInfo("In processSegments, pathVerts finished size: " + MString() + pathVerts.size());
+    return storeIndex;
+}
+std::vector<int> WireSculptPlugin::processSegments(std::vector<std::pair<vec3f, vec3f>>* segments) {
+    std::vector<int> vertIndices;
+    std::vector<bool> inIndexList(this->verticies.size(), false);
 
-    return pathVerts;
+    // Find index of closest vertex for start and end point
+    for (int i = 0; i < segments->size(); i++) {
+        vec3f start = (*segments)[i].first;   
+        int startIndex = findClosestVertex(start.x, start.y, start.z);
+        if (!inIndexList[startIndex]) {
+            inIndexList[startIndex] = true;
+            vertIndices.push_back(startIndex);
+        }
+
+        vec3f end = (*segments)[i].second;  
+        int endIndex = findClosestVertex(end.x, end.y, end.z);
+        if (!inIndexList[endIndex]) {
+            inIndexList[endIndex] = true;
+            vertIndices.push_back(endIndex);
+        }
+    }
+
+    return vertIndices;
 }
 
 std::vector<Vertex>* WireSculptPlugin::GetVerticies() {

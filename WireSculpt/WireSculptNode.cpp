@@ -327,7 +327,7 @@ MStatus WireSculptNode::initialize()
 MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
     const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
-    MColorArray colors;
+    MColorArray colorsContours;
 
     // Making sphere wireframe
     for (auto vertex : verticies) {
@@ -345,7 +345,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
             MColor color(0.5, 0.5, 0.5);
-            colors.append(color);
+            colorsContours.append(color);
         }
     }
     
@@ -437,16 +437,15 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
             for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
                 MColor color(0.5, 0.5, 0.5);
-                colors.append(color);
+                colorsContours.append(color);
             }
         }
     }
-    std::vector<Vertex*> featureVertices = ws.processSegments(&featureSegments);
+    std::vector<int> featureVertices = ws.processSegments(&featureSegments);
     MGlobal::displayInfo("Num process segments verts: " + MString() + featureVertices.size());
     for (int index = 0; index < featureVertices.size(); index++) {
-        Vertex* featureVert = featureVertices[index];
+        Vertex* featureVert = &verticies[featureVertices[index]];
         MPoint start = (*featureVert).mPosition;
-        MGlobal::displayInfo("Curr vert position: " + MString() + start.x + "; " + MString() + start.y + "; " + MString() + start.z);
 
         MPointArray currPoints;
         MIntArray currFaceCounts;
@@ -459,7 +458,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
             MColor color(1.0, 0, 0);
-            colors.append(color);
+            colorsContours.append(color);
         }
     }
     
@@ -523,7 +522,8 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     meshFn.createColorSetWithName(colorSetName, nullptr, nullptr, &status);
 
     // Assign colors to vertices
-    status = meshFn.setVertexColors(colors, vertexIndices);
+    //status = meshFn.setVertexColors(colorsContours, vertexIndices);
+    status = meshFn.setVertexColors(colorsContours, vertexIndices);
 
     return meshObject;
 }
