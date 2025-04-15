@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <Eigen/Core>
+#include <igl/heat_geodesics.h>
 
 #include <unordered_map>
 struct vec3f {
@@ -16,7 +17,7 @@ struct vec3f {
 class WireSculptPlugin
 {
 public:
-	WireSculptPlugin() {};
+	WireSculptPlugin();
 
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
@@ -40,6 +41,9 @@ public:
 	std::vector<Vertex> verticies;
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
+
+	std::unique_ptr<igl::HeatGeodesicsData<double>> geodesicData;
+	//static igl::HeatGeodesicsData<double> geodesicData;
 
 private:
 

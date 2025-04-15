@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <maya/MGlobal.h>
 
-HeatMapDist::HeatMapDist(WireSculptPlugin ws) {
+HeatMapDist::HeatMapDist(WireSculptPlugin& ws) {
     colors.resize(ws.faces.size());
     t = 100 * computeTime(ws);
     computeA(ws);
