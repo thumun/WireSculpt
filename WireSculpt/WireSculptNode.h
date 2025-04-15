@@ -38,6 +38,14 @@ protected:
         const int& contourChoice, const double& testSCVal, 
         WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
         MObject& outData, MStatus& status);
+
+    // CreateMesh helpers for visualization
+    void createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,
+        MColorArray* colors, MColor color);
+    void createContoursMesh(const double& radius, std::vector<std::pair<vec3f, vec3f>> featureSegments,
+        MColorArray* colors, MColor color);
+    void createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
+        std::vector<int> featureVertices, MColorArray* colors, MColor color);
     
     MPointArray points;
     MIntArray faceCounts;

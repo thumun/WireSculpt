@@ -324,13 +324,85 @@ MStatus WireSculptNode::initialize()
     return MS::kSuccess;
 }
 
+// Visualizing Mesh with Spheres
+void WireSculptNode::createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,
+    MColorArray* colors, MColor color) {
+    for (auto vertex : verticies) {
+
+        MPoint start = vertex.mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+        int numVerticesThisSphere = currPoints.length();
+
+        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            (*colors).append(color);
+        }
+    }
+}
+
+// Visualizing Contours Lines
+void WireSculptNode::createContoursMesh(const double& radius, std::vector<std::pair<vec3f, vec3f>> featureSegments,
+    MColorArray* colors, MColor color) {
+    for (int index = 0; index < featureSegments.size(); index++) {
+        std::pair<vec3f, vec3f> line = featureSegments[index];
+        MPoint start(line.first.x, line.first.y, line.first.z);
+        MPoint end(line.second.x, line.second.y, line.second.z);
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        CylinderMesh cylinder(start, end, radius);
+        cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
+        cylinder.appendToMesh(points, faceCounts, faceConnects);
+        int numVerticesThisSphere = currPoints.length();
+
+        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            (*colors).append(color);
+        }
+    }
+}
+
+void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
+    std::vector<int> featureVertices, MColorArray* colors, MColor color) {
+    for (int index = 0; index < featureVertices.size(); index++) {
+        Vertex* featureVert = &verticies[featureVertices[index]];
+        MPoint start = (*featureVert).mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        SphereMesh sphere(start, radius);
+        sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
+        sphere.appendToMesh(points, faceCounts, faceConnects);
+        int numVerticesThisSphere = currPoints.length();
+
+        for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            (*colors).append(color);
+        }
+    }
+}
+
 MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
     const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+    
+    // Color variables intitialization
     MColorArray colorsContours;
+    MColorArray colorsHeatMap;
+    MColor gray(0.5, 0.5, 0.5);
+    MColor red(1.0, 0, 0);
 
     // Making sphere wireframe
-    for (auto vertex : verticies) {
+    createWireframeMesh(radius, verticies, &colorsContours, gray);
+    /*for (auto vertex : verticies) {
       
         MPoint start = vertex.mPosition;
 
@@ -347,7 +419,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             MColor color(0.5, 0.5, 0.5);
             colorsContours.append(color);
         }
-    }
+    }*/
     
 
     /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
@@ -420,7 +492,8 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     /* Extracting feature lines and visualizing */
     // Draw Contours
     std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
-    if (featureSegments.size() > 0) {
+    createContoursMesh(radius, featureSegments, &colorsContours, gray);
+    /*if (featureSegments.size() > 0) {
         for (int index = 0; index < featureSegments.size(); index++) {
             std::pair<vec3f, vec3f> line = featureSegments[index];
             MPoint start(line.first.x, line.first.y, line.first.z);
@@ -440,9 +513,10 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
                 colorsContours.append(color);
             }
         }
-    }
+    }*/
     std::vector<int> featureVertices = ws.processSegments(&featureSegments);
-    MGlobal::displayInfo("Num process segments verts: " + MString() + featureVertices.size());
+    createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
+    /*MGlobal::displayInfo("Num process segments verts: " + MString() + featureVertices.size());
     for (int index = 0; index < featureVertices.size(); index++) {
         Vertex* featureVert = &verticies[featureVertices[index]];
         MPoint start = (*featureVert).mPosition;
@@ -460,7 +534,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
             MColor color(1.0, 0, 0);
             colorsContours.append(color);
         }
-    }
+    }*/
     
     MGlobal::displayInfo("Finished: set up contours");
     
