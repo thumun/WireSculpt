@@ -8,7 +8,6 @@
 
 #include "WireSculptPlugin.h"
 #include "ExtremePoints.h"
-#include "HeatMapDist.h"
 #include "Contours.h"
 
 #include <igl/read_triangle_mesh.h>
