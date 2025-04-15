@@ -17,7 +17,7 @@ struct vec3f {
 class WireSculptPlugin
 {
 public:
-	WireSculptPlugin() {};
+	WireSculptPlugin();
 
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
@@ -42,6 +42,7 @@ public:
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
 
+	std::unique_ptr<igl::HeatGeodesicsData<double>> geodesicData;
 	//static igl::HeatGeodesicsData<double> geodesicData;
 
 private:

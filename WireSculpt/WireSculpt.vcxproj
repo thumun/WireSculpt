@@ -152,6 +152,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;NT_PLUGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%MAYA_LOCATION%\include;..\libigl\include;..\libigl\eigen-src;..\libigl\boost-src;..\suitesparse\SuiteSparse_config;..\suitesparse\SPQR\Include;..\suitesparse\CHOLMOD\Include;..\trimesh2\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

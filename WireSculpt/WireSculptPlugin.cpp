@@ -47,6 +47,11 @@ void WireSculptPlugin::resetIDs() {
     Face::lastId = 0; 
 }
 
+WireSculptPlugin::WireSculptPlugin()
+{
+    geodesicData = std::make_unique<igl::HeatGeodesicsData<double>>();
+}
+
 // processes the obj file 
 // returns false: issue with file (contents or type) 
 // returns true: success 
@@ -188,6 +193,8 @@ std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath)
     int clip_bound = 0;
 
     igl::read_triangle_mesh(filePath, V, F);
+
+    igl::heat_geodesics_precompute(V, F, *geodesicData.get());
 
     Eigen::MatrixXi B;
     igl::is_vertex_manifold(F, B);
@@ -426,17 +433,29 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 }
 
 std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {
-    Eigen::MatrixXd V;
-    Eigen::MatrixXi F;
-    igl::read_triangle_mesh("D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj", V, F);
 
-    igl::HeatGeodesicsData<double> geodesicData;
-    igl::heat_geodesics_precompute(V, F, geodesicData);
+    Eigen::VectorXi gamma (1); // init w/ size 1 
+    gamma << 0; // source is vert 0 
 
-    HeatMapDist dist = HeatMapDist(ws);
+    //Eigen::VectorXi gamma = { 0 };
+
+    Eigen::VectorXd D;
+
+    igl::heat_geodesics_solve(*geodesicData.get(), gamma, D);
+
+    std::unordered_map<Vertex*, float> outHeatInfo; 
+
+    // converting D to be in our prev format
+    for (int i = 0; i < D.size(); i++) {
+        outHeatInfo.insert({&verticies[i], D(i)});
+    }
+
+    /*HeatMapDist dist = HeatMapDist(ws);
     dist.heatDiffusion(0);
     dist.computePhi(0, ws);
-    return dist.colorScheme(ws, 'd');
+    return dist.colorScheme(ws, 'd');*/
+
+    return outHeatInfo; 
 }
 
 void WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws, std::vector<Vertex*>* segments) {
@@ -509,7 +528,7 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj");
+    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/subSphere.obj");
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
     //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
     //std::vector<Vertex>* verticies = ws.GetVerticies();
@@ -517,11 +536,13 @@ int main() {
     //Vertex* goal = &verticies[5];   // arbitrary
     //std::vector<Vertex*> path = ws.FindPath((*verticies), source, goal, (*verticies).size());
 
-    //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cube.obj");
+    ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/subSphere.obj");
 
-    auto featSeg = ws.GetContours(0.7f, 0, 1, 0.1f, "D:/CGGT/AdvTopics/WireSculpt/testobj/lowpolyfox_manifold.obj");
+    auto featSeg = ws.GetContours(0.7f, 0, 1, 0.1f, "D:/CGGT/AdvTopics/WireSculpt/testobj/subSphere.obj");
     auto test = ws.processSegments(&featSeg);
 
-    ws.GetHeatMapDistance(ws, &test);
+    //ws.GetHeatMapDistance(ws, &test);
+    ws.GetHeatMapDistance(ws);
+
 }
 #endif // EXEDEBUG

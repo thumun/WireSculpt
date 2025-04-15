@@ -15,7 +15,7 @@
 class HeatMapDist
 {
 public: 
-	HeatMapDist(WireSculptPlugin ws);
+	HeatMapDist(WireSculptPlugin& ws);
     ~HeatMapDist() {};
 
     void heatDiffusion(int sInput);
