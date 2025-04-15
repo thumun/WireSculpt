@@ -458,13 +458,26 @@ std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireScul
     return outHeatInfo; 
 }
 
-void WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws, std::vector<Vertex*>* segments) {
-    HeatMapDist dist = HeatMapDist(ws);
-    dist.heatDiffusion(0);
-    dist.heatDiffusionFromPath(*segments);
-    //dist.heatDiffusion(0);
-    dist.computePhi(0, ws);
-    auto verts = dist.colorScheme(ws, 'd');
+std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws, std::vector<int>* segments) {
+    Eigen::VectorXi gamma(segments->size()); // init w/ size 1 
+    //gamma << 0; // source is vert 0 
+
+    for (int i = 0; i < segments->size(); ++i) {
+        gamma[i] = (*segments)[i];
+    }
+
+    Eigen::VectorXd D;
+
+    igl::heat_geodesics_solve(*geodesicData.get(), gamma, D);
+
+    std::unordered_map<Vertex*, float> outHeatInfo;
+
+    // converting D to be in our prev format
+    for (int i = 0; i < D.size(); i++) {
+        outHeatInfo.insert({ &verticies[i], D(i) });
+    }
+
+    return outHeatInfo;
 }
 
 std::vector<std::pair<vec3f, vec3f>> WireSculptPlugin::GetContours(float fovChoice, int viewChoice, int contoursChoice, float testSCChoice, const char* filename) {
