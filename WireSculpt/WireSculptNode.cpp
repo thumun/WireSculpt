@@ -415,9 +415,11 @@ void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<
 
         for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
             float distance = colorScheme[(vc.first)];
-
-            r = 1.0 * distance / maxDist;
-            b = 1.0 - 1.0 * distance / maxDist;
+            r = distance; //(maxDist > 1e-6f) ? (distance / maxDist) : 0.0f;
+            r = std::min(std::max(r, 0.0f), 1.0f);
+            b = 1.0 - r;
+           /* r = 1.0 * distance / maxDist;
+            b = 1.0 - 1.0 * distance / maxDist;*/
 
             MColor color(r, g, b);
             (*colors).append(color);
@@ -520,7 +522,9 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     
     
     /* Heat Map Visualization - Outputting Colored Vertices Example */
-    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
+
     createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
 
     MFnMesh meshFn;
