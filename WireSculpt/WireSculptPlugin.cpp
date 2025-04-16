@@ -436,8 +436,6 @@ std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireScul
     Eigen::VectorXi gamma (1); // init w/ size 1 
     gamma << 0; // source is vert 0 
 
-    //Eigen::VectorXi gamma = { 0 };
-
     Eigen::VectorXd D;
 
     igl::heat_geodesics_solve(*geodesicData.get(), gamma, D);
@@ -448,11 +446,6 @@ std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireScul
     for (int i = 0; i < D.size(); i++) {
         outHeatInfo.insert({&verticies[i], D(i)});
     }
-
-    /*HeatMapDist dist = HeatMapDist(ws);
-    dist.heatDiffusion(0);
-    dist.computePhi(0, ws);
-    return dist.colorScheme(ws, 'd');*/
 
     return outHeatInfo; 
 }
