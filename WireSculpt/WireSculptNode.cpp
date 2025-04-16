@@ -520,7 +520,9 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     
     
     /* Heat Map Visualization - Outputting Colored Vertices Example */
-    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
+
     createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
 
     MFnMesh meshFn;
