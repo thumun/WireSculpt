@@ -9,14 +9,14 @@
 
 class Edge;
 
-struct NonLandmarkData {
-	// Feature attraction weight w, and path repulsion weight w*
-	float wAttract;
-	float wRepel;
-
-	// Geodesic distance from feature lines
-	float geoDistance;
-};
+//struct NonLandmarkData {
+//	// Feature attraction weight w, and path repulsion weight w*
+//	float wAttract;
+//	float wRepel;
+//
+//	// Geodesic distance from feature lines
+//	float geoDistance;
+//};
 
 // Represents the vertices of the input 3D model 
 class Vertex {
@@ -29,12 +29,19 @@ public:
 
 	MPoint mPosition;
 	//MVector mNormal;
-	//bool isLandmark;
-	std::pair<bool, NonLandmarkData> isLandmark; 
+	bool isLandmark;
+	//std::pair<bool, NonLandmarkData> isLandmark; 
 	std::map<Vertex*, Edge*> neighbors;
 	int id;
 
 	static int lastId;
+
+	// Feature attraction weight w, and path repulsion weight w*
+	float wAttract;
+	float wRepel;
+
+	// Geodesic distance from feature lines
+	float geoDistance;
 
 	// A* path traversal
 	float f;	// f = g + h

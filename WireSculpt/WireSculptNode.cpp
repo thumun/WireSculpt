@@ -437,6 +437,8 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     /* Color variables intitialization */
     MColorArray colorsContours;
     MColorArray colorsHeatMap;
+    MColorArray colorsTemp;
+
     MColor gray(0.5, 0.5, 0.5);
     MColor red(1.0, 0, 0);
 
@@ -452,9 +454,6 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     }
     // Set landmark vertices to be vertices of indexes extremePts chose:
     std::vector<Vertex*> landmarks;
-    MPointArray currPoints;
-    MIntArray currFaceCounts;
-    MIntArray currFaceConnects;
 
     for (int index : extremePoints) {
         if (index >= verticies.size()) {
@@ -462,11 +461,22 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         }
         else {
             landmarks.push_back(&verticies[index]);
+            MGlobal::displayInfo("landmark pushed back");
 
             // Draw each Landmark Vertex
-            /*SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            MPointArray currPoints;
+            MIntArray currFaceCounts;
+            MIntArray currFaceConnects;
+
+            SphereMesh sphere(verticies[index].mPosition, radius * 2);
             sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
-            sphere.appendToMesh(points, faceCounts, faceConnects);*/
+            sphere.appendToMesh(points, faceCounts, faceConnects);
+            int numVerticesThisSphere = currPoints.length();
+
+            for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+                colorsHeatMap.append(gray);
+            }
+
         }
     }
     
