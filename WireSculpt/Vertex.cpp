@@ -11,6 +11,8 @@ Vertex::Vertex(const MPoint& position, bool landmark) :
 
 	//this->isLandmark.first = landmark;
 	this->isLandmark = landmark;
+	this->wAttract = 0;
+	this->wRepel = 0;
 	resetFGH();
 	this->neighbors = {};
 	lastId++;

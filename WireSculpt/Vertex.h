@@ -41,7 +41,7 @@ public:
 	float wRepel;
 
 	// Geodesic distance from feature lines
-	float geoDistance;
+	//float geoDistance;
 
 	// A* path traversal
 	float f;	// f = g + h

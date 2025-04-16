@@ -551,6 +551,10 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
 
+std::vector<Edge>* WireSculptPlugin::GetEdges() {
+    return &(this->edges);
+}
+
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();

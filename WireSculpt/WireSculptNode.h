@@ -34,10 +34,11 @@ public:
     static MObject  testSC;
 
 protected:
-    MObject createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
+    MObject createMesh(const double& radius, const double& aAttract, const double& bAttract, 
+        const double& fovVal, const int& viewChoice,
         const int& contourChoice, const double& testSCVal, 
         WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
-        MObject& outData, MStatus& status);
+        std::vector<Edge>& edges, MObject& outData, MStatus& status);
 
     // CreateMesh helpers for visualization
     void createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,

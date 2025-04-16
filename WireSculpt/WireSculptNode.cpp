@@ -430,14 +430,15 @@ void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<
 
 }
 
-MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, const int& viewChoice, 
-    const int& contourChoice, const double& testSCVal, WireSculptPlugin& ws, const std::string& filePath, 
-    std::vector<Vertex>& verticies, MObject& outData, MStatus& status) {
+MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, const double& bAttract, 
+    const double& fovVal, const int& viewChoice,
+    const int& contourChoice, const double& testSCVal, 
+    WireSculptPlugin& ws, const std::string& filePath, 
+    std::vector<Vertex>& verticies, std::vector<Edge>& edges, MObject& outData, MStatus& status) {
     
     /* Color variables intitialization */
     MColorArray colorsContours;
     MColorArray colorsHeatMap;
-    MColorArray colorsTemp;
 
     MColor gray(0.5, 0.5, 0.5);
     MColor red(1.0, 0, 0);
@@ -445,7 +446,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
     // Making sphere wireframe
     // createWireframeMesh(radius, verticies, &colorsContours, gray);
 
-    /* Run TSP with Landmark vertices, then A* within each pair of consecutive vertices */
+    /* Step 1 - Extract Extreme Points */
     std::vector<int> extremePoints = ws.GetExtremePoints(filePath);
     MGlobal::displayInfo("Extreme points: ");
     for (int i : extremePoints) {
@@ -479,8 +480,40 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
 
         }
     }
-    
-    // Run TSP Optimized Nearest Neighbors on five vertices
+
+    /* Step 2 - Extract Feature Lines */
+    // Draw Contours
+    std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
+    // createContoursMesh(radius, featureSegments, &colorsContours, gray);
+
+    std::vector<int> featureVertices = ws.processSegments(&featureSegments);
+    // createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
+
+    MGlobal::displayInfo("Finished: set up contours");
+
+
+    /* Step 3 - Build Heat Map from Feature Lines Vertices */
+    //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
+    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
+    createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
+
+    /* Compute Feature Attraction Weights */
+    float lBar = 0; 
+    for (auto e : edges) {      // find average edge length
+        lBar += e.getLength();
+    }
+    lBar /= edges.size();
+
+    for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
+        Vertex* vert = &verticies[i];
+        float distance = colorScheme[vert];
+        vert->wAttract = (aAttract / (1.0 + std::exp(-bAttract * distance / lBar))) + (1 - aAttract);   // issue ? - doubles in float math!!
+    }
+
+    for (auto e: edges) {
+        //Vertex* vi = e.endpoints;
+    }
+    // Run TSP Optimized Nearest Neighbors on landmark vertices
     std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
 
     // Run A* between each of the vertices
@@ -520,22 +553,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& fovVal, c
         }
     }
     
-    /* Extracting feature lines and visualizing */
-    // Draw Contours
-    std::vector<std::pair<vec3f, vec3f>> featureSegments = ws.GetContours(fovVal, viewChoice, contourChoice, testSCVal, filePath.c_str());
-    // createContoursMesh(radius, featureSegments, &colorsContours, gray);
-
-    std::vector<int> featureVertices = ws.processSegments(&featureSegments);
-    // createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
     
-    MGlobal::displayInfo("Finished: set up contours");
-    
-    
-    /* Heat Map Visualization - Outputting Colored Vertices Example */
-    //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
-    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
-
-    createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
 
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
@@ -709,7 +727,8 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, fovVal, viewVal, contourVal, testSCVal, ws, meshFilePathStr, *(ws.GetVerticies()), newOutputData, returnStatus);
+        createMesh(thicknessVal, aAttractVal, bAttractVal, fovVal, viewVal, contourVal, testSCVal, 
+            ws, meshFilePathStr, *(ws.GetVerticies()), *(ws.GetEdges()), newOutputData, returnStatus);
 
         if (!returnStatus) {
             returnStatus.perror("ERROR creating new mesh\n");
