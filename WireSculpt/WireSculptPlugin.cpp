@@ -138,13 +138,22 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 // want to do while but how to loop at same time
                 if (edges.size() > 0) {
                     for (int j = 0; j < edges.size(); j++) {
-
-                        if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
+                        if (
+                            (edges[j].endpoints.first != &verticies[vertOne] 
+                            && edges[j].endpoints.second != &verticies[vertTwo]) || 
+                            (edges[j].endpoints.first != &verticies[vertTwo]
+                            && edges[j].endpoints.second != &verticies[vertOne])
+                            ) {
+                            edgeFound = true;
+                            edgeIndx = j;
+                            break;
+                        }
+                        /*if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
                             (edges[j].endpoints.find(&verticies[vertTwo]) != edges[j].endpoints.end())) {
                             edgeFound = true; 
                             edgeIndx = j; 
                             break;
-                        }
+                        }*/
                     }
                 }
 

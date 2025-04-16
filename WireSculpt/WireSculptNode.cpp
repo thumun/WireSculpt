@@ -497,7 +497,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
     createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
 
-    /* Compute Feature Attraction Weights */
+    /* Step 4 - Compute Feature Attraction Weights */
     float lBar = 0; 
     for (auto e : edges) {      // find average edge length
         lBar += e.getLength();
@@ -511,9 +511,16 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     }
 
     for (auto e: edges) {
-        //Vertex* vi = e.endpoints;
+        const Vertex* vi = e.endpoints.first;
+        const Vertex* vj = e.endpoints.second;
+        e.featureLength = 0.5 * (vi->wAttract + vj->wAttract) * e.getLength();   // does this change the correct edges? (pointer issues?)
+        //e.warpedLength = 0.5 * (vi->wAttract + vj->wAttract) * e.getLength();   // does this change the correct edges? (pointer issues?)
     }
-    // Run TSP Optimized Nearest Neighbors on landmark vertices
+
+    // print warped edge lengths for each vertex to check
+
+
+    /* Step 5 - Run TSP Optimized Nearest Neighbors on landmark vertices */ 
     std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
 
     // Run A* between each of the vertices
@@ -533,6 +540,9 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         Vertex* source = landmarks[tour[index1]];
         Vertex* goal = landmarks[tour[index2]];
 
+        /* Step 5a - Adjust edge weights via path repulsion */ 
+        // Call heatmap on existing path
+        // updated warpedLengths
         std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
         if (path.size() == 0) {
             MGlobal::displayInfo("No path found");

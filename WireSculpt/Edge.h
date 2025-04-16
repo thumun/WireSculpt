@@ -8,12 +8,13 @@ public:
 	~Edge();
 
 	// Two Vertex endpoints
-	std::set<const Vertex*> endpoints;
+	std::pair<const Vertex*, const Vertex*> endpoints;
 
 	static int lastId;
 
 	// Warped edge length between two vertices
-	float warpedLength;
+	float featureLength;	// length after warping by feature attraction
+	float warpedLength;		// accumulated warping (applying path repulsion)
 	int id;
 
 	float getLength(); 
