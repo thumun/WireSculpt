@@ -23,7 +23,7 @@ public:
 	std::vector<Vertex>* GetVerticies();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
 	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws);
-	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws, std::vector<int> * segments);
+	void GetHeatMapDistance(WireSculptPlugin& ws, std::vector<Vertex*> * segments);
 	
 	// Path finding procedure:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors
