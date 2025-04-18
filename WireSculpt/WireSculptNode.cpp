@@ -401,6 +401,10 @@ void WireSculptNode::mapToColors(std::unordered_map<Vertex*, float> colorScheme)
         float distance = colorScheme[(vc.first)];
         float r = std::min(std::max(distance, 0.0f), 1.0f);
         vc.second = r;
+
+        if (r < 0) {
+            MGlobal::displayInfo("Invalid r value");
+        }
     }
 }
 
@@ -512,7 +516,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     mapToColors(contourHeatMap);
 
     /* Step 4 - Compute Feature Attraction Weights */
-    MGlobal::displayInfo("edge size: " + MString() + edges.size());
+    //MGlobal::displayInfo("edge size: " + MString() + edges.size());
 
     float lBar = 0; 
     for (auto e : edges) {      // find average edge length
@@ -524,7 +528,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         Vertex* vert = &verticies[i];
         float distance = contourHeatMap[vert];
         vert->wAttract = (aAttract / (1.0 + std::exp(-bAttract * distance / lBar))) + (1 - aAttract);   // issue ? - doubles in float math!!
-        MGlobal::displayInfo("Wattract: " + MString() + vert->wAttract);
+        //MGlobal::displayInfo("Wattract: " + MString() + vert->wAttract);
     }
 
     for (auto e: edges) {
@@ -566,23 +570,23 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         /* Step 5a - Adjust edge weights via path repulsion */ 
         // Call heatmap on existing path
         if (wirePath.size() > 0) {
-        }
-        std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &featureVertices);
-        //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
-        mapToColors(pathHeatMap);
+            std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &wirePath);
+            //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
+            mapToColors(pathHeatMap);
 
-        // Update warpedLengths
-        for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
-            Vertex* vert = &verticies[i];
-            float distance = pathHeatMap[vert];
-            vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
+            // Update warpedLengths
+            for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
+                Vertex* vert = &verticies[i];
+                float distance = pathHeatMap[vert];
+                vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
+            }
+            for (auto e : edges) {
+                const Vertex* vi = e.endpoints.first;
+                const Vertex* vj = e.endpoints.second;
+                e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
+            }
         }
-        for (auto e : edges) {
-            const Vertex* vi = e.endpoints.first;
-            const Vertex* vj = e.endpoints.second;
-            e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
-        }
-
+        
         // Run A* between each of the vertices
         std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
         wirePath.insert(wirePath.end(), path.begin(), path.end());  // concatenate current path to accumulated wirePath

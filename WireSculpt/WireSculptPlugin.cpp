@@ -426,8 +426,15 @@ std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vert
             Vertex* nVert = neighbor.first;
             Edge* nEdge = neighbor.second;
 
+            float warped = nEdge->warpedLength;
+            /*if (warped < 0.6) {
+                warped = 0.1;
+            }
+            else {
+                warped = 10;
+            }*/
             float newG = current->g + nEdge->warpedLength;
-            //MGlobal::displayInfo("Edge warped: " + MString() + nEdge->warpedLength);
+            MGlobal::displayInfo("Edge warped: " + MString() + warped);
             if (newG < nVert->g) {
                 float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
                 float newF = newG + newH;
