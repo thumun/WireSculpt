@@ -62,16 +62,16 @@ global proc createWireSculptGUI() {
     // Feature Attraction Weights
     string $attractionGroup = `frameLayout -label "Feature Attraction Weights" -collapsable false`;
     columnLayout;
-    $gAAttractionSlider = `floatSliderGrp -label "Strength (a)" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
-    $gBAttractionSlider = `floatSliderGrp -label "Steepness (b)" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
+    $gAAttractionSlider = `floatSliderGrp -label "Strength (a)" -field true -minValue 0.0 -maxValue 2.0 -value 0.5`;
+    $gBAttractionSlider = `floatSliderGrp -label "Steepness (b)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
     setParent ..;
     setParent ..;
 
     // Path Repulsion Weights
     string $repulsionGroup = `frameLayout -label "Path Repulsion Weights" -collapsable false`;
     columnLayout;
-    $gARepulsionSlider = `floatSliderGrp -label "Strength (a*)" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
-    $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
+    $gARepulsionSlider = `floatSliderGrp -label "Strength (a*)" -field true -minValue 0.0 -maxValue 2.0 -value 0.5`;
+    $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
     setParent ..;
     setParent ..;
 

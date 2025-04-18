@@ -139,10 +139,10 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 if (edges.size() > 0) {
                     for (int j = 0; j < edges.size(); j++) {
                         if (
-                            (edges[j].endpoints.first != &verticies[vertOne] 
-                            && edges[j].endpoints.second != &verticies[vertTwo]) || 
-                            (edges[j].endpoints.first != &verticies[vertTwo]
-                            && edges[j].endpoints.second != &verticies[vertOne])
+                            (edges[j].endpoints.first == &verticies[vertOne] 
+                            && edges[j].endpoints.second == &verticies[vertTwo]) || 
+                            (edges[j].endpoints.first == &verticies[vertTwo]
+                            && edges[j].endpoints.second == &verticies[vertOne])
                             ) {
                             edgeFound = true;
                             edgeIndx = j;
@@ -353,6 +353,7 @@ float WireSculptPlugin::insertionCost(Vertex& lm1, Vertex& lm2, Vertex& lm3) {
     return computeLMDistance(lm1, lm3) + computeLMDistance(lm3, lm2) - computeLMDistance(lm1, lm2);
 }
 
+// vertices are not necessarily endpoints of the same edge 
 float WireSculptPlugin::computeLMDistance(Vertex& lm1, Vertex& lm2) {
     MPoint start = lm1.mPosition;
     MPoint end = lm2.mPosition;
@@ -361,7 +362,7 @@ float WireSculptPlugin::computeLMDistance(Vertex& lm1, Vertex& lm2) {
 
 
 // A* Path Finding Algorithm
-std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
+std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
 {
     // Initialize the open and closed lists
     std::priority_queue<Vertex*, std::vector<Vertex*>, VertexPtrCompare> openList;
@@ -396,22 +397,27 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 
             // Reconstruct the path
             std::vector<Vertex*> path;
+            std::vector<int> pathIds;
             while (!(current->id == start->id))
             {
                 path.push_back(current);
-
+                pathIds.push_back(current->id);
                 if (parentList[current->id] >= 0) {
                     current = &verticies[parentList[current->id]];	// assuming that verticies are stored in order of id
 
                 }
                 else {
-                    return path;
+                    return pathIds;
                 }
             }
 
             path.push_back(start);
             reverse(path.begin(), path.end());
-            return path;
+
+            pathIds.push_back(start->id);
+            reverse(pathIds.begin(), pathIds.end());
+
+            return pathIds;
             
         }
 
@@ -421,6 +427,7 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
             Edge* nEdge = neighbor.second;
 
             float newG = current->g + nEdge->warpedLength;
+            //MGlobal::displayInfo("Edge warped: " + MString() + nEdge->warpedLength);
             if (newG < nVert->g) {
                 float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
                 float newF = newG + newH;
@@ -437,7 +444,7 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 
         }
     }
-    return std::vector<Vertex*>();
+    return std::vector<int>();
 }
 
 std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {

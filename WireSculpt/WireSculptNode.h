@@ -35,10 +35,13 @@ public:
 
 protected:
     MObject createMesh(const double& radius, const double& aAttract, const double& bAttract, 
-        const double& fovVal, const int& viewChoice,
+        const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
         const int& contourChoice, const double& testSCVal, 
         WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
         std::vector<Edge>& edges, MObject& outData, MStatus& status);
+
+    // map to colors - red channel
+    void mapToColors(std::unordered_map<Vertex*, float> colorScheme);
 
     // CreateMesh helpers for visualization
     void createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,

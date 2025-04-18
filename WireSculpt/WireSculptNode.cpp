@@ -390,6 +390,19 @@ void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Ve
         }
     }
 }
+void WireSculptNode::mapToColors(std::unordered_map<Vertex*, float> colorScheme) {
+    float maxDist = -1;
+    for (auto vc : colorScheme) {
+        if (vc.second > maxDist) {
+            maxDist = vc.second;
+        }
+    }
+    for (auto vc : colorScheme) {
+        float distance = colorScheme[(vc.first)];
+        float r = std::min(std::max(distance, 0.0f), 1.0f);
+        vc.second = r;
+    }
+}
 
 // Visualizing Heatmap Mesh
 void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors) {
@@ -431,7 +444,7 @@ void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<
 }
 
 MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, const double& bAttract, 
-    const double& fovVal, const int& viewChoice,
+    const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
     const int& contourChoice, const double& testSCVal, 
     WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, std::vector<Edge>& edges, MObject& outData, MStatus& status) {
@@ -494,10 +507,13 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
     /* Step 3 - Build Heat Map from Feature Lines Vertices */
     //std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws);
-    std::unordered_map<Vertex*, float> colorScheme = ws.GetHeatMapDistance(ws, &featureVertices);
-    createHeatMapMesh(radius, colorScheme, &colorsHeatMap);
+    std::unordered_map<Vertex*, float> contourHeatMap = ws.GetHeatMapDistance(ws, &featureVertices);
+    createHeatMapMesh(radius, contourHeatMap, &colorsHeatMap);
+    mapToColors(contourHeatMap);
 
     /* Step 4 - Compute Feature Attraction Weights */
+    MGlobal::displayInfo("edge size: " + MString() + edges.size());
+
     float lBar = 0; 
     for (auto e : edges) {      // find average edge length
         lBar += e.getLength();
@@ -506,28 +522,35 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
     for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
         Vertex* vert = &verticies[i];
-        float distance = colorScheme[vert];
+        float distance = contourHeatMap[vert];
         vert->wAttract = (aAttract / (1.0 + std::exp(-bAttract * distance / lBar))) + (1 - aAttract);   // issue ? - doubles in float math!!
+        MGlobal::displayInfo("Wattract: " + MString() + vert->wAttract);
     }
 
     for (auto e: edges) {
         const Vertex* vi = e.endpoints.first;
         const Vertex* vj = e.endpoints.second;
         e.featureLength = 0.5 * (vi->wAttract + vj->wAttract) * e.getLength();   // does this change the correct edges? (pointer issues?)
-        //e.warpedLength = 0.5 * (vi->wAttract + vj->wAttract) * e.getLength();   // does this change the correct edges? (pointer issues?)
+        e.warpedLength = e.featureLength;   // does this change the correct edges? (pointer issues?)
     }
 
     // print warped edge lengths for each vertex to check
-
+    /*for (auto v : verticies) {
+        for (auto ve : v.neighbors) {
+            Edge* e = ve.second;
+            MGlobal::displayInfo("Warped edge feature lengths: " + MString() + e->featureLength);
+        }
+    }*/
 
     /* Step 5 - Run TSP Optimized Nearest Neighbors on landmark vertices */ 
-    std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);
-
-    // Run A* between each of the vertices
+    std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20); // max 20 iterations
+    std::vector<int> wirePath;
+    
     for (int t = 0; t < tour.size(); t++) {
         int index1;
         int index2;
 
+        // if last element, cycle back to first node
         if (t == tour.size() - 1) {
             index1 = tour.size() - 1;
             index2 = 0;
@@ -542,23 +565,50 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
         /* Step 5a - Adjust edge weights via path repulsion */ 
         // Call heatmap on existing path
-        // updated warpedLengths
-        std::vector<Vertex*> path = ws.FindPath(verticies, source, goal, verticies.size());
+        if (wirePath.size() > 0) {
+        }
+        std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &featureVertices);
+        //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
+        mapToColors(pathHeatMap);
+
+        // Update warpedLengths
+        for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
+            Vertex* vert = &verticies[i];
+            float distance = pathHeatMap[vert];
+            vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
+        }
+        for (auto e : edges) {
+            const Vertex* vi = e.endpoints.first;
+            const Vertex* vj = e.endpoints.second;
+            e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
+        }
+
+        // Run A* between each of the vertices
+        std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
+        wirePath.insert(wirePath.end(), path.begin(), path.end());  // concatenate current path to accumulated wirePath
+
         if (path.size() == 0) {
             MGlobal::displayInfo("No path found");
         }
         else {
             for (int i = 0; i < path.size() - 1; i++) {
-                MPoint start = path[i]->mPosition;
-                MPoint end = path[i + 1]->mPosition;
+                Vertex* v1 = &verticies[path[i]];
+                Vertex* v2 = &verticies[path[i + 1]];
+                MPoint start = v1->mPosition;
+                MPoint end = v2->mPosition;
 
                 MPointArray currPoints;
                 MIntArray currFaceCounts;
                 MIntArray currFaceConnects;
 
-                /*CylinderMesh cylinder(start, end, radius * 0.5);
+                CylinderMesh cylinder(start, end, radius * 0.5);
                 cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);*/
+                cylinder.appendToMesh(points, faceCounts, faceConnects);
+
+                int numVerticesThisSphere = currPoints.length();
+                for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+                    colorsHeatMap.append(gray);
+                }
             }
         }
     }
@@ -737,7 +787,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
 
         // Create new geometry
-        createMesh(thicknessVal, aAttractVal, bAttractVal, fovVal, viewVal, contourVal, testSCVal, 
+        createMesh(thicknessVal, aAttractVal, bAttractVal, aRepelVal, bRepelVal, fovVal, viewVal, contourVal, testSCVal, 
             ws, meshFilePathStr, *(ws.GetVerticies()), *(ws.GetEdges()), newOutputData, returnStatus);
 
         if (!returnStatus) {
