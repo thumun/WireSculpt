@@ -42,6 +42,7 @@ protected:
 
     // map to colors - red channel
     void mapToColors(std::unordered_map<Vertex*, float> colorScheme);
+    void remapFeatureLengths(std::vector<Edge>& edges, float gamma);
 
     // CreateMesh helpers for visualization
     void createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,
@@ -51,7 +52,8 @@ protected:
     void createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
         std::vector<int> featureVertices, MColorArray* colors, MColor color);
     void createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors);
-    
+    void createEdgeWeightsMesh(const double& radius, std::vector<Edge>& edges,
+        MColorArray* colors);
     MPointArray points;
     MIntArray faceCounts;
     MIntArray faceConnects;
