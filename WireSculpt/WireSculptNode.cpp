@@ -393,7 +393,7 @@ void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Ve
 
 // Visualize edge weights after applying feature attraction mesh
 void WireSculptNode::createEdgeWeightsMesh(const double& radius, std::vector<Edge>& edges, MColorArray* colors) {
-    /*float maxDist = -1;
+    float maxDist = -1;
     float shortDist = 99999;
     for (auto e : edges) {
         if (e.featureLength > maxDist) {
@@ -403,7 +403,7 @@ void WireSculptNode::createEdgeWeightsMesh(const double& radius, std::vector<Edg
             shortDist = e.featureLength;
         }
     }
-    MGlobal::displayInfo("Max Feature Length: " + MString() + maxDist);*/
+    MGlobal::displayInfo("Max Feature Length: " + MString() + maxDist);
 
     //float gamma = 0.4;
     //float maxDist = -1;
@@ -444,22 +444,22 @@ void WireSculptNode::createEdgeWeightsMesh(const double& radius, std::vector<Edg
 
         int numVerticesThisSphere = currPoints.length();
         for (unsigned int c = 0; c < numVerticesThisSphere; ++c) {
-            //float r = ((float)length) / maxDist;
+            float r = ((float)length - shortDist) / (maxDist - shortDist);
             //MGlobal::displayInfo("R value: " + MString() + r);
-            float r;
-            // Bucketing
-            if (length < 0.5) {
-                r = 0;
-            }
-            else if (length < 0.6) {
-                r = 0.3;
-            }
-            else if (length < 0.7) {
-                r = 0.6;
-            }
-            else {
-                r = 1.0;
-            }
+            //float r;
+            //// Bucketing
+            //if (length < 0.5) {
+            //    r = 0;
+            //}
+            //else if (length < 0.6) {
+            //    r = 0.3;
+            //}
+            //else if (length < 0.7) {
+            //    r = 0.6;
+            //}
+            //else {
+            //    r = 1.0;
+            //}
 
             float b = 1.0 - r;
             MColor color(r, 0, b, 0.6f); //(0, g, b);

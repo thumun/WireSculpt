@@ -430,7 +430,7 @@ std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vert
             float warped = nEdge->warpedLength;
             //warped = 0.5f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (5.0f - 0.5f)));
            // warped *= 100;
-            if (warped < 0.3) {
+            /*if (warped < 0.3) {
                 warped = 0.1;
             }
             else if (warped < 0.6) {
@@ -441,9 +441,9 @@ std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vert
             }
             else {
                 warped = 100;
-            }
+            }*/
             float newG = current->g + warped; //nEdge->warpedLength;
-            //MGlobal::displayInfo("Edge warped: " + MString() + warped);
+            MGlobal::displayInfo("Edge warped: " + MString() + warped);
             if (newG < nVert->g) {
                 float newH = (goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
                 float newF = newG + newH;
