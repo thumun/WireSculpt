@@ -21,6 +21,7 @@ public:
 
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
+	std::vector<Edge>* GetEdges();
 	std::vector<int> GetExtremePoints(const std::string& filePath);
 	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws);
 	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws, std::vector<int>* segments);
@@ -29,7 +30,7 @@ public:
 	// 1. Run FindTspPath on landmark vertices, using regular distance calculation for nearest neighbors
 	// 2. Run FindPath for each pair of consecutive vertices in the path
 	// Note: We can also use FindPath in place of the tsp distance calculation, but this may increase computation heavily
-	std::vector<Vertex*> FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount);
+	std::vector<int> FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount);
 	std::vector<int> FindTspPath(std::vector<Vertex*> landmarks, int start);	// outputs naive tsp path
 	std::vector<int> TwoOptTspPath(std::vector<Vertex*> landmarks, int start, int maxIters);	// optimize naive tsp path
 

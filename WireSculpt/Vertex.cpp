@@ -9,7 +9,10 @@ int Vertex::lastId = 0;
 Vertex::Vertex(const MPoint& position, bool landmark) : 
 	mPosition(position), id(lastId) {
 
-	this->isLandmark.first = landmark;
+	//this->isLandmark.first = landmark;
+	this->isLandmark = landmark;
+	this->wAttract = 0;
+	this->wRepel = 0;
 	resetFGH();
 	this->neighbors = {};
 	lastId++;

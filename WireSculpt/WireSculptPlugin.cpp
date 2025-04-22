@@ -138,13 +138,22 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                 // want to do while but how to loop at same time
                 if (edges.size() > 0) {
                     for (int j = 0; j < edges.size(); j++) {
-
-                        if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
+                        if (
+                            (edges[j].endpoints.first == &verticies[vertOne] 
+                            && edges[j].endpoints.second == &verticies[vertTwo]) || 
+                            (edges[j].endpoints.first == &verticies[vertTwo]
+                            && edges[j].endpoints.second == &verticies[vertOne])
+                            ) {
+                            edgeFound = true;
+                            edgeIndx = j;
+                            break;
+                        }
+                        /*if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
                             (edges[j].endpoints.find(&verticies[vertTwo]) != edges[j].endpoints.end())) {
                             edgeFound = true; 
                             edgeIndx = j; 
                             break;
-                        }
+                        }*/
                     }
                 }
 
@@ -344,6 +353,7 @@ float WireSculptPlugin::insertionCost(Vertex& lm1, Vertex& lm2, Vertex& lm3) {
     return computeLMDistance(lm1, lm3) + computeLMDistance(lm3, lm2) - computeLMDistance(lm1, lm2);
 }
 
+// vertices are not necessarily endpoints of the same edge 
 float WireSculptPlugin::computeLMDistance(Vertex& lm1, Vertex& lm2) {
     MPoint start = lm1.mPosition;
     MPoint end = lm2.mPosition;
@@ -352,7 +362,7 @@ float WireSculptPlugin::computeLMDistance(Vertex& lm1, Vertex& lm2) {
 
 
 // A* Path Finding Algorithm
-std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
+std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vertex* start, Vertex* goal, int vertexCount)
 {
     // Initialize the open and closed lists
     std::priority_queue<Vertex*, std::vector<Vertex*>, VertexPtrCompare> openList;
@@ -387,22 +397,27 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
 
             // Reconstruct the path
             std::vector<Vertex*> path;
+            std::vector<int> pathIds;
             while (!(current->id == start->id))
             {
                 path.push_back(current);
-
+                pathIds.push_back(current->id);
                 if (parentList[current->id] >= 0) {
                     current = &verticies[parentList[current->id]];	// assuming that verticies are stored in order of id
 
                 }
                 else {
-                    return path;
+                    return pathIds;
                 }
             }
 
             path.push_back(start);
             reverse(path.begin(), path.end());
-            return path;
+
+            pathIds.push_back(start->id);
+            reverse(pathIds.begin(), pathIds.end());
+
+            return pathIds;
             
         }
 
@@ -425,10 +440,9 @@ std::vector<Vertex*> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, 
                     inOpenList[nVert->id] = true;
                 }
             }
-
         }
     }
-    return std::vector<Vertex*>();
+    return std::vector<int>();
 }
 
 std::unordered_map<Vertex*, float> WireSculptPlugin::GetHeatMapDistance(WireSculptPlugin& ws) {
@@ -544,12 +558,16 @@ std::vector<Vertex>* WireSculptPlugin::GetVerticies() {
     return &(this->verticies);
 }
 
+std::vector<Edge>* WireSculptPlugin::GetEdges() {
+    return &(this->edges);
+}
+
 #if EXEDEBUG
 int main() {
     WireSculptPlugin ws = WireSculptPlugin();
-    ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/subSphere.obj");
+    //ws.ProcessFile("D:/CGGT/AdvTopics/WireSculpt/testobj/subSphere.obj");
     //ws.GetExtremePoints("D:/CGGT/AdvTopics/WireSculpt/testobj/cow.obj");
-    //ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test objs/suzanne.obj");
+    ws.ProcessFile("C:/Users/53cla/Documents/Penn/CIS_6600/Authoring Tool/WireSculpt/Test_objs/triangulated/subSphere.obj");
     //std::vector<Vertex>* verticies = ws.GetVerticies();
     //Vertex* source = &verticies[2];
     //Vertex* goal = &verticies[5];   // arbitrary
