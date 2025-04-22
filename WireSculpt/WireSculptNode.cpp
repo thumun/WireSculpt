@@ -583,20 +583,20 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
             MGlobal::displayInfo("landmark pushed back");
 
             // Draw each Landmark Vertex
-            MPointArray currPoints;
-            MIntArray currFaceCounts;
-            MIntArray currFaceConnects;
+            //MPointArray currPoints;
+            //MIntArray currFaceCounts;
+            //MIntArray currFaceConnects;
 
-            SphereMesh sphere(verticies[index].mPosition, radius * 2);
-            sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
-            sphere.appendToMesh(points, faceCounts, faceConnects);
-            int numVerticesThisSphere = currPoints.length();
+            //SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            //sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
+            //sphere.appendToMesh(points, faceCounts, faceConnects);
+            //int numVerticesThisSphere = currPoints.length();
 
-            for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-               /* float r = ((float) colorIndex) / (extremePoints.size() - 1.0);
-                MColor color(r, 0.0, 1.0 - r);*/
-                colorsHeatMap.append(gray);
-            }
+            //for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            //   /* float r = ((float) colorIndex) / (extremePoints.size() - 1.0);
+            //    MColor color(r, 0.0, 1.0 - r);*/
+            //    colorsHeatMap.append(gray);
+            //}
             colorIndex += 1;
         }
     }
@@ -658,6 +658,62 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     //remapFeatureLengths(edges, 0.5);        // warps feature lengths 
     createEdgeWeightsMesh(radius, edges, &colorsHeatMap);
 
+    // Testing A*
+    Vertex* source = &verticies[0];
+    Vertex* goal = &verticies[4];
+    std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
+
+    MPointArray currPoints1;
+    MIntArray currFaceCounts1;
+    MIntArray currFaceConnects1;
+
+    SphereMesh sphere(source->mPosition, radius * 2);
+    sphere.getMesh(currPoints1, currFaceCounts1, currFaceConnects1);
+    sphere.appendToMesh(points, faceCounts, faceConnects);
+    int numVerticesThisSphere = currPoints1.length();
+
+    for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+        colorsHeatMap.append(gray);
+    }
+
+    MPointArray currPoints2;
+    MIntArray currFaceCounts2;
+    MIntArray currFaceConnects2;
+
+    SphereMesh sphere2(goal->mPosition, radius * 2);
+    sphere2.getMesh(currPoints2, currFaceCounts2, currFaceConnects2);
+    sphere2.appendToMesh(points, faceCounts, faceConnects);
+    int numVerticesThisSphere2 = currPoints1.length();
+
+    for (unsigned int i = 0; i < numVerticesThisSphere2; ++i) {
+        colorsHeatMap.append(gray);
+    }
+
+    for (int i = 0; i < path.size() - 1; i++) {
+        Vertex* v1 = &verticies[path[i]];
+        Vertex* v2 = &verticies[path[i + 1]];
+        MPoint start = v1->mPosition;
+        MPoint end = v2->mPosition;
+
+        MPointArray currPoints;
+        MIntArray currFaceCounts;
+        MIntArray currFaceConnects;
+
+        CylinderMesh cylinder(start, end, radius * 0.5);
+        cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
+        cylinder.appendToMesh(points, faceCounts, faceConnects);
+
+        int numVerticesThisSphere = currPoints.length();
+        for (unsigned int c = 0; c < numVerticesThisSphere; ++c) {
+            float r = ((float) i) / (path.size() - 2);
+            float b = 1.0 - r;
+            //MColor color(r, 0, b); //(0, g, b);
+            colorsHeatMap.append(gray);
+            //MGlobal::displayInfo("Path Points Color: r: 0; g: " + MString() + g + "; b: " + MString() + b);
+
+        }
+    }
+    // Testing A* ends
 
     // print warped edge lengths for each vertex to check
     /*for (auto v : verticies) {
@@ -668,83 +724,82 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     }*/
 
     /* Step 5 - Run TSP Optimized Nearest Neighbors on landmark vertices */ 
-    std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20); // max 20 iterations
-    std::vector<int> wirePath;
     
-    for (int t = 0; t < tour.size(); t++) {
-        int index1;
-        int index2;
+    //std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20); // max 20 iterations
+    //std::vector<int> wirePath;
+    //
+    //for (int t = 0; t < tour.size(); t++) {
+    //    int index1;
+    //    int index2;
 
-        // if last element, cycle back to first node
-        if (t == tour.size() - 1) {
-            index1 = tour.size() - 1;
-            index2 = 0;
-        }
-        else {
-            index1 = t;
-            index2 = t + 1;
-        }
+    //    // if last element, cycle back to first node
+    //    if (t == tour.size() - 1) {
+    //        index1 = tour.size() - 1;
+    //        index2 = 0;
+    //    }
+    //    else {
+    //        index1 = t;
+    //        index2 = t + 1;
+    //    }
 
-        Vertex* source = landmarks[tour[index1]];
-        Vertex* goal = landmarks[tour[index2]];
+    //    Vertex* source = landmarks[tour[index1]];
+    //    Vertex* goal = landmarks[tour[index2]];
 
-        /* Step 5a - Adjust edge weights via path repulsion */ 
-        // Call heatmap on existing path
-        //if (wirePath.size() > 0) {
-        //    std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &wirePath);
-        //    //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
-        //    mapToColors(pathHeatMap);
+    //    /* Step 5a - Adjust edge weights via path repulsion */ 
+    //    // Call heatmap on existing path
+    //    //if (wirePath.size() > 0) {
+    //    //    std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &wirePath);
+    //    //    //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
+    //    //    mapToColors(pathHeatMap);
 
-        //    // Update warpedLengths
-        //    for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
-        //        Vertex* vert = &verticies[i];
-        //        float distance = pathHeatMap[vert];
-        //        vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
-        //    }
-        //    for (auto e : edges) {
-        //        const Vertex* vi = e.endpoints.first;
-        //        const Vertex* vj = e.endpoints.second;
-        //        e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
-        //    }
-        //}
-        
-        // Run A* between each of the vertices
-        std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
-        wirePath.insert(wirePath.end(), path.begin(), path.end());  // concatenate current path to accumulated wirePath
+    //    //    // Update warpedLengths
+    //    //    for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
+    //    //        Vertex* vert = &verticies[i];
+    //    //        float distance = pathHeatMap[vert];
+    //    //        vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
+    //    //    }
+    //    //    for (auto e : edges) {
+    //    //        const Vertex* vi = e.endpoints.first;
+    //    //        const Vertex* vj = e.endpoints.second;
+    //    //        e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
+    //    //    }
+    //    //}
+    //    
+    //    // Run A* between each of the vertices
+    //    std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
+    //    wirePath.insert(wirePath.end(), path.begin(), path.end());  // concatenate current path to accumulated wirePath
 
-        if (path.size() == 0) {
-            MGlobal::displayInfo("No path found");
-        }
-        else {
-            for (int i = 0; i < path.size() - 1; i++) {
-                Vertex* v1 = &verticies[path[i]];
-                Vertex* v2 = &verticies[path[i + 1]];
-                MPoint start = v1->mPosition;
-                MPoint end = v2->mPosition;
+    //    if (path.size() == 0) {
+    //        MGlobal::displayInfo("No path found");
+    //    }
+    //    else {
+    //        for (int i = 0; i < path.size() - 1; i++) {
+    //            Vertex* v1 = &verticies[path[i]];
+    //            Vertex* v2 = &verticies[path[i + 1]];
+    //            MPoint start = v1->mPosition;
+    //            MPoint end = v2->mPosition;
 
-                MPointArray currPoints;
-                MIntArray currFaceCounts;
-                MIntArray currFaceConnects;
+    //            MPointArray currPoints;
+    //            MIntArray currFaceCounts;
+    //            MIntArray currFaceConnects;
 
-                CylinderMesh cylinder(start, end, radius * 0.5);
-                cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
-                cylinder.appendToMesh(points, faceCounts, faceConnects);
+    //            CylinderMesh cylinder(start, end, radius * 0.5);
+    //            cylinder.getMesh(currPoints, currFaceCounts, currFaceConnects);
+    //            cylinder.appendToMesh(points, faceCounts, faceConnects);
 
-                int numVerticesThisSphere = currPoints.length();
-                for (unsigned int c = 0; c < numVerticesThisSphere; ++c) {
-                    float r = ((float) i) / (path.size() - 2);
-                    float b = 1.0 - r;
-                    //MColor color(r, 0, b); //(0, g, b);
-                    colorsHeatMap.append(gray);
-                    //MGlobal::displayInfo("Path Points Color: r: 0; g: " + MString() + g + "; b: " + MString() + b);
+    //            int numVerticesThisSphere = currPoints.length();
+    //            for (unsigned int c = 0; c < numVerticesThisSphere; ++c) {
+    //                float r = ((float) i) / (path.size() - 2);
+    //                float b = 1.0 - r;
+    //                //MColor color(r, 0, b); //(0, g, b);
+    //                colorsHeatMap.append(gray);
+    //                //MGlobal::displayInfo("Path Points Color: r: 0; g: " + MString() + g + "; b: " + MString() + b);
 
-                }
-            }
-        }
-    }
+    //            }
+    //        }
+    //    }
+    //}
     
-    
-
     MFnMesh meshFn;
     MObject meshObject = meshFn.create(points.length(), faceCounts.length(), points, faceCounts, faceConnects, outData, &status);
 

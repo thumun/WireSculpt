@@ -54,6 +54,10 @@ protected:
     void createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors);
     void createEdgeWeightsMesh(const double& radius, std::vector<Edge>& edges,
         MColorArray* colors);
+
+    // Testing functions
+
+
     MPointArray points;
     MIntArray faceCounts;
     MIntArray faceConnects;
