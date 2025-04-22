@@ -609,7 +609,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
     /* Step 5 - Run TSP Optimized Nearest Neighbors on landmark vertices */ 
     std::vector<int> tour = ws.TwoOptTspPath(landmarks, 0, 20);     // max 20 iterations
-    std::vector<int> wirePath;
+    std::vector<int> wirePath;                                      // accumulated path
     
     for (int t = 0; t < tour.size(); t++) {
         int index1;
@@ -630,23 +630,23 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
         /* Step 5a - Adjust edge weights via path repulsion */ 
         // Call heatmap on existing path
-        //if (wirePath.size() > 0) {
-        //    std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &wirePath);
-        //    //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
-        //    mapToColors(pathHeatMap);
+        if (wirePath.size() > 0) {
+            std::unordered_map<Vertex*, float> pathHeatMap = ws.GetHeatMapDistance(ws, &wirePath);
+            //createHeatMapMesh(radius, pathHeatMap, &colorsHeatMap);
+            //mapToColors(pathHeatMap);
 
-        //    // Update warpedLengths
-        //    for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
-        //        Vertex* vert = &verticies[i];
-        //        float distance = pathHeatMap[vert];
-        //        vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1 - aRepel);   // issue ? - doubles in float math!!
-        //    }
-        //    for (auto e : edges) {
-        //        const Vertex* vi = e.endpoints.first;
-        //        const Vertex* vj = e.endpoints.second;
-        //        e.warpedLength = (vi->wAttract + vj->wAttract) * e.featureLength / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
-        //    }
-        //}
+            // Update warpedLengths
+            for (int i = 0; i < verticies.size(); i++) {    // compute feature attraction weight for each vertex
+                Vertex* vert = &verticies[i];
+                float distance = pathHeatMap[vert] < 0 ? 0 : pathHeatMap[vert];
+                vert->wRepel = (aRepel / (1.0 + std::exp(-bRepel * distance / lBar))) + (1.0 - aRepel);   // issue ? - doubles in float math!!
+            }
+            for (auto& e : edges) {
+                const Vertex* vi = e.endpoints.first;
+                const Vertex* vj = e.endpoints.second;
+                e.warpedLength = (vi->wAttract + vj->wAttract) * e.getLength() / (vi->wRepel + vj->wRepel);   // IS THIS FEATURE LENGTH OR ORIGINAL LENGTH??
+            }
+        }
         
         // Run A* between each of the vertices
         std::vector<int> path = ws.FindPath(verticies, source, goal, verticies.size());
