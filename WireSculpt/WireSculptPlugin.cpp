@@ -426,24 +426,7 @@ std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vert
             Vertex* nVert = neighbor.first;
             Edge* nEdge = neighbor.second;
 
-            // TODO - REVERT later
-            float warped = nEdge->warpedLength;
-            //warped = 0.5f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (5.0f - 0.5f)));
-           // warped *= 100;
-            /*if (warped < 0.3) {
-                warped = 0.1;
-            }
-            else if (warped < 0.6) {
-                warped = 10;
-            }
-            else if (warped < 0.9) {
-                warped = 50;
-            }
-            else {
-                warped = 100;
-            }*/
-            float newG = current->g + warped; //nEdge->warpedLength;
-            MGlobal::displayInfo("Edge warped: " + MString() + warped);
+            float newG = current->g + nEdge->warpedLength;
             if (newG < nVert->g) {
                 float newH = 0; //(goal->mPosition - nVert->mPosition).length();	// for now - the distance from n to goal
                 float newF = newG + newH;
@@ -457,26 +440,6 @@ std::vector<int> WireSculptPlugin::FindPath(std::vector<Vertex>& verticies, Vert
                     inOpenList[nVert->id] = true;
                 }
             }
-            //MGlobal::displayInfo("Curr OpenList: ");
-            //std::priority_queue<Vertex*, std::vector<Vertex*>, VertexPtrCompare> tempQueue = openList;
-
-            //MGlobal::displayInfo("----- Printing openList Vertex Info -----");
-
-            //while (!tempQueue.empty()) {
-            //    Vertex* v = tempQueue.top();
-            //    tempQueue.pop();
-
-            //    MGlobal::displayInfo("Vertex ID: " + MString() + v->id);
-            //    MGlobal::displayInfo("  f: " + MString() + v->f + ", g: " + MString() + v->g);
-
-            //    // Print warped edge lengths to neighbors
-            //    for (auto& neighbor : v->neighbors) {
-            //        Edge* e = neighbor.second;
-            //        MGlobal::displayInfo("    Edge to Vertex " + MString() + neighbor.first->id +
-            //            ": warpedLength = " + MString() + e->warpedLength);
-            //    }
-            //}
-
         }
     }
     return std::vector<int>();

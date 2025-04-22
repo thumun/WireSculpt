@@ -41,21 +41,25 @@ protected:
         std::vector<Edge>& edges, MObject& outData, MStatus& status);
 
     // map to colors - red channel
-    void mapToColors(std::unordered_map<Vertex*, float> colorScheme);
-    void remapFeatureLengths(std::vector<Edge>& edges, float gamma);
+    /*void mapToColors(std::unordered_map<Vertex*, float> colorScheme);
+    void remapFeatureLengths(std::vector<Edge>& edges, float gamma);*/
 
-    // CreateMesh helpers for visualization
+    /* CreateMesh helpers for visualization */
     void createWireframeMesh(const double& radius, std::vector<Vertex>& verticies,
         MColorArray* colors, MColor color);
     void createContoursMesh(const double& radius, std::vector<std::pair<vec3f, vec3f>> featureSegments,
         MColorArray* colors, MColor color);
+
+    // visualize corresponding vertices belonging to contours
     void createFeatureVertsMesh(const double& radius, std::vector<Vertex>& verticies, 
         std::vector<int> featureVertices, MColorArray* colors, MColor color);
+    
+    // visualize heat map on vertices with given colorScheme
     void createHeatMapMesh(const double& radius, std::unordered_map<Vertex*, float> colorScheme, MColorArray* colors);
+    
+    // visualize feature length warped edge weights as colors -- normalizes distances and maps from range 0-1 to fit rgb
     void createEdgeWeightsMesh(const double& radius, std::vector<Edge>& edges,
         MColorArray* colors);
-
-    // Testing functions
 
 
     MPointArray points;
