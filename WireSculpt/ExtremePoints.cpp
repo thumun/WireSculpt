@@ -381,7 +381,7 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
     int prev_previous_num_points = 0;
     int previous_num_points = 0;
     int current_num_points = 0;
-    int max_iters = 2;
+    int max_iters = 5;
     int iters = 0;
 
     std::vector<std::vector<int>> A;
