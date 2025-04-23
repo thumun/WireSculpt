@@ -263,7 +263,9 @@ void compute_laplacian(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXi& 
     Eigen::MatrixXd V_is_concave = Eigen::MatrixXd::Zero(V.rows(), 1);
 
     for (int i = 0; i < V.rows(); i++) {
-        if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, 0.3) && filter_2(V, i, A)) {
+        //if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, 0.05) && filter_2(V, i, A)) {
+        //if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, 0.0005) && filter_2(V, i, A)) {
+        if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, filter1_thresh) && filter_2(V, i, A)) {
             V_is_concave(i, 0) = 1.0;
         }
     }
@@ -369,7 +371,7 @@ bool in_proximity_to(Eigen::MatrixXd p1, std::set<int>& extreme_point_set, Eigen
 }
 
 std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eigen::MatrixXd& L, int index_given,
-    Eigen::MatrixXi& E) {
+    Eigen::MatrixXi& E, double proximity, double maxVal) {
 
     typedef Eigen::Triplet<double> T;
 
@@ -380,7 +382,7 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
     int prev_previous_num_points = 0;
     int previous_num_points = 0;
     int current_num_points = 0;
-    int max_iters = 2;
+    int max_iters = 5;
     int iters = 0;
 
     std::vector<std::vector<int>> A;
@@ -452,13 +454,19 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
                 max_val = std::max(x(adj_vert, 0), max_val);
                 min_val = std::min(x(adj_vert, 0), min_val);
             }
-            if (x(i) >= max_val || x(i) <= min_val) {
+
+            /*double threshold = 0.85;*/
+            double threshold = maxVal;
+            if (x(i) >= threshold * max_val || x(i) <= threshold * min_val) {
+            //if (x(i) >= max_val || x(i) <= min_val) {
                 if (extreme_point_set.size() < 2) {
                     candidate_extreme_points.push_back(i);
                 }
                 else {
                     double max_dist = max_geodesic_dist(extreme_point_set, V);
-                    if (!in_proximity_to(V.row(i), extreme_point_set, V, max_dist * 0.15)) {
+                    if (!in_proximity_to(V.row(i), extreme_point_set, V, max_dist * proximity)) {
+                    //if (!in_proximity_to(V.row(i), extreme_point_set, V, max_dist * 0.05)) {
+                    //if (!in_proximity_to(V.row(i), extreme_point_set, V, max_dist * 0.15)) {
                         double neighbors = 0.0;
                         for (int j = 0; j < A[i].size(); j++) {
                             neighbors = neighbors + x(A[i][j]);

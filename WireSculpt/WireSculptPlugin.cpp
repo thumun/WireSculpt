@@ -171,7 +171,7 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
     return true;
 }
 
-std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath) {
+std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath, double proximity, double filter, double maxVal) {
     Eigen::MatrixXd V;
     Eigen::MatrixXi F;
 
@@ -214,9 +214,9 @@ std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath)
     // debugged - this seems to be working 
     compute_all_features(V, F, E, N, VF, VFi, IF, OV, FC, FN, DA, D, L, G, dblA);
 
-    compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, 0.4);
+    compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, filter);
 
-    extreme_points = get_extreme_points(F, V, L, index, E);
+    extreme_points = get_extreme_points(F, V, L, index, E, proximity, maxVal);
 
     return extreme_points;
 }

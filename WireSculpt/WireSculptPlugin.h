@@ -22,7 +22,7 @@ public:
 	bool ProcessFile(std::string filePath);
 	std::vector<Vertex>* GetVerticies();
 	std::vector<Edge>* GetEdges();
-	std::vector<int> GetExtremePoints(const std::string& filePath);
+	std::vector<int> GetExtremePoints(const std::string& filePath, double proximity, double filter, double maxVal);
 	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws);
 	std::unordered_map<Vertex*, float> GetHeatMapDistance(WireSculptPlugin& ws, std::vector<int>* segments);
 	

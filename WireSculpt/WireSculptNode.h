@@ -32,11 +32,15 @@ public:
     static MObject  view;
     static MObject  contour;
     static MObject  testSC;
+    static MObject  proximityThresh;
+    static MObject  filterThresh;
+    static MObject  maxValThresh;
 
 protected:
     MObject createMesh(const double& radius, const double& aAttract, const double& bAttract, 
         const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
-        const int& contourChoice, const double& testSCVal, 
+        const int& contourChoice, const double& testSCVal, const double& proximity, const double& filter, 
+        const double& maxVal, 
         WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
         std::vector<Edge>& edges, MObject& outData, MStatus& status);
 

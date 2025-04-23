@@ -13,4 +13,4 @@ void compute_laplacian(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXi& 
 	Eigen::MatrixXd& N, Eigen::MatrixXd& L, Eigen::MatrixXd& vertex_is_concave, double beta,
 	double eps, double sigma, int clip_bound, int lap_weighting, double filter1_thresh);
 std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eigen::MatrixXd& L, int index_given,
-	Eigen::MatrixXi& E);
+	Eigen::MatrixXi& E, double proximity, double maxVal);
