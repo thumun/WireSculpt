@@ -12,6 +12,23 @@ This plugin was created by Claire Lu and Neha Thumu as a part of CIS660 at the U
 
 INSERT IMAGE OF GUI WITH COLOR CODED BOXES!!
 
+## Breakdown of Creating this Plugin 
+### Maya Node Setup and General Code Setup 
+- general Maya stuff
+- file reading
+- classes 
+### Extreme Points Integration 
+- used florian's repo as basis
+- integrated necessary src code from libigl library
+### A* Pathfinding 
+- //
+### Heat Map Distance 
+- originally used CHoudrouge4's repo as basis 
+- src code from libigl
+### Contour Feature lines 
+- //
+### Integration 
+- // 
 
 ## Resources
 1. Generating a unit sphere (SphereMesh class): https://github.com/Erkaman/cute-deferred-shading/blob/master/src/main.cpp#L573
