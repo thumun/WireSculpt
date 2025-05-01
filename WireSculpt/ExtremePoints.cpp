@@ -228,7 +228,7 @@ bool filter_2(Eigen::MatrixXd& V, int i, std::vector<std::vector<int>>& A) {
     one_ring.row(A[i].size()) = V.row(i);
     Eigen::MatrixXd ev;
     eigenvalues(one_ring, ev);
-    return (ev(0, 0) / ev.sum() > 0.001);
+    return (ev(0, 0) / ev.sum() > 0.0001);
 }
 
 void compute_laplacian(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXi& E, Eigen::MatrixXd& G,
