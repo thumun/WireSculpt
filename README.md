@@ -5,7 +5,7 @@ This plugin is based on the following SIGGRAPH paper published in 2021: WireRoom
 
 This plugin was created by Claire Lu and Neha Thumu as a part of CIS660 at the University of Pennsylvania. 
 
-## How to install and use our Plugin 
+## How to install and use Wiresculpt
 - First, make sure you have Maya 2022 or Maya 2024 installed (we have not tested this plug in for other versions). We also recommend Visual Studio 2022 to build the plugin.
 - Clone our repo, then open it in Visual Studio in **admin mode** (without this, the project will **not** build properly). Once you build the project, the .mll file will be added to the debug folder of the project. Now, open your version of Maya and go to the plug in window (..)
 - You can launch our GUI through the x window () or by opening the script editor and manually opening our wireUI.mel file and launching it from there.
