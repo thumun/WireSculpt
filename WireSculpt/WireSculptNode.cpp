@@ -438,7 +438,7 @@ void WireSculptNode::createFeatureVertsMesh(const double& radius, std::vector<Ve
         MIntArray currFaceCounts;
         MIntArray currFaceConnects;
 
-        SphereMesh sphere(start, radius);
+        SphereMesh sphere(start, radius * 1.1);
         sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
         sphere.appendToMesh(points, faceCounts, faceConnects);
         int numVerticesThisSphere = currPoints.length();
@@ -599,13 +599,15 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     }
     // Set landmark vertices to be vertices of indexes extremePts chose:
     std::vector<Vertex*> landmarks;
+    std::set<Vertex*> landmarksSet;
     int colorIndex = 0;
     for (int index : extremePoints) {
         if (index >= verticies.size()) {
             MGlobal::displayInfo("Error: index too large");
         }
         else {
-            landmarks.push_back(&verticies[index]);
+            //landmarks.push_back(&verticies[index]);
+            landmarksSet.insert(&verticies[index]);
             MGlobal::displayInfo("landmark pushed back");
 
             // Draw each Landmark Vertex
@@ -633,9 +635,30 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     // createContoursMesh(radius, featureSegments, &colorsContours, gray);
 
     std::vector<int> featureVertices = ws.processSegments(&featureSegments);
-    // createFeatureVertsMesh(radius, verticies, featureVertices, &colorsContours, red);
+    MColor red_alpha(1, 0, 0, 0.7);
+    //createFeatureVertsMesh(radius, verticies, featureVertices, &colorsHeatMap, red_alpha);
 
     MGlobal::displayInfo("Finished: set up contours");
+
+    // Add feature verts into landmarks
+    float fVThreshold = 0.2;
+    //int seed = 42;  // Seed
+    //std::mt19937 gen(seed); // Mersenne Twister engine
+    std::uniform_real_distribution<> dis(0.0, 1.0); // Range [0, 1)
+    for (int index : featureVertices) {
+        std::mt19937 gen(index); // Mersenne Twister engine
+        double rand = dis(gen); // Generate random number
+        //std::mt19937 gen(index); // Seed with index
+        //uint32_t randInt = gen(); // Get deterministic integer
+        double rand = static_cast<double>(randInt) / gen.max();
+        if (rand <= fVThreshold) {
+            landmarksSet.insert(&verticies[index]);
+        }
+    }
+    
+    for (Vertex* v : landmarksSet) {
+        landmarks.push_back(v);
+    }
 
 
     /* Step 3 - Build Heat Map from Feature Lines Vertices */
@@ -668,8 +691,8 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         Vertex* vert = &verticies[i];
         featureWtsHeatMap[vert] = vert->wAttract;
     }
-    createHeatMapMesh(radius, featureWtsHeatMap, &colorsHeatMap);
-    createEdgeWeightsMesh(radius, edges, &colorsHeatMap);
+    //createHeatMapMesh(radius, featureWtsHeatMap, &colorsHeatMap);
+    //createEdgeWeightsMesh(radius, edges, &colorsHeatMap);
     // End visualize
 
     /* Step 5 - Run TSP Optimized Nearest Neighbors on landmark vertices */ 
