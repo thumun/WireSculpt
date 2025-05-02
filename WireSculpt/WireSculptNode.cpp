@@ -49,7 +49,6 @@ WireSculptNode::~WireSculptNode()
 {
 }
 
-
 MStatus WireSculptNode::initialize()
 {
     MFnNumericAttribute numAttr;
