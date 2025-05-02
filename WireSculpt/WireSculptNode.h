@@ -23,9 +23,9 @@ public:
     static MObject  bAttract;
     static MObject  aRepel;
     static MObject  bRepel;
-    static MObject  lambda;
-    static MObject  K;
-    static MObject  M;
+    //static MObject  lambda;
+    //static MObject  K;
+    //static MObject  M;
     static MObject  thickness;
     static MObject  outGeom;
     static MObject  fov;

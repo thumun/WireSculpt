@@ -148,12 +148,6 @@ bool WireSculptPlugin::ProcessFile(std::string filePath) {
                             edgeIndx = j;
                             break;
                         }
-                        /*if ((edges[j].endpoints.find(&verticies[vertOne]) != edges[j].endpoints.end()) &&
-                            (edges[j].endpoints.find(&verticies[vertTwo]) != edges[j].endpoints.end())) {
-                            edgeFound = true; 
-                            edgeIndx = j; 
-                            break;
-                        }*/
                     }
                 }
 
@@ -197,7 +191,6 @@ std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath,
     int index = 0;
     std::vector<int> extreme_points;
 
-    // no idea what this value is 
     int clip_bound = 0;
 
     igl::read_triangle_mesh(filePath, V, F);
@@ -206,12 +199,10 @@ std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath,
 
     Eigen::MatrixXi B;
     igl::is_vertex_manifold(F, B);
-    // link this to plug in 
     if (B.minCoeff() == 0) {
         std::cerr << ">> The loaded mesh is not manifold.\n";
     }
 
-    // debugged - this seems to be working 
     compute_all_features(V, F, E, N, VF, VFi, IF, OV, FC, FN, DA, D, L, G, dblA);
 
     compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, filter);

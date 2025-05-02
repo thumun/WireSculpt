@@ -263,8 +263,6 @@ void compute_laplacian(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXi& 
     Eigen::MatrixXd V_is_concave = Eigen::MatrixXd::Zero(V.rows(), 1);
 
     for (int i = 0; i < V.rows(); i++) {
-        //if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, 0.05) && filter_2(V, i, A)) {
-        //if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, 0.0005) && filter_2(V, i, A)) {
         if (is_concave(V, N, A, i) && filter_1b(V, N, i, A, filter1_thresh) && filter_2(V, i, A)) {
             V_is_concave(i, 0) = 1.0;
         }

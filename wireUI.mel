@@ -5,11 +5,7 @@ global string $gAAttractionSlider;
 global string $gBAttractionSlider;
 global string $gARepulsionSlider;
 global string $gBRepulsionSlider;
-global string $gKSlider;
-global string $gMSlider;
-global string $gLambdaSlider;
 global string $gThicknessSlider;
-global string $gOutputSlider;
 global string $gViewChoice;
 global string $gFOVSlider;
 global string $gContourChoice;
@@ -27,11 +23,7 @@ global proc createWireSculptGUI() {
     global string $gBAttractionSlider;
     global string $gARepulsionSlider;
     global string $gBRepulsionSlider;
-    global string $gKSlider;
-    global string $gMSlider;
-    global string $gLambdaSlider;
     global string $gThicknessSlider;
-    global string $gOutputSlider;
     global string $gViewChoice;
     global string $gFOVSlider;
     global string $gContourChoice;
@@ -89,20 +81,6 @@ global proc createWireSculptGUI() {
     $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
     setParent ..;
     setParent ..;
-
-    // Multi-Path Construction
-    string $pathGroup = `frameLayout -label "Multi-Path Construction" -collapsable false`;
-    columnLayout;
-    $gKSlider = `intSliderGrp -label "Paths Expanded (K)" -field true -minValue 1 -maxValue 10 -value 5`;
-    $gMSlider = `intSliderGrp -label "Paths to Keep (M)" -field true -minValue 1 -maxValue 10 -value 5`;
-    setParent ..;
-    setParent ..;
-
-    string $lambdaGroup = `frameLayout -label "Custom lambda Value" -collapsable false`;
-    columnLayout;
-    $gLambdaSlider = `floatSliderGrp -label "lambda" -field true -minValue 0.0 -maxValue 1.0 -value 0.5`;
-    setParent ..;
-    setParent ..;
     
     separator -style "none" -height 10;
 
@@ -113,13 +91,6 @@ global proc createWireSculptGUI() {
     string $thicknessGroup = `frameLayout -label "NURBs Curve Thickness" -collapsable false`;
     columnLayout;
     $gThicknessSlider = `floatSliderGrp -label "Thickness" -field true -minValue 0.1 -maxValue 2.0 -value 1.0`;
-    setParent ..;
-    setParent ..;
-
-    // Output Path Slider
-    string $outputGroup = `frameLayout -label "Output Paths" -collapsable false`;
-    columnLayout;
-    $gOutputSlider = `intSliderGrp -label "Output Path" -field true -minValue 1 -maxValue 10 -value 1`;
     setParent ..;
     setParent ..;
     
@@ -194,9 +165,6 @@ global proc generatePaths() {
     global string $gBAttractionSlider;
     global string $gARepulsionSlider;
     global string $gBRepulsionSlider;
-    global string $gKSlider;
-    global string $gMSlider;
-    global string $gLambdaSlider;
     global string $gThicknessSlider;
     global string $gViewChoice;
     global string $gFOVSlider;
@@ -211,9 +179,6 @@ global proc generatePaths() {
     float $bAttraction = `floatSliderGrp -query -value $gBAttractionSlider`;
     float $aRepulsion = `floatSliderGrp -query -value $gARepulsionSlider`;
     float $bRepulsion = `floatSliderGrp -query -value $gBRepulsionSlider`;
-    int $K = `intSliderGrp -query -value $gKSlider`;
-    int $M = `intSliderGrp -query -value $gMSlider`;
-    float $lambda = `floatSliderGrp -query -value $gLambdaSlider`;
     float $thickness = `floatSliderGrp -query -value $gThicknessSlider`;
     int $viewChoice = `radioButtonGrp -query -select $gViewChoice`;
     float $fov = `floatSliderGrp -query -value $gFOVSlider`;
@@ -236,9 +201,6 @@ global proc generatePaths() {
     setAttr WireSculptNode1.steepAttraction $bAttraction;
     setAttr WireSculptNode1.rangeRepulsion $aRepulsion;
     setAttr WireSculptNode1.steepRepulsion $bRepulsion;
-    setAttr WireSculptNode1.lambdaError $lambda;
-    setAttr WireSculptNode1.kValue $K;
-    setAttr WireSculptNode1.mValue $M;
     setAttr WireSculptNode1.wireThickness $thickness;
     setAttr WireSculptNode1.fov $fov;
     setAttr WireSculptNode1.view $viewChoice;
