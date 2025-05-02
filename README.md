@@ -7,10 +7,28 @@ This plugin was created by Claire Lu and Neha Thumu as a part of CIS660 at the U
 
 ## How to install and use Wiresculpt
 - First, make sure you have Maya 2022 or Maya 2024 installed (we have not tested this plug in for other versions). We also recommend Visual Studio 2022 to build the plugin.
-- Clone our repo, then open it in Visual Studio in **admin mode** (without this, the project will **not** build properly). Once you build the project, the .mll file will be added to the debug folder of the project. Now, open your version of Maya and go to the plug in window (..)
-- You can launch our GUI through the x window () or by opening the script editor and manually opening our wireUI.mel file and launching it from there.
+- Clone our repo, then open it in Visual Studio in **admin mode** (without this, the project will **not** build properly). Once you build the project, the .mll file will be added to the debug folder of the project. To load the plugin, open your version of Maya and go to Windows->Settings/Preferences->Plug-in Manager and browse to open the file. 
+<img src="https://github.com/user-attachments/assets/7f9e323c-2ce6-48ed-91f4-5b060ca0d886" width="300" height="300">
 
-INSERT IMAGE OF GUI WITH COLOR CODED BOXES!!
+- You can launch our GUI through the menu at the top of the Maya UI or by opening the script editor and manually opening our wireUI.mel file and launching it from there.
+<img src="https://github.com/user-attachments/assets/49d5cd84-16d6-4654-b014-72dbf636a624" width="300" height="500">
+
+To load a model into the plugin, click the load from file button. The 3D mesh has to be **triangulated** and **manifold** or the plugin will **not** be able to process it.
+
+The extreme points parameters can be adjusted to change the verticies that are selected as extreme points. 
+- Proximity: Controls how close new extreme points can be to existing ones
+- MaxVal: threshold for determining whether a vertex qualifies as an extreme point based on its Laplacian value relative to its neighbors
+- Filter threshold: Controls how many areas are considered concave (concave verticies are not considered extreme)
+
+The feature attraction weights determine how closely the path follows the features.
+ - Range (a): controls the strength of the attraction
+ - Steepness (b): controls the range/locality of the attraction
+
+The path repulsion weights aid in avoiding repetitions of verticies in the path.
+- Range (a*): controls the strength of the repulsion
+- Steepness (b*): controls the locality of repulsion
+
+
 
 ## Breakdown of Creating this Plugin 
 ### Maya Node Setup and General Code Setup 
