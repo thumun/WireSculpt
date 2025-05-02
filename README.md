@@ -10,10 +10,12 @@ This plugin was created by Claire Lu and Neha Thumu as a part of CIS660 at the U
 - Clone our repo, then open it in Visual Studio in **admin mode** (without this, the project will **not** build properly). Once you build the project, the .mll file will be added to the debug folder of the project. To load the plugin, open your version of Maya and go to Windows->Settings/Preferences->Plug-in Manager and browse to open the file. 
 <img src="https://github.com/user-attachments/assets/7f9e323c-2ce6-48ed-91f4-5b060ca0d886" width="300" height="300">
 
-- You can launch our GUI through the menu at the top of the Maya UI or by opening the script editor and manually opening our wireUI.mel file and launching it from there.
-<img src="https://github.com/user-attachments/assets/49d5cd84-16d6-4654-b014-72dbf636a624" width="300" height="500">
+- You can launch our GUI through the menu at the top of the Maya UI or by typing 'CreateWireSculpt;' into the script editor.
+![image](https://github.com/user-attachments/assets/8a2a553a-3e11-473e-aedc-5255254671c5)
 
-To load a model into the plugin, click the load from file button. The 3D mesh has to be **triangulated** and **manifold** or the plugin will **not** be able to process it.
+To load a model into the plugin, click the load from file button. The 3D mesh has to be **triangulated**, **manifold**, and **obj**, or the plugin will **not** be able to process it.
+
+<img src="https://github.com/user-attachments/assets/42883115-418b-4b93-b8cc-7ad27ab0974a" width="400" height="500">
 
 The extreme points parameters can be adjusted to change the verticies that are selected as extreme points. 
 - Proximity: Controls how close new extreme points can be to existing ones
@@ -28,21 +30,30 @@ The path repulsion weights aid in avoiding repetitions of verticies in the path.
 - Range (a*): controls the strength of the repulsion
 - Steepness (b*): controls the locality of repulsion
 
+NURBs Curve Thickness parameter adjusts the width of the output line.
 
+Contours are view dependent so it's shaped by the perspective.
+- Front: captures contours from the front of the model 
+- Side: captures contours from the side of the model
+
+FOV (field of vision) is another parameter for affecting the look of the contours.
+
+Suggestive Contours can be switched on/off depending on wire output preference.
 
 ## Breakdown of Creating this Plugin 
 ### Maya Node Setup and General Code Setup 
-- general Maya stuff
-- file reading
-- classes 
+- We setup the node following the examples provided by Autodesk. Our parameters are read in from the GUI and used as appropriate within our code. When the generate button is clicked and the parameters have been altered, the mesh will be recomputed based on our algorithms. Then the wire will be output to Maya. 
+- We organized our code into plugin related classes (node information, helper files for outputting the wire) and classes to hold our data (verticies, edges, and faces). 
+- We wrote a file reading method to process OBJ files and create our verticies, edges, and faces arrays (to be used in our algorithms). 
 ### Extreme Points Integration 
-- used florian's repo as basis
-- integrated necessary src code from libigl library
+- We used the following repository in order to detect extreme points of meshes that are inputted by the user: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
+- We altered the code to parameterize the extreme points as the values used in the original implementation did not generalize to all inputs. 
+- We also integrated necessary source code from the libigl library. (This can be found in our libigl and suitesparse folders) 
 ### A* Pathfinding 
 - //
 ### Heat Map Distance 
-- originally used CHoudrouge4's repo as basis 
-- src code from libigl
+- We originally translated this method: https://github.com/CHoudrouge4/HeatMethodForGeodesicDistance into C++ however this did not yield results that we could use. 
+- We instead used the heat map method from the libigl library. 
 ### Contour Feature lines 
 - //
 ### Integration 
@@ -60,6 +71,9 @@ code from here: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
 11. Wikipedia A* Implementation Reference: https://en.wikipedia.org/wiki/A*_search_algorithm
 
 ## Additional Notes 
+### Models Used 
+- Fox:
+- Seagull: https://poly.pizza/m/6Tpj_vcWP3f
 ### Configuration Settings
 - exedebug = way to debug our code as it builds an exe instead of an mll (just need a main and a if EXEDEBUG line encompassing the main)
 - xcopy -> custom post build events where we are copying the libs that we need to the maya binary and to our debug folder so everything builds/runs properly
