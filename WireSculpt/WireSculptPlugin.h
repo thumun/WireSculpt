@@ -45,7 +45,6 @@ public:
 	std::vector<Face> faces;
 
 	std::unique_ptr<igl::HeatGeodesicsData<double>> geodesicData;
-	//static igl::HeatGeodesicsData<double> geodesicData;
 
 private:
 

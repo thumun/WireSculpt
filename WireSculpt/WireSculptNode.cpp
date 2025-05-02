@@ -28,9 +28,9 @@ MObject WireSculptNode::aAttract;
 MObject WireSculptNode::bAttract;
 MObject WireSculptNode::aRepel;
 MObject WireSculptNode::bRepel;
-MObject WireSculptNode::lambda;
-MObject WireSculptNode::K;
-MObject WireSculptNode::M;
+//MObject WireSculptNode::lambda;
+//MObject WireSculptNode::K;
+//MObject WireSculptNode::M;
 MObject WireSculptNode::thickness;
 MObject WireSculptNode::outGeom;
 MObject WireSculptNode::fov;
@@ -48,7 +48,6 @@ WireSculptNode::WireSculptNode() : MPxNode()
 WireSculptNode::~WireSculptNode()
 {
 }
-
 
 MStatus WireSculptNode::initialize()
 {
@@ -119,43 +118,7 @@ MStatus WireSculptNode::initialize()
         return returnStatus;
     }
 
-    // Lambda - error
-    WireSculptNode::lambda = numAttr.create("lambdaError", "le", MFnNumericData::kDouble, 0.0, &returnStatus);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR creating lambda attribute\n");
-        return returnStatus;
-    }
-    returnStatus = addAttribute(WireSculptNode::lambda);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR adding lambda error attribute\n");
-        return returnStatus;
-    }
-
-    // K - total paths to expand in iteration
-    WireSculptNode::K = numAttr.create("kValue", "kV", MFnNumericData::kDouble, 0.0, &returnStatus);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR creating K Value attribute\n");
-        return returnStatus;
-    }
-    returnStatus = addAttribute(WireSculptNode::K);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR adding K Value attribute\n");
-        return returnStatus;
-    }
-
-    // M - total number of paths to keep in an iteration
-    WireSculptNode::M = numAttr.create("mValue", "mV", MFnNumericData::kDouble, 0.0, &returnStatus);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR creating M Value attribute\n");
-        return returnStatus;
-    }
-    returnStatus = addAttribute(WireSculptNode::M);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR adding M Value attribute\n");
-        return returnStatus;
-    }
-
-    // M - total number of paths to keep in an iteration
+    // thickness of the wire path
     WireSculptNode::thickness = numAttr.create("wireThickness", "wt", MFnNumericData::kDouble, 0.0, &returnStatus);
     if (!returnStatus) {
         returnStatus.perror("ERROR creating thickness attribute\n");
@@ -296,27 +259,6 @@ MStatus WireSculptNode::initialize()
     }
 
     returnStatus = attributeAffects(WireSculptNode::bRepel,
-        WireSculptNode::outGeom);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR in attributeAffects\n");
-        return returnStatus;
-    }
-
-    returnStatus = attributeAffects(WireSculptNode::lambda,
-        WireSculptNode::outGeom);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR in attributeAffects\n");
-        return returnStatus;
-    }
-
-    returnStatus = attributeAffects(WireSculptNode::K,
-        WireSculptNode::outGeom);
-    if (!returnStatus) {
-        returnStatus.perror("ERROR in attributeAffects\n");
-        return returnStatus;
-    }
-
-    returnStatus = attributeAffects(WireSculptNode::M,
         WireSculptNode::outGeom);
     if (!returnStatus) {
         returnStatus.perror("ERROR in attributeAffects\n");
@@ -826,30 +768,6 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
             return returnStatus;
         }
         double bRepelVal = bRepelData.asDouble();
-
-        // Lambda
-        MDataHandle lambdaData = data.inputValue(lambda, &returnStatus);
-        if (!returnStatus) {
-            returnStatus.perror("ERROR getting lambda data handle\n");
-            return returnStatus;
-        }
-        double lambdaVal = lambdaData.asDouble();
-
-        // K
-        MDataHandle kData = data.inputValue(K, &returnStatus);
-        if (!returnStatus) {
-            returnStatus.perror("ERROR getting k data handle\n");
-            return returnStatus;
-        }
-        double kVal = kData.asDouble();
-
-        // M
-        MDataHandle mData = data.inputValue(M, &returnStatus);
-        if (!returnStatus) {
-            returnStatus.perror("ERROR getting m data handle\n");
-            return returnStatus;
-        }
-        double mVal = mData.asDouble();
 
         // Thickness
         MDataHandle thicknessData = data.inputValue(thickness, &returnStatus);

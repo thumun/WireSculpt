@@ -174,6 +174,29 @@ MStatus WireSculpt::doIt(const MArgList& argList)
 	return MStatus::kSuccess;
 }
 
+// creates menu to open WireSculpt UI
+void createMenu(MString& melPath) {
+	MString menuName = "WireSculptMenu";
+
+	MGlobal::executeCommand(MString("if (`menu -exists ") + menuName + MString("`) deleteUI ") + menuName + MString(";"));
+
+	MGlobal::executeCommand(MString("menu -parent MayaWindow -label \"WireSculpt\" ") + menuName + MString(";"));
+
+	MString sourceCmd = "source \"" + melPath + "\"";
+	MStatus sourceStatus = MGlobal::executeCommand(sourceCmd);
+
+	if (sourceStatus != MS::kSuccess) {
+		MGlobal::displayError("[WireSculpt] Failed to source MEL script: " + melPath);
+		return;
+	}
+
+	MGlobal::executeCommand(
+		"menuItem -parent " + menuName +
+		" -label \"Open WireSculpt\" " +
+		"-command \"CreateWireSculpt;\""
+	);
+}
+
 // Initialize Maya Plugin upon loading
 EXPORT MStatus initializePlugin(MObject obj)
 {
@@ -192,6 +215,11 @@ EXPORT MStatus initializePlugin(MObject obj)
 		return status;
 	}
 
+	MString pluginPath = plugin.loadPath();
+	MString melPath = pluginPath + "/wireUI.mel";
+
+	createMenu(melPath);
+
 	return status;
 }
 // Cleanup Plugin upon unloading
@@ -205,6 +233,9 @@ EXPORT MStatus uninitializePlugin(MObject obj)
 		status.perror("deregisterNode");
 		return status;
 	}
+
+	MGlobal::executeCommand("if (`menu -exists WireSculptMenu`) deleteUI WireSculptMenu;");
+	MGlobal::executeCommand("if (`menu -exists wireSculptMenuUI`) deleteUI wireSculptMenuUI;");
 
 	status = plugin.deregisterCommand("WireSculpt");
 	if (!status)
