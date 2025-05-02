@@ -57,8 +57,12 @@ Suggestive Contours can be switched on/off depending on wire output preference.
 ### Contour Feature lines 
 - //
 ### Integration 
-- // 
-
+- We first read the file in using our process logic then computed the extreme points. These are set as our landmark verticies. 
+- Then we get the feature lines of the mesh (the contours). 
+- We then compute the heat map distance while using the feature lines as the sources.
+- Next, we compute the feature attraction weights (so the wire path follows our features lines)
+- The next step requires multiple passes of a pathfinding algorithm in order to properly get our output wire. After the first path, we calculate path repulsion weights in order to avoid backtracking of verticies. We then run A* once more to get our output.
+- Our output is then shown in Maya!
 ## Resources
 1. Generating a unit sphere (SphereMesh class): https://github.com/Erkaman/cute-deferred-shading/blob/master/src/main.cpp#L573
 2. Extreme Points Resources:
