@@ -202,7 +202,10 @@ std::vector<int> WireSculptPlugin::GetExtremePoints(const std::string& filePath,
     if (B.minCoeff() == 0) {
         std::cerr << ">> The loaded mesh is not manifold.\n";
     }
-
+    MGlobal::displayInfo("Extreme points parameters: ");
+    MGlobal::displayInfo("Proximity: " + MString() + proximity);
+    MGlobal::displayInfo("Filter: " + MString() + filter);
+    MGlobal::displayInfo("Max Val: " + MString() + maxVal);
     compute_all_features(V, F, E, N, VF, VFi, IF, OV, FC, FN, DA, D, L, G, dblA);
 
     compute_laplacian(V, F, E, G, N, L, vertex_is_concave, beta, eps, sigma, clip_bound, lap_weighting, filter);

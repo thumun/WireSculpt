@@ -31,6 +31,7 @@ MObject WireSculptNode::bRepel;
 //MObject WireSculptNode::lambda;
 //MObject WireSculptNode::K;
 //MObject WireSculptNode::M;
+MObject WireSculptNode::isAbstract;
 MObject WireSculptNode::thickness;
 MObject WireSculptNode::outGeom;
 MObject WireSculptNode::fov;
@@ -181,6 +182,16 @@ MStatus WireSculptNode::initialize()
     }
 
     // Extreme Points Params
+    WireSculptNode::isAbstract = numAttr.create("isAbstract", "isa", MFnNumericData::kBoolean, true, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating isAbstract attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::isAbstract);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding isAbstract attribute\n");
+        return returnStatus;
+    }
     WireSculptNode::proximityThresh = numAttr.create("proximityThresh", "pt", MFnNumericData::kDouble, 0.0, &returnStatus);
     if (!returnStatus) {
         returnStatus.perror("ERROR creating extreme proximity threshold attribute\n");
@@ -294,6 +305,13 @@ MStatus WireSculptNode::initialize()
     }
 
     returnStatus = attributeAffects(WireSculptNode::testSC,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::isAbstract,
         WireSculptNode::outGeom);
     if (!returnStatus) {
         returnStatus.perror("ERROR in attributeAffects\n");
@@ -512,7 +530,7 @@ void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<
 MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, const double& bAttract, 
     const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
     const int& contourChoice, const double& testSCVal, const double& proximity, const double& filter,
-    const double& maxVal,
+    const double& maxVal, const bool& isAbstract,
     WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, std::vector<Edge>& edges, MObject& outData, MStatus& status) {
     
@@ -528,12 +546,20 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
     /* Step 1 - Extract Extreme Points */
 
-    MGlobal::displayInfo("Extreme points parameters: ");
+    /*MGlobal::displayInfo("Extreme points parameters: ");
     MGlobal::displayInfo("Proximity: " + MString() + proximity);
     MGlobal::displayInfo("Filter: " + MString() + filter);
-    MGlobal::displayInfo("Max Val: " + MString() + maxVal);
+    MGlobal::displayInfo("Max Val: " + MString() + maxVal);*/
 
-    std::vector<int> extremePoints = ws.GetExtremePoints(filePath, proximity, filter, maxVal);
+    float proxNum = 0.15;
+    float filterNum = 0.05;
+    float maxNum = 1.0;
+    if (isAbstract) {
+        proxNum = proximity;
+        filterNum = filter;
+        maxNum = maxVal; 
+    }
+    std::vector<int> extremePoints = ws.GetExtremePoints(filePath, proxNum, filterNum, maxNum);
     MGlobal::displayInfo("Extreme points: ");
     for (int i : extremePoints) {
         MGlobal::displayInfo("point: " + MString() + i);
@@ -832,6 +858,13 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double testSCVal = testSCData.asDouble() * 0.1f;
 
+        MDataHandle isAbstractData = data.inputValue(isAbstract, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting proximityThresh data handle\n");
+            return returnStatus;
+        }
+        bool isAbstractVal = isAbstractData.asBool();
+
         MDataHandle proximityThreshData = data.inputValue(proximityThresh, &returnStatus);
         if (!returnStatus) {
             returnStatus.perror("ERROR getting proximityThresh data handle\n");
@@ -882,7 +915,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
 
         // Create new geometry
         createMesh(thicknessVal, aAttractVal, bAttractVal, aRepelVal, bRepelVal, fovVal, viewVal, contourVal, testSCVal, 
-            proximityThreshVal, filterThreshVal, maxValThreshVal,
+            proximityThreshVal, filterThreshVal, maxValThreshVal, isAbstractVal,
             ws, meshFilePathStr, *(ws.GetVerticies()), *(ws.GetEdges()), newOutputData, returnStatus);
 
         if (!returnStatus) {
