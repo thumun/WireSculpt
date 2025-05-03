@@ -20,7 +20,7 @@ global proc CreateWireSculpt() {
     }
 
     // Create the window
-    window -title "WireSculpt" -widthHeight 500 700 wireSculptWindow;
+    window -title "WireSculpt" -widthHeight 500 800 wireSculptWindow;
     
     // Create a form layout
     formLayout mainForm;
@@ -208,20 +208,20 @@ global proc wireSculpt_generate_Clicked()
 }
 
 // Procedure to set up the WireSculpt menu
-global proc setupWireSculptMenu()
-{
-    global string $gMainWindow;
-
+//global proc setupWireSculptMenu()
+//{
+//    global string $gMainWindow;
+//
     // Create WireSculpt menu if it doesn't exist
-    if (!`menu -exists wireSculptMenuUI`) {
-        menu -parent $gMainWindow -label "WireSculptUI" wireSculptMenuUI;
-    }
-
+//    if (!`menu -exists wireSculptMenuUI`) {
+//        menu -parent $gMainWindow -label "WireSculptUI" wireSculptMenuUI;
+//    }
+    
     // Add menu item for creating WireSculpt node
-    menuItem -parent wireSculptMenuUI
-             -label "Create WireSculptUI"
-             -command "CreateWireSculpt()";
-}
+//    menuItem -parent wireSculptMenuUI
+//         -label "Create WireSculptUI"
+//         -command "CreateWireSculpt()";
+//}
 
 // Call the setupWireSculptMenu procedure to create the menu
-setupWireSculptMenu();
+//setupWireSculptMenu();
