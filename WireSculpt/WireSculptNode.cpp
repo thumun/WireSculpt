@@ -24,6 +24,7 @@
 
 MTypeId WireSculptNode::id(0x0007F015);
 MObject WireSculptNode::inMeshFile;
+MObject WireSculptNode::featureVertsAmt;
 MObject WireSculptNode::aAttract;
 MObject WireSculptNode::bAttract;
 MObject WireSculptNode::aRepel;
@@ -31,6 +32,7 @@ MObject WireSculptNode::bRepel;
 //MObject WireSculptNode::lambda;
 //MObject WireSculptNode::K;
 //MObject WireSculptNode::M;
+MObject WireSculptNode::isAbstract;
 MObject WireSculptNode::thickness;
 MObject WireSculptNode::outGeom;
 MObject WireSculptNode::fov;
@@ -69,6 +71,18 @@ MStatus WireSculptNode::initialize()
     returnStatus = addAttribute(WireSculptNode::inMeshFile);
     if (!returnStatus) {
         returnStatus.perror("ERROR adding mesh file attribute\n");
+        return returnStatus;
+    }
+
+    // Feature Verts Parameters
+    WireSculptNode::featureVertsAmt = numAttr.create("featureVertsAmt", "fva", MFnNumericData::kDouble, 0.0, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating feature verts amt attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::featureVertsAmt);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding feature verts amt attribute\n");
         return returnStatus;
     }
     
@@ -181,6 +195,16 @@ MStatus WireSculptNode::initialize()
     }
 
     // Extreme Points Params
+    WireSculptNode::isAbstract = numAttr.create("isAbstract", "isa", MFnNumericData::kBoolean, true, &returnStatus);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR creating isAbstract attribute\n");
+        return returnStatus;
+    }
+    returnStatus = addAttribute(WireSculptNode::isAbstract);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR adding isAbstract attribute\n");
+        return returnStatus;
+    }
     WireSculptNode::proximityThresh = numAttr.create("proximityThresh", "pt", MFnNumericData::kDouble, 0.0, &returnStatus);
     if (!returnStatus) {
         returnStatus.perror("ERROR creating extreme proximity threshold attribute\n");
@@ -231,6 +255,13 @@ MStatus WireSculptNode::initialize()
 
     /** Adding Attribute Affects */
     returnStatus = attributeAffects(WireSculptNode::inMeshFile,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::featureVertsAmt,
         WireSculptNode::outGeom);
     if (!returnStatus) {
         returnStatus.perror("ERROR in attributeAffects\n");
@@ -294,6 +325,13 @@ MStatus WireSculptNode::initialize()
     }
 
     returnStatus = attributeAffects(WireSculptNode::testSC,
+        WireSculptNode::outGeom);
+    if (!returnStatus) {
+        returnStatus.perror("ERROR in attributeAffects\n");
+        return returnStatus;
+    }
+
+    returnStatus = attributeAffects(WireSculptNode::isAbstract,
         WireSculptNode::outGeom);
     if (!returnStatus) {
         returnStatus.perror("ERROR in attributeAffects\n");
@@ -512,7 +550,7 @@ void WireSculptNode::createHeatMapMesh(const double& radius, std::unordered_map<
 MObject WireSculptNode::createMesh(const double& radius, const double& aAttract, const double& bAttract, 
     const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
     const int& contourChoice, const double& testSCVal, const double& proximity, const double& filter,
-    const double& maxVal,
+    const double& maxVal, const bool& isAbstract, const double& featureAmt,
     WireSculptPlugin& ws, const std::string& filePath, 
     std::vector<Vertex>& verticies, std::vector<Edge>& edges, MObject& outData, MStatus& status) {
     
@@ -528,12 +566,22 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
 
     /* Step 1 - Extract Extreme Points */
 
-    MGlobal::displayInfo("Extreme points parameters: ");
+    /*MGlobal::displayInfo("Extreme points parameters: ");
     MGlobal::displayInfo("Proximity: " + MString() + proximity);
     MGlobal::displayInfo("Filter: " + MString() + filter);
-    MGlobal::displayInfo("Max Val: " + MString() + maxVal);
+    MGlobal::displayInfo("Max Val: " + MString() + maxVal);*/
+    MGlobal::displayInfo("Percentage feature: " + MString() + featureAmt);
 
-    std::vector<int> extremePoints = ws.GetExtremePoints(filePath, proximity, filter, maxVal);
+
+    float proxNum = 0.15;
+    float filterNum = 0.05;
+    float maxNum = 1.0;
+    if (isAbstract) {
+        proxNum = proximity;
+        filterNum = filter;
+        maxNum = maxVal; 
+    }
+    std::vector<int> extremePoints = ws.GetExtremePoints(filePath, proxNum, filterNum, maxNum);
     MGlobal::displayInfo("Extreme points: ");
     for (int i : extremePoints) {
         MGlobal::displayInfo("point: " + MString() + i);
@@ -550,24 +598,24 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         else {
             //landmarks.push_back(&verticies[index]);
             landmarksSet.insert(&verticies[index]);
-            MGlobal::displayInfo("landmark pushed back");
+            //MGlobal::displayInfo("landmark pushed back");
 
             // Draw each Landmark Vertex
-            MPointArray currPoints;
-            MIntArray currFaceCounts;
-            MIntArray currFaceConnects;
+            //MPointArray currPoints;
+            //MIntArray currFaceCounts;
+            //MIntArray currFaceConnects;
 
-            SphereMesh sphere(verticies[index].mPosition, radius * 2);
-            sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
-            sphere.appendToMesh(points, faceCounts, faceConnects);
-            int numVerticesThisSphere = currPoints.length();
+            //SphereMesh sphere(verticies[index].mPosition, radius * 2);
+            //sphere.getMesh(currPoints, currFaceCounts, currFaceConnects);
+            //sphere.appendToMesh(points, faceCounts, faceConnects);
+            //int numVerticesThisSphere = currPoints.length();
 
-            for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
-               /* float r = ((float) colorIndex) / (extremePoints.size() - 1.0);
-                MColor color(r, 0.0, 1.0 - r);*/
-                colorsHeatMap.append(gray);
-            }
-            colorIndex += 1;
+            //for (unsigned int i = 0; i < numVerticesThisSphere; ++i) {
+            //   /* float r = ((float) colorIndex) / (extremePoints.size() - 1.0);
+            //    MColor color(r, 0.0, 1.0 - r);*/
+            //    colorsHeatMap.append(gray);
+            //}
+            //colorIndex += 1;
         }
     }
 
@@ -583,7 +631,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
     MGlobal::displayInfo("Finished: set up contours");
 
     // Add feature verts into landmarks
-    float fVThreshold = 0.2;
+    float fVThreshold = featureAmt;
     //int seed = 42;  // Seed
     //std::mt19937 gen(seed); // Mersenne Twister engine
     std::uniform_real_distribution<> dis(0.0, 1.0); // Range [0, 1)
@@ -760,6 +808,13 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         MString objFilePath = MString() + meshFilePathStr.c_str();
         MGlobal::displayInfo("File path: " + objFilePath);
 
+        MDataHandle featureAmtData = data.inputValue(featureVertsAmt, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting featureAmt data handle\n");
+            return returnStatus;
+        }
+        double featureAmtVal = featureAmtData.asDouble();
+
         // Range Attract
         MDataHandle aAttractData = data.inputValue(aAttract, &returnStatus);
         if (!returnStatus) {
@@ -832,6 +887,13 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
         }
         double testSCVal = testSCData.asDouble() * 0.1f;
 
+        MDataHandle isAbstractData = data.inputValue(isAbstract, &returnStatus);
+        if (!returnStatus) {
+            returnStatus.perror("ERROR getting proximityThresh data handle\n");
+            return returnStatus;
+        }
+        bool isAbstractVal = isAbstractData.asBool();
+
         MDataHandle proximityThreshData = data.inputValue(proximityThresh, &returnStatus);
         if (!returnStatus) {
             returnStatus.perror("ERROR getting proximityThresh data handle\n");
@@ -882,7 +944,7 @@ MStatus WireSculptNode::compute(const MPlug& plug, MDataBlock& data) {
 
         // Create new geometry
         createMesh(thicknessVal, aAttractVal, bAttractVal, aRepelVal, bRepelVal, fovVal, viewVal, contourVal, testSCVal, 
-            proximityThreshVal, filterThreshVal, maxValThreshVal,
+            proximityThreshVal, filterThreshVal, maxValThreshVal, isAbstractVal, featureAmtVal,
             ws, meshFilePathStr, *(ws.GetVerticies()), *(ws.GetEdges()), newOutputData, returnStatus);
 
         if (!returnStatus) {
