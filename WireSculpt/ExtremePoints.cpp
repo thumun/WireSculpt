@@ -454,9 +454,9 @@ std::vector<int> get_extreme_points(Eigen::MatrixXi& F, Eigen::MatrixXd& V, Eige
             }
 
             /*double threshold = 0.85;*/
-            double threshold = maxVal;
-            if (x(i) >= threshold * max_val || x(i) <= threshold * min_val) {
-            //if (x(i) >= max_val || x(i) <= min_val) {
+            //double threshold = maxVal;
+            //if (x(i) >= threshold * max_val || x(i) <= threshold * min_val) {
+            if (x(i) >= max_val || x(i) <= min_val) {
                 if (extreme_point_set.size() < 2) {
                     candidate_extreme_points.push_back(i);
                 }
