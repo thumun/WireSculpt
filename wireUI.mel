@@ -55,12 +55,7 @@ global proc CreateWireSculpt() {
     setParent ..;
     setParent ..;
     
-    // Abstraction Toggle
-    string $abstractionGroup = `frameLayout -label "Abstraction (Extreme Points) Options" -collapsable false`;
-    columnLayout;
-    $gAbstractionCheckbox = `checkBox -label "Enable Abstraction" -value true -onCommand "toggleExtremeOptions()" -offCommand "toggleExtremeOptions()"`;
-    setParent ..;
-    setParent ..;
+    
     
     
     // Extreme Points Parameters
@@ -74,13 +69,7 @@ global proc CreateWireSculpt() {
     
     // Extreme Points Parameters (wrapped for visibility toggling)
     // Extreme Points Parameters (toggle the frameLayout itself)
-    string $extremeGroup = `frameLayout -label "    Adjust extreme points parameters when Abstraction is enabled" -collapsable false -visible true extremePointsFrame`;
-        columnLayout;
-        $gExtremeMax = `floatSliderGrp -label "Max Points Threshold" -field true -minValue 0.1 -maxValue 1.0 -value 0.85 -precision 5`;
-        $gExtremeProx = `floatSliderGrp -label "Proximity Threshold" -field true -minValue 0.001 -maxValue 0.15 -value 0.05 -precision 5`;
-        $gExtremeFilter = `floatSliderGrp -label "Filter Threshold" -field true -minValue 0.00001 -maxValue 0.05 -value 0.0005 -precision 7`;
-        setParent ..;
-    setParent ..;
+    
 
     // Path Repulsion Weights
     string $repulsionGroup = `frameLayout -label "Path Repulsion Weights" -collapsable false`;
@@ -88,6 +77,21 @@ global proc CreateWireSculpt() {
     $gARepulsionSlider = `floatSliderGrp -label "Strength (a*)" -field true -minValue 0.0 -maxValue 2.0 -value 0.5`;
     $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
     setParent ..;
+    setParent ..;
+    
+    // Abstraction Toggle
+    string $abstractionGroup = `frameLayout -label "Abstraction (Extreme Points) Options" -collapsable false`;
+    columnLayout;
+    $gAbstractionCheckbox = `checkBox -label "Enable Abstraction" -value true -onCommand "toggleExtremeOptions()" -offCommand "toggleExtremeOptions()"`;
+    setParent ..;
+    setParent ..;
+    
+    string $extremeGroup = `frameLayout -label "    Adjust extreme points parameters when Abstraction is enabled" -collapsable false -visible true extremePointsFrame`;
+        columnLayout;
+        $gExtremeMax = `floatSliderGrp -label "Max Points Threshold" -field true -minValue 0.1 -maxValue 1.0 -value 0.85 -precision 5`;
+        $gExtremeProx = `floatSliderGrp -label "Proximity Threshold" -field true -minValue 0.001 -maxValue 0.15 -value 0.05 -precision 5`;
+        $gExtremeFilter = `floatSliderGrp -label "Filter Threshold" -field true -minValue 0.00001 -maxValue 0.05 -value 0.0005 -precision 7`;
+        setParent ..;
     setParent ..;
     
     separator -style "none" -height 10;
@@ -187,6 +191,7 @@ global proc wireSculpt_generate_Clicked()
     global string $gFOVSlider;
     global string $gContourChoice;
     global string $gContourSlider;
+    global string $gAbstractionCheckbox;
     global string $gExtremeMax;
     global string $gExtremeProx;
     global string $gExtremeFilter;
@@ -201,6 +206,7 @@ global proc wireSculpt_generate_Clicked()
     float $fov = `floatSliderGrp -query -value $gFOVSlider`;
     int $contourChoice = `radioButtonGrp -query -select $gContourChoice`;
     float $contour = `floatSliderGrp -query -value $gContourSlider`;
+    int $abstraction = `checkBox -query -value $gAbstractionCheckbox`;
     float $extremeMax = `floatSliderGrp -query -value $gExtremeMax`;
     float $extremeProx = `floatSliderGrp -query -value $gExtremeProx`;
     float $extremeFilter = `floatSliderGrp -query -value $gExtremeFilter`;
@@ -223,9 +229,12 @@ global proc wireSculpt_generate_Clicked()
     setAttr WireSculptNode1.view $viewChoice;
     setAttr WireSculptNode1.contour $contourChoice;
     setAttr WireSculptNode1.testSC $contour;
+    setAttr WireSculptNode1.isAbstract $abstraction;
     setAttr WireSculptNode1.maxValThresh $extremeMax;
     setAttr WireSculptNode1.proximityThresh $extremeProx;
     setAttr WireSculptNode1.filterThresh $extremeFilter;
+    print("Abstraction checkbox value: " + $abstraction + "\n");
+    print("HELLO");
 }
 
 // Procedure to set up the WireSculpt menu
