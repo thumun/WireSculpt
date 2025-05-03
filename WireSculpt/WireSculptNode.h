@@ -19,6 +19,7 @@ public:
 
     static MTypeId  id;
     static MObject  inMeshFile;
+    static MObject  featureVertsAmt;
     static MObject  aAttract;
     static MObject  bAttract;
     static MObject  aRepel;
@@ -38,7 +39,7 @@ protected:
     MObject createMesh(const double& radius, const double& aAttract, const double& bAttract, 
         const double& aRepel, const double& bRepel, const double& fovVal, const int& viewChoice,
         const int& contourChoice, const double& testSCVal, const double& proximity, const double& filter, 
-        const double& maxVal, const bool& isAbstract,
+        const double& maxVal, const bool& isAbstract, const double& featureAmt,
         WireSculptPlugin& ws, const std::string& filePath, std::vector<Vertex>& verticies, 
         std::vector<Edge>& edges, MObject& outData, MStatus& status);
 
