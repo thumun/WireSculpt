@@ -650,7 +650,7 @@ MObject WireSculptNode::createMesh(const double& radius, const double& aAttract,
         double rand = dis(gen); // Generate random number
         //std::mt19937 gen(index); // Seed with index
         //uint32_t randInt = gen(); // Get deterministic integer
-        double rand = static_cast<double>(randInt) / gen.max();
+        //double rand = static_cast<double>(randInt) / gen.max();
         if (rand <= fVThreshold) {
             landmarksSet.insert(&verticies[index]);
         }
