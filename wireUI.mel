@@ -144,7 +144,7 @@ global proc CreateWireSculpt() {
     // Test SC
     string $testSCGroup = `rowLayout`;
     columnLayout;
-    $gContourSlider = `floatSliderGrp -label "Test SC" -field true -minValue 0 -maxValue 1 -value 0.1`;
+    $gContourSlider = `floatSliderGrp -label "Trim SC" -field true -minValue 0 -maxValue 1 -value 0.1`;
     setParent ..;
     setParent ..;
     
