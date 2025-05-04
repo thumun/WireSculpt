@@ -80,6 +80,7 @@ code from here: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
 ### Models Used 
 - Fox:
 - Seagull: https://poly.pizza/m/6Tpj_vcWP3f
+- Giraffe: https://sketchfab.com/3d-models/low-poly-giraffe-e9715aee26bd4e03b2740547b5b259d0
 ### Configuration Settings
 - exedebug = way to debug our code as it builds an exe instead of an mll (just need a main and a if EXEDEBUG line encompassing the main)
 - xcopy -> custom post build events where we are copying the libs that we need to the maya binary and to our debug folder so everything builds/runs properly
