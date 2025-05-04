@@ -1,4 +1,5 @@
 # WireSculpt
+<img src ="https://github.com/user-attachments/assets/f5162aa6-5210-4ac5-bf3d-00c368c34179" width="400" height="350">
 
 ## Details
 This plugin is based on the following SIGGRAPH paper published in 2021: WireRoom: Model-guided Explorative Design of Abstract Wire Art by Zhijin Yang, Pengfei Xu, Hongbo Fu, and Hui Huang.
@@ -89,6 +90,7 @@ code from here: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
 - Seagull: https://poly.pizza/m/6Tpj_vcWP3f
 - Giraffe: https://sketchfab.com/3d-models/low-poly-giraffe-e9715aee26bd4e03b2740547b5b259d0
 - Elephant: https://sketchfab.com/3d-models/low-poly-elephant-84fd98c561464b1ba5d3dd48ab161b9c
+- Sailboat (sail alteratioons by Neha): https://poly.pizza/m/BgSZXwmm7k
 - Saul Goodman Figure: https://sketchfab.com/3d-models/saul-goodman-531a84899eb44401a1ff5d8f735aa6ad
 - Saul Goodman Head: https://www.artstation.com/artwork/blKOkn - saul head dineth
 - Blender Add-on to make meshes manifold: https://extensions.blender.org/add-ons/print3d-toolbox/
