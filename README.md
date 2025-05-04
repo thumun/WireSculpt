@@ -91,6 +91,7 @@ code from here: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
 - Giraffe: https://sketchfab.com/3d-models/low-poly-giraffe-e9715aee26bd4e03b2740547b5b259d0
 - Elephant: https://sketchfab.com/3d-models/low-poly-elephant-84fd98c561464b1ba5d3dd48ab161b9c
 - Sailboat (sail alteratioons by Neha): https://poly.pizza/m/BgSZXwmm7k
+- Sunflower: https://sketchfab.com/3d-models/lowpoly-sunflower-d8f3585482944774be1de8a03a7375cd
 - Saul Goodman Figure: https://sketchfab.com/3d-models/saul-goodman-531a84899eb44401a1ff5d8f735aa6ad
 - Saul Goodman Head: https://www.artstation.com/artwork/blKOkn - saul head dineth
 - Blender Add-on to make meshes manifold: https://extensions.blender.org/add-ons/print3d-toolbox/
