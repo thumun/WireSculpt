@@ -17,7 +17,7 @@ Our process can be found in this [design doc](https://github.com/thumun/WireScul
 
 To load a model into the plugin, click the load from file button. The 3D mesh has to be **triangulated**, **manifold**, and **obj**, or the plugin will **not** be able to process it.
 
-<img src="https://github.com/user-attachments/assets/858e55f8-e90b-44f5-9ba0-47a013d1e34d" width="400" height="500">
+<img src="https://github.com/user-attachments/assets/6af2361b-f5d7-4db1-b6ee-ad1244ec42a6" width="400" height="500">
 
 The Abstraction option enables the wireframe sculpture to have a more abstract aesthetic by enabling more extreme points to be chosen as landmark vertices that get visited by the wire path algorithm. The extreme points parameters can be adjusted to change the verticies that are selected as extreme points. 
 - Proximity: Controls how close new extreme points can be to existing ones
