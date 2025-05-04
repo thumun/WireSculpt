@@ -111,7 +111,7 @@ global proc CreateWireSculpt() {
     // Thickness for NURBs Curve Extrusion
     string $thicknessGroup = `frameLayout -label "NURBs Curve Thickness" -collapsable false`;
     columnLayout;
-    $gThicknessSlider = `floatSliderGrp -label "Thickness" -field true -minValue 0.1 -maxValue 2.0 -value 1.0`;
+    $gThicknessSlider = `floatSliderGrp -label "Thickness" -field true -minValue 0.1 -maxValue 10.0 -value 1.0`;
     setParent ..;
     setParent ..;
     
