@@ -94,6 +94,7 @@ code from here: https://github.com/FlorianTeich/concavity-aware-fields/tree/main
 - Saul Goodman Figure: https://sketchfab.com/3d-models/saul-goodman-531a84899eb44401a1ff5d8f735aa6ad
 - Saul Goodman Head: https://www.artstation.com/artwork/blKOkn - saul head dineth
 - Blender Add-on to make meshes manifold: https://extensions.blender.org/add-ons/print3d-toolbox/
+- Metal shader: https://help.autodesk.com/view/MAYAUL/2025/ENU/?guid=GUID-426580A4-6079-46A2-B651-E3CE38A5DEB8 
 
 ### Configuration Settings
 - exedebug = way to debug our code as it builds an exe instead of an mll (just need a main and a if EXEDEBUG line encompassing the main)
