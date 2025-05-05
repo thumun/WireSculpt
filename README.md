@@ -6,6 +6,10 @@
     <img src="https://github.com/user-attachments/assets/e6018558-cfdc-4f04-a1e0-38b43f2169e6" alt="thumb" width="500">
 </a>
 
+## Fabricated Example
+![image](https://github.com/user-attachments/assets/6b0df16f-bff7-4039-95df-2e79783c8344)
+Created by Claire and based on the Seagull model
+
 ## Details
 This plugin is based on the following SIGGRAPH paper published in 2021: WireRoom: Model-guided Explorative Design of Abstract Wire Art by Zhijin Yang, Pengfei Xu, Hongbo Fu, and Hui Huang.
 
