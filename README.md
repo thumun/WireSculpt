@@ -1,6 +1,11 @@
 # WireSculpt
 <img src ="https://github.com/user-attachments/assets/f5162aa6-5210-4ac5-bf3d-00c368c34179" width="400" height="350">
 
+## Video Presentation with Demo
+<a href="https://vimeo.com/1081571255/3611f6b0f6">
+    <img src="https://github.com/user-attachments/assets/e6018558-cfdc-4f04-a1e0-38b43f2169e6" alt="thumb" width="500">
+</a>
+
 ## Details
 This plugin is based on the following SIGGRAPH paper published in 2021: WireRoom: Model-guided Explorative Design of Abstract Wire Art by Zhijin Yang, Pengfei Xu, Hongbo Fu, and Hui Huang.
 
