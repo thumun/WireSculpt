@@ -7,7 +7,8 @@
 </a>
 
 ## Fabricated Example
-![image](https://github.com/user-attachments/assets/6b0df16f-bff7-4039-95df-2e79783c8344)
+<img src="https://github.com/user-attachments/assets/6b0df16f-bff7-4039-95df-2e79783c8344" width="400">
+
 Created by Claire and based on the Seagull model
 
 ## Details
