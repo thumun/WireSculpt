@@ -48,7 +48,7 @@ global proc CreateWireSculpt() {
     // Italic Heading
     text -label "Path Construction Options" -font "obliqueLabelFont" -align "center";
     
-    // Feature Attraction Weights
+    // Feature line landmark points
     string $featureGroup = `frameLayout -label "Feature Vertices (% Included)" -collapsable false`;
     columnLayout;
     $gFeatureVertsSlider = `floatSliderGrp -label "Percentage (%)" -field true -minValue 0.0 -maxValue 1.0 -value 0.2`;
@@ -59,12 +59,10 @@ global proc CreateWireSculpt() {
     // Feature Attraction Weights
     string $attractionGroup = `frameLayout -label "Feature Attraction Weights" -collapsable false`;
     columnLayout;
-    $gAAttractionSlider = `floatSliderGrp -label "Strength (a)" -field true -minValue 0.0 -maxValue 2.0 -value 0.5`;
-    $gBAttractionSlider = `floatSliderGrp -label "Steepness (b)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
+    $gAAttractionSlider = `floatSliderGrp -label "Strength (a)" -field true -minValue 0.0 -maxValue 2.0 -value 1.8 -precision 2`;
+    $gBAttractionSlider = `floatSliderGrp -label "Steepness (b)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5 -precision 2`;
     setParent ..;
     setParent ..;
-    
-    
     
     
     // Extreme Points Parameters
@@ -83,8 +81,8 @@ global proc CreateWireSculpt() {
     // Path Repulsion Weights
     string $repulsionGroup = `frameLayout -label "Path Repulsion Weights" -collapsable false`;
     columnLayout;
-    $gARepulsionSlider = `floatSliderGrp -label "Strength (a*)" -field true -minValue 0.0 -maxValue 2.0 -value 0.5`;
-    $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5`;
+    $gARepulsionSlider = `floatSliderGrp -label "Strength (a*)" -field true -minValue 0.0 -maxValue 2.0 -value 1.98 -precision 2`;
+    $gBRepulsionSlider = `floatSliderGrp -label "Steepness (b*)" -field true -minValue 0.0 -maxValue 10.0 -value 0.5 -precision 2`;
     setParent ..;
     setParent ..;
     

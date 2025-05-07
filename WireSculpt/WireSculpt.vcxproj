@@ -163,6 +163,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy ..\extdll\*.dll "$(SolutionDir)$(Platform)\$(Configuration)\" /Y
+xcopy ..\extdll\*.mel "$(SolutionDir)$(Platform)\$(Configuration)\" /Y
 xcopy ..\extdll\*.dll "%MAYA_LOCATION%\bin" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
